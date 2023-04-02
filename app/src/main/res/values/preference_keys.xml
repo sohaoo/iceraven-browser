@@ -336,4 +336,14 @@
     <!-- Notification Pre Permission Prompt -->
     <string name="pref_key_notification_pre_permission_prompt_enabled">pref_key_notification_pre_permission_prompt_enabled</string>
     <string name="pref_key_is_notification_pre_permission_prompt_shown">pref_key_is_notification_pre_permission_prompt_shown</string>
+
+    <string name="pref_key_strip_url" translatable="false">pref_key_strip_url</string>
+    <string name="pref_key_show_displayname_insteadof_email" translatable="false">pref_key_show_displayname_insteadof_email</string>
+    <!-- Add-ons Source Customization Settings -->
+    <string name="pref_addons_settings_category" translatable="false">pref_addons_settings_category</string>
+    <string name="pref_key_addons_custom_account" translatable="false">pref_key_addons_custom_account</string>
+    <string name="pref_key_addons_custom_collection" translatable="false">pref_key_addons_custom_collection</string>
+    <!-- System Customization Settings -->
+    <string name="pref_system_behavior_settings_category" translatable="false">pref_system_behavior_settings_category</string>
+    <string name="pref_key_relinquish_memory_under_pressure" translatable="false">pref_key_relinquish_memory_under_pressure</string>
 </resources>

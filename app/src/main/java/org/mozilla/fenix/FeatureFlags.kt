@@ -24,12 +24,12 @@ object FeatureFlags {
      * Pull-to-refresh allows you to pull the web content down far enough to have the page to
      * reload.
      */
-    val pullToRefreshEnabled = Config.channel.isNightlyOrDebug || Config.channel.isBeta
+    const val pullToRefreshEnabled = true
 
     /**
      * Enables the Sync Addresses feature.
      */
-    const val syncAddressesFeature = false
+    const val syncAddressesFeature = true
 
     /**
      * Show Pocket recommended stories on home.

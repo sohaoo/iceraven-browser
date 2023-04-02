@@ -9,9 +9,8 @@ import android.app.Application
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-import com.google.android.play.core.review.ReviewManagerFactory
+import io.github.forkmaintainers.iceraven.components.PagedAddonCollectionProvider
 import mozilla.components.feature.addons.AddonManager
-import mozilla.components.feature.addons.amo.AddonCollectionProvider
 import mozilla.components.feature.addons.migration.DefaultSupportedAddonsChecker
 import mozilla.components.feature.addons.update.DefaultAddonUpdater
 import mozilla.components.feature.autofill.AutofillConfiguration
@@ -19,7 +18,6 @@ import mozilla.components.lib.publicsuffixlist.PublicSuffixList
 import mozilla.components.support.base.worker.Frequency
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.Config
-import org.mozilla.fenix.FeatureFlags
 import org.mozilla.fenix.R
 import org.mozilla.fenix.autofill.AutofillConfirmActivity
 import org.mozilla.fenix.autofill.AutofillSearchActivity
@@ -30,7 +28,6 @@ import org.mozilla.fenix.datastore.pocketStoriesSelectedCategoriesDataStore
 import org.mozilla.fenix.ext.asRecentTabs
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.filterState
-import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.ext.sort
 import org.mozilla.fenix.gleanplumb.state.MessagingMiddleware
 import org.mozilla.fenix.home.PocketUpdatesMiddleware
@@ -102,32 +99,16 @@ class Components(private val context: Context) {
     }
 
     val addonCollectionProvider by lazyMonitored {
-        // Check if we have a customized (overridden) AMO collection (supported in Nightly & Beta)
-        if (FeatureFlags.customExtensionCollectionFeature && context.settings().amoCollectionOverrideConfigured()) {
-            AddonCollectionProvider(
-                context,
-                core.client,
-                collectionUser = context.settings().overrideAmoUser,
-                collectionName = context.settings().overrideAmoCollection,
-            )
-        }
-        // Use build config otherwise
-        else if (!BuildConfig.AMO_COLLECTION_USER.isNullOrEmpty() &&
-            !BuildConfig.AMO_COLLECTION_NAME.isNullOrEmpty()
-        ) {
-            AddonCollectionProvider(
-                context,
-                core.client,
-                serverURL = BuildConfig.AMO_SERVER_URL,
-                collectionUser = BuildConfig.AMO_COLLECTION_USER,
-                collectionName = BuildConfig.AMO_COLLECTION_NAME,
-                maxCacheAgeInMinutes = AMO_COLLECTION_MAX_CACHE_AGE,
-            )
-        }
-        // Fall back to defaults
-        else {
-            AddonCollectionProvider(context, core.client, maxCacheAgeInMinutes = AMO_COLLECTION_MAX_CACHE_AGE)
-        }
+        PagedAddonCollectionProvider(
+            context,
+            core.client,
+            serverURL = BuildConfig.AMO_SERVER_URL,
+            maxCacheAgeInMinutes = AMO_COLLECTION_MAX_CACHE_AGE,
+        )
+    }
+
+    fun clearAddonCache() {
+        addonCollectionProvider.deleteCacheFile(context)
     }
 
     @Suppress("MagicNumber")
@@ -159,7 +140,6 @@ class Components(private val context: Context) {
 
     val reviewPromptController by lazyMonitored {
         ReviewPromptController(
-            manager = ReviewManagerFactory.create(context),
             reviewSettings = FenixReviewSettings(settings),
         )
     }

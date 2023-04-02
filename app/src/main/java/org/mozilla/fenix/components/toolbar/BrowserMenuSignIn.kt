@@ -15,6 +15,7 @@ import mozilla.components.browser.menu.BrowserMenu
 import mozilla.components.browser.menu.item.BrowserMenuImageText
 import org.mozilla.fenix.R
 import org.mozilla.fenix.ext.components
+import org.mozilla.fenix.ext.settings
 
 /**
  * A menu item for displaying account information. The item computes the label on every bind call,
@@ -59,7 +60,11 @@ class BrowserMenuSignIn(
         val displayName = components.backgroundServices.syncStore.state.account?.displayName
 
         if (isSignedIn) {
-            displayName ?: email ?: resources.getString(R.string.browser_menu_account_settings)
+            if (context.settings().showDisplayNameInsteadofEmail) {
+                displayName ?: resources.getString(R.string.browser_menu_account_settings)
+            } else {
+                email ?: resources.getString(R.string.browser_menu_account_settings)
+            }
         } else {
             resources.getString(R.string.sync_menu_sync_and_save_data)
         }

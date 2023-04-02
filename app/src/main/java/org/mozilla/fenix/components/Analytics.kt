@@ -130,11 +130,7 @@ class Analytics(
         MetricController.create(
             listOf(
                 GleanMetricsService(context),
-                AdjustMetricsService(
-                    application = context as Application,
-                    storage = metricsStorage,
-                    crashReporter = crashReporter,
-                ),
+                AdjustMetricsService(context as Application),
             ),
             isDataTelemetryEnabled = { context.settings().isTelemetryEnabled },
             isMarketingDataTelemetryEnabled = { context.settings().isMarketingTelemetryEnabled },

@@ -1,0 +1,138 @@
+name: Release Automation
+
+on:
+  push:
+    branches:
+      - iceraven
+    tags:
+      - "*"
+  create:
+
+jobs:
+  release-automation:
+    name: Build App
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'true'
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: temurin
+
+      - name: Install Android SDK with pieces Gradle skips
+        run: ./automation/iceraven/install-sdk.sh
+
+      - name: Inspect memory
+        run: free -h
+
+      - name: Create version name
+        run: echo "VERSION_NAME=$(git describe --tags HEAD)" >> $GITHUB_ENV
+
+      - name: Build forkRelease variant of app
+        uses: gradle/gradle-build-action@v2
+        env:
+          # Try to stop the daemon from magically vanishing by adding random memory-related arguments.
+          # See <https://stackoverflow.com/a/70010526> and <https://stackoverflow.com/a/70756876>
+          # The runner seems to have ~6 gigs of memory, so we make sure to stay under that.
+          # We have Java 11 so we don't have a perm size anymore.
+          GRADLE_OPTS: -Dorg.gradle.jvmargs="-XX:MaxMetaspaceSize=1g -Xms2g -Xmx4g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/dev/stderr"
+        with:
+          gradle-home-cache-cleanup: true
+          gradle-executable: /usr/bin/time
+          arguments: -v ./gradlew app:assemblefenixForkRelease -x lintVitalFenixForkRelease -PversionName=${{ env.VERSION_NAME }} --stacktrace
+
+      - name: Create signed APKs
+        if: "contains(toJSON(github.event.ref_type), 'tag') && contains(toJSON(github.event.ref), 'iceraven')"
+        uses: abhijitvalluri/sign-apks@v0.8
+        with:
+          releaseDirectory: app/build/outputs/apk/fenix/forkRelease/
+          signingKeyBase64: ${{ secrets.DEBUG_SIGNING_KEY }}
+          alias: ${{ secrets.DEBUG_ALIAS }}
+          keyStorePassword: ${{ secrets.DEBUG_KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.DEBUG_KEY_PASSWORD }}
+
+      - name: Create changelog
+        if: "contains(toJSON(github.event.ref_type), 'tag') && contains(toJSON(github.event.ref), 'iceraven')"
+        run: |
+          PREVIOUS_RELEASE_TAG=$(git tag --list iceraven-* --sort=-creatordate | tail -n+2 | head -n 1)
+          echo "## Automated release of version ${{ github.event.ref }} browser" >>temp_changelog.md
+          if [[ "$(git log | grep $PREVIOUS_RELEASE_TAG | wc -l)" != "0" ]] ; then
+            # There's a path from the previous release to now
+            echo "<details>" >>temp_changelog.md
+            echo "<summary>Click to expand</summary>" >>temp_changelog.md
+            echo " " >>temp_changelog.md
+            echo "This is an automated release, consisting of the following changes:" >>temp_changelog.md
+            echo "### Change log (commit history since previous release)" >>temp_changelog.md
+            echo " " >>temp_changelog.md
+            git log ${{ github.event.ref }}...$PREVIOUS_RELEASE_TAG --pretty='format:%C(auto)%h (%as) %s' | head -n 1000 >>temp_changelog.md
+            echo " " >>temp_changelog.md
+            echo " " >>temp_changelog.md
+            echo "</details>" >>temp_changelog.md
+          else
+            echo "This is an automated release, not directly descended from the previous release." >>temp_changelog.md
+          fi
+          echo "**NOTE**: @fork-maintainers, you can edit these auto-generated release notes with a more user-friendly summary of the key changes, if needed." >>temp_changelog.md
+          echo " " >>temp_changelog.md
+
+      - name: Create Release
+        if: "contains(toJSON(github.event.ref_type), 'tag') && contains(toJSON(github.event.ref), 'iceraven')"
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.ref }}
+          release_name: "Version ${{ github.event.ref }}"
+          draft: false
+          prerelease: false
+          body_path: temp_changelog.md
+
+      - name: Upload arm64 apk
+        if: "contains(toJSON(github.event.ref_type), 'tag') && contains(toJSON(github.event.ref), 'iceraven')"
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: app/build/outputs/apk/fenix/forkRelease/app-fenix-arm64-v8a-forkRelease.apk
+          asset_name: ${{ github.event.ref }}-browser-arm64-v8a-forkRelease.apk
+          asset_content_type: application/vnd.android.package-archive
+
+      - name: Upload armeabi apk
+        if: "contains(toJSON(github.event.ref_type), 'tag') && contains(toJSON(github.event.ref), 'iceraven')"
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: app/build/outputs/apk/fenix/forkRelease/app-fenix-armeabi-v7a-forkRelease.apk
+          asset_name: ${{ github.event.ref }}-browser-armeabi-v7a-forkRelease.apk
+          asset_content_type: application/vnd.android.package-archive
+
+      - name: Upload x86 apk
+        if: "contains(toJSON(github.event.ref_type), 'tag') && contains(toJSON(github.event.ref), 'iceraven')"
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: app/build/outputs/apk/fenix/forkRelease/app-fenix-x86-forkRelease.apk
+          asset_name: ${{ github.event.ref }}-browser-x86-forkRelease.apk
+          asset_content_type: application/vnd.android.package-archive
+
+      - name: Upload x86_64 apk
+        if: "contains(toJSON(github.event.ref_type), 'tag') && contains(toJSON(github.event.ref), 'iceraven')"
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: app/build/outputs/apk/fenix/forkRelease/app-fenix-x86_64-forkRelease.apk
+          asset_name: ${{ github.event.ref }}-browser-x86_64-forkRelease.apk
+          asset_content_type: application/vnd.android.package-archive

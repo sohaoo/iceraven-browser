@@ -43,19 +43,12 @@ object FenixVersions {
     const val accompanist_drawablepainter = "0.23.1"
     const val accompanist_insets = "0.23.1"
 
-    const val adjust = "4.33.0"
-    const val installreferrer = "2.2"
-
     const val junit = "5.5.2"
     const val mockk = "1.12.0"
 
     const val mockwebserver = "4.10.0"
     const val uiautomator = "2.2.0"
     const val robolectric = "4.9"
-
-    const val google_ads_id_version = "16.0.0"
-
-    const val google_play_review_version = "2.0.0"
 
     const val protobuf = "3.21.10" // keep in sync with the version used in AS.
 }
@@ -117,9 +110,6 @@ object FenixDependencies {
     const val protobuf_javalite = "com.google.protobuf:protobuf-javalite:${FenixVersions.protobuf}"
     const val protobuf_compiler = "com.google.protobuf:protoc:${FenixVersions.protobuf}"
 
-    const val adjust = "com.adjust.sdk:adjust-android:${FenixVersions.adjust}"
-    const val installreferrer = "com.android.installreferrer:installreferrer:${FenixVersions.installreferrer}"
-
     const val jna = "net.java.dev.jna:jna:${FenixVersions.jna}@jar"
 
     const val junit = "junit:junit:${FenixVersions.junit}"
@@ -155,12 +145,6 @@ object FenixDependencies {
     const val mockwebserver = "com.squareup.okhttp3:mockwebserver:${FenixVersions.mockwebserver}"
     const val uiautomator = "androidx.test.uiautomator:uiautomator:${FenixVersions.uiautomator}"
     const val robolectric = "org.robolectric:robolectric:${FenixVersions.robolectric}"
-
-    const val google_ads_id = "com.google.android.gms:play-services-ads-identifier:${FenixVersions.google_ads_id_version}"
-
-    // Required for in-app reviews
-    const val google_play_review = "com.google.android.play:review:${FenixVersions.google_play_review_version}"
-    const val google_play_review_ktx = "com.google.android.play:review-ktx:${FenixVersions.google_play_review_version}"
 
     const val detektApi = "io.gitlab.arturbosch.detekt:detekt-api:${FenixVersions.detekt}"
     const val detektTest = "io.gitlab.arturbosch.detekt:detekt-test:${FenixVersions.detekt}"

@@ -24,6 +24,16 @@ class FenixAccountManager(context: Context) {
         }
 
     /**
+     * Returns the Firefox Account displayName if authenticated in the app, `null` otherwise.
+     */
+    val accountProfileDisplayName: String?
+        get() = if (accountState == AccountState.AUTHENTICATED) {
+            accountManager.accountProfile()?.displayName
+        } else {
+            null
+        }
+
+    /**
      * The current state of the Firefox Account. See [AccountState].
      */
     val accountState: AccountState

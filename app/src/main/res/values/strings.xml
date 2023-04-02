@@ -52,7 +52,7 @@
     <string name="recently_saved_menu_item_remove">Remove</string>
 
     <!-- About content. The first parameter is the name of the application. (For example: Fenix) -->
-    <string name="about_content">%1$s is produced by Mozilla.</string>
+    <string name="about_content">%1$s is produced by @fork-maintainers.</string>
 
     <!-- Private Browsing -->
     <!-- Explanation for private browsing displayed to users on home view when they first enable private mode
@@ -1964,4 +1964,25 @@
     <string name="a11y_action_label_wallpaper_collection_learn_more">open link to learn more about this collection</string>
     <!-- Action label for links that point to an article. Talkback will append this to say "Double tap to read the article". -->
     <string name="a11y_action_label_read_article">read the article</string>
+
+    <!-- Preference for add-ons custom source -->
+    <string name="preferences_addons_customization">Configure custom add-ons source</string>
+    <!-- Placeholder text shown in the search bar before a user enters text -->
+    <string name="addons_search_hint">Search add-ons</string>
+    <!-- Preference for showing display name instead of email -->
+    <string name="preferences_show_displayname_insteadof_email">Show Display name instead of email</string>
+    <!-- Title for strip url preference in customization settings -->
+    <string name="preferences_strip_url_title">Strip HTTP/HTTPS/WWW from URLs</string>
+    <!-- Description for strip url preference in customization settings -->
+    <string name="preferences_strip_url_description">Enable to strip out HTTP/HTTPS/WWW from URLs in toolbar and tab tray</string>
+    <!-- Label for add-ons custom source account preference -->
+    <string name="addons_custom_source_account">Set custom add-ons account</string>
+    <!-- Label for add-ons custom source collection preference -->
+    <string name="addons_custom_source_collection">Set custom add-ons collection</string>
+    <!-- Preference category for system behavior customization -->
+    <string name="preferences_system_behavior">Configure system behavior</string>
+    <!-- Title for relinquish memory preference in customization settings -->
+    <string name="preferences_relinquish_memory_title">Suspend tabs to avoid being killed for memory</string>
+    <!-- Description for relinquish memory preference in customization settings -->
+    <string name="preferences_relinquish_memory_description">If enabled, tabs will be suspended and page state lost when the system is low on memory</string>
 </resources>

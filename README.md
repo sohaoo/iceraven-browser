@@ -1,58 +1,121 @@
-# Firefox for Android
+# Iceraven Browser! [![Release Automation](https://github.com/fork-maintainers/iceraven-browser/actions/workflows/iceraven-build.yml/badge.svg)](https://github.com/fork-maintainers/iceraven-browser/actions/workflows/iceraven-build.yml)
 
-[![Task Status](https://firefox-ci-tc.services.mozilla.com/api/github/v1/repository/mozilla-mobile/fenix/main/badge.svg)](https://firefox-ci-tc.services.mozilla.com/api/github/v1/repository/mozilla-mobile/fenix/main/latest)
-[![codecov](https://codecov.io/gh/mozilla-mobile/fenix/branch/main/graph/badge.svg)](https://codecov.io/gh/mozilla-mobile/fenix)
+Definitely not brought to you by Mozilla!
 
-Fenix (internal codename) is the all-new Firefox for Android browser, based on [GeckoView](https://mozilla.github.io/geckoview/) and [Mozilla Android Components](https://mozac.org/).
+Iceraven Browser is a web browser for Android, based on [Mozilla's Fenix version of Firefox](https://github.com/mozilla-mobile/fenix/), [GeckoView](https://mozilla.github.io/geckoview/) and [Mozilla Android Components](https://mozac.org/).
 
-<a href="https://play.google.com/store/apps/details?id=org.mozilla.firefox" target="_blank"><img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" alt="Get it on Google Play" height="90"/></a>
+Our goal is to be a close fork of the new Firefox for Android that seeks to provide users with more options, more opportunities to customize (including a broad extension library), and more information about the pages they visit and how their browsers are interacting with those pages.
+
+Notable features include:
+  * `about:config` support
+  * The ability to *attempt* to install a much longer list of add-ons than Mozilla's Fenix version of Firefox accepts. Currently the browser queries [this AMO collection](https://addons.mozilla.org/en-US/firefox/collections/16201230/What-I-want-on-Fenix/) **Most of them will not work**, because they depend on code that Mozilla is still working on writing in `android-components`, but you may attempt to install them. If you don't see an add-on you want, you can [request it](https://github.com/fork-maintainers/iceraven-browser/issues/new).
+  * **No warranties or guarantees of security or updates or even stability**! Note that Iceraven Browser includes some unstable code written by Mozilla, with our own added modifications on top, all shipped with the stable version of GeckoView engine. Hence, the browser may contain bugs introduced upstream. Binaries are currently built automatically by our Github release automation. These binaries are signed with a debug key. When we finally publish this somewhere official like F-droid, we will sign the apks with a proper key suitable for public release. Due to the current way we create the releases and sign them, you may not want to rely on such "alpha" quality software as your primary web browser, as it will have bugs. So, use this browser only if you are comfortable with these limitations/potential risks.
+
+**Note/Disclaimer:** Iceraven Browser could not exist without the hardworking folks at the Mozilla Corporation who work on the Mozilla Android Components and Firefox projects, but it is not an official Mozilla product, and is not provided, endorsed, vetted, approved, or secured by Mozilla.
+
+In addition, we intend to try to cut down on telemetry and proprietary code to as great of an extent as possible as long as doing so does not compromise the user experience or make the fork too hard to maintain. Right now, we believe that no telemetry should be being sent to Mozilla anymore, but we cannot guarantee this; data may still be sent. Because of the way we have implemented this, the app may still appear to contain trackers when analyzed by tools that look for the presence of known tracking libraries. These detected trackers should actually be non-functional substitutes, many of which are sourced [from here](https://gitlab.com/relan/fennecbuild/-/blob/master/fenix-liberate.patch). **If you catch the app actually sending data to Mozilla, Adjust, Leanplum, Firebase, or any other such service, please open an issue!** Presumably any data that reaches Mozilla is governed by Mozilla's privacy policy, but as Iceraven Browser is, again **not a Mozilla product**, we can make no promises.
+
+Iceraven Browser combines the power of Fenix (of which we are a fork) and the spirit of Fennec, with a respectful nod toward the grand tradition of Netscape Navigator, from which all Gecko-based projects came, including the earliest of our predecessors, the old Mozilla Phoenix and Mozilla Firefox desktop browsers.
+
+That said, Iceraven Browser is an independent all-volunteer project, and has no affiliation with Netscape, Netscape Navigator, Mozilla, Mozilla Firefox, Mozila Phoenix, Debian, Debian Iceweasel, Parabola GNU/Linux-libre Iceweasel, America Online, or Verizon, among others. :)  Basically, if you don't like the browser, it's not their fault. :)
+
+## 📥 Installation
+
+Right now, releases are published as `.apk` files, through Github. You should download and install the appropriate one for your device.
+
+1. **Determine what version you need**. If you have a newer, 64-bit device, or a device with more than 4 GB of memory, you probably want the `arm64-v8a` version. **Any ordinary phone or tablet should be able to use the `armeabi-v7a` version**, but it will be limited to using no more than 4 GB of memory. You almost certainly don't want the `x86` or `x86_64` versions; they are in case you are running Android on a PC.
+
+2. [**Download the APK for the latest release from the Releases page**](https://github.com/fork-maintainers/iceraven-browser/releases). Make sure to pick the version you chose in step 1.
+
+3. **Install the APK**. You will need to enable installation of apps from "unknown" (to Google) sources, and installatiuon of apps *by* whatever app you used to open the downloaded APK (i.e. your browser or file manager). Android will try to dissuade you from doing this, and suggest that it is dangerous. Iceraven is a browser for people who enjoy danger.
+
+4. **Enjoy Iceraven**. Make sure to install the add-ons that are essential for you in the main menu under "Add-Ons". You may want to set Iceraven as your device's default browser app. If you do this, it will be able to provide so-called "Chrome" [custom tabs](https://developers.google.com/web/android/custom-tabs) for other applications, allowing you to use your add-ons there.
+
+## 🔨 Building
+
+1. Set up the environment. We need the Android SDK at `$ANDROID_SDK_ROOT` and a Java JDK at `$JAVA_HOME` that isn't the Ubuntu Java 8 one. We want environment variables that look something like:
+
+```sh
+# Where does our system install the JDK? This is the right path for the Ubuntu Java 11 JDK, if it is installed.
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+# Where did we install the Android SDK?
+export ANDROID_SDK_ROOT=$HOME/android-sdk/android-sdk-linux/
+```
+
+If we don't have the Android SDK, we can install it thusly on Linux:
+
+```sh
+mkdir -p $HOME/android-sdk/android-sdk-linux
+cd $HOME/android-sdk/android-sdk-linux
+mkdir -p licenses
+echo "8933bad161af4178b1185d1a37fbf41ea5269c55" >> licenses/android-sdk-license
+echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> licenses/android-sdk-license
+echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" >> licenses/android-sdk-license
+mkdir cmdline-tools
+cd cmdline-tools
+wget "$(curl -s https://developer.android.com/studio | grep -oP "https://dl.google.com/android/repository/commandlinetools-linux-[0-9]+_latest.zip")"
+unzip commandlinetools-linux-*_latest.zip
+cd ..
+```
+
+2. Clone the project.
+
+```sh
+git clone --recursive https://github.com/fork-maintainers/iceraven-browser
+```
+
+4. Go inside `iceraven-browser`. That's where the build is coordinated from.
+
+```sh
+cd iceraven-browser
+```
+
+5. Configure the project. For your personal use you need to sign the apk file. The simplest way to do this is to use the debug key that is auto-generated by Android SDK. This is not a great idea for releasing, but acceptable for your personal use. You can configure it as follows:
+
+```sh
+echo "autosignReleaseWithDebugKey=" >> local.properties
+```
+
+6. Build the project. To build the Iceraven-branded release APKs, you can do:
+
+```sh
+./gradlew app:assemblefenixForkRelease -PversionName="$(git describe --tags HEAD)"
+```
+
+(If you don't use the `app:` prefix, you might get complaints about the build system being `unable to locate the objcopy executable`.)
+
+The APKs will show up in `app/build/outputs/apk/fenix/forkRelease/`.
 
 ## Getting Involved
 
-Please read the [Community Participation Guidelines](https://www.mozilla.org/en-US/about/governance/policies/participation/) and the [Bugzilla Etiquette guidelines](https://bugzilla.mozilla.org/page.cgi?id=etiquette.html) before filing an issue. This is our professional working environment as much as it is our bug tracker, and we want to keep our workspace clean and healthy.
+This is an all-volunteer project. No one is getting paid (at least not by the project itself.).
 
-* [Guide to Contributing](https://github.com/mozilla-mobile/shared-docs/blob/master/android/CONTRIBUTING.md) (**New contributors start here!**)
+Therefore, everyone should feel free to open issues and pull requests.  Join the club!
 
-* Browse our [current Issues](https://github.com/mozilla-mobile/fenix/issues), or [file a security issue][sec issue].
-
-* Matrix: [#fenix:mozilla.org channel](https://chat.mozilla.org/#/room/#fenix:mozilla.org) (**We're available Monday-Friday, GMT and PST working hours**). Related channels:
-  * [#mobile-test-eng:mozilla.org channel](https://chat.mozilla.org/#/room/#mobile-test-eng:mozilla.org): for UI test automation
-  * [#perf-android-frontend:mozilla.org channel](https://chat.mozilla.org/#/room/#perf-android-frontend:mozilla.org): for front-end (JVM) performance of Android apps
-  * [#android-tips:mozilla.org channel](https://chat.mozilla.org/#/room/#android-tips:mozilla.org): for tips on Android development
-
-* Check out the [project wiki](https://github.com/mozilla-mobile/fenix/wiki) for more information.
-  * See [our guide on Writing Custom Lint Rules](https://github.com/mozilla-mobile/shared-docs/blob/master/android/writing_lint_rules.md).
-
-* Localization happens on [Pontoon](https://pontoon.mozilla.org/projects/firefox-for-android/). Please get in touch with delphine (at) mozilla (dot) com directly for more information.
-
-**Beginners!** - Watch out for [Issues with the "Good First Issue" label](https://github.com/mozilla-mobile/fenix/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22). These are easy bugs that have been left for first timers to have a go, get involved and make a positive contribution to the project!
-
+Developers are especially welcome, wanted, and needed.
 
 ## I want to open a Pull Request!
 
 We encourage you to participate in this open source project. We love Pull Requests, Bug Reports, ideas, (security) code reviews or any other kind of positive contribution.
 
-Since we are a small team, however, **we do not have the bandwidth to review unsolicited PRs**. Please follow our [Pull Request guidelines](https://github.com/mozilla-mobile/shared-docs/blob/master/android/CONTRIBUTING_code.md#creating-a-pull-request), or **we may close the PR**.
+### How to Appease the Linter
 
-To make it easier to review, we have these PR requirements:
+If you are getting errors form `./gradelw ktlint`, try running `./gradlew ktlintFormat` to let `ktlint` decide how to lay out your code, instead of just yelling at you that you can't read its mind.
 
-* Every PR must have **exactly** one issue associated with it.
-* Write a clear explanation of what the code is doing when opening the pull request, and optionally add comments to the PR.
-* Make sure there are tests - or ask for help on how the code should be tested in the Issue!
-* Keep PRs small and to the point. For extra code-health changes, either file a separate issue, or make it a separate PR that can be easily reviewed.
-* Use micro-commits. This makes it easier and faster to review.
-* Add a screenshot for UX changes (this is part of the PR checklist)
+### 🙅 How to skip CI checks for PRs 🙅
 
-As a small team, we have to prioritize our work, and reviewing PRs takes time. We receive lots of PRs every day, so if you can keep your PRs small, it helps our small team review and merge code faster, minimizing stale code.
+If you want to skip Github CI checks in a PR, please add the following to the PR title exactly: `[skip ci]`.
+Also, please include the exact phrase `[skip ci]` in every commit message. This is to avoid Travis CI checks as well as skipping Github CI checks after merging the commits to the `fork` branch.
 
+This is useful to do **if** you are sure that your changes do not effect the app's code (ex: changes to `README.md`).
 
-Keep in mind that the team is very overloaded, so PRs sometimes wait
-for a *very* long time. However this is not for lack of interest, but
-because we find ourselves in a constant need to prioritize
-certain issues/PRs over others. If you think your issue/PR is very important,
-try to popularize it by getting other users to comment and share their point of view.
+## 🚀 Release automation 🚀
 
-## I want to file an issue!
+We have now setup release automation so that Github actions automatically trigger a release build and publish a release when we push a tag to the repository.
+
+**NOTE**: The tag should be of the format `iceraven-x.y.z`, where `x.y.z` is the release version, for the automation to kick in and also so that the built app will have the correct version name.
+
+## ✏️  I want to file an issue!
 
 Great! We encourage you to participate in this open source project. We love Pull Requests, Bug Reports, ideas, (security) code reviews or any other kind of positive contribution.
 
@@ -61,182 +124,10 @@ To make it easier to triage, we have these issue requirements:
 * Please do your best to search for duplicate issues before filing a new issue so we can keep our issue board clean.
 * Every issue should have **exactly** one bug/feature request described in it. Please do not file meta feedback list tickets as it is difficult to parse them and address their individual points.
 * Feature Requests are better when they’re open-ended instead of demanding a specific solution -ie  “I want an easier way to do X” instead of “add Y”
-* Issues are not the place to go off topic or debate. If you have questions, please join the [#fenix:mozilla.org channel](https://chat.mozilla.org/#/room/#fenix:mozilla.org).
-* Please always remember our [Community Participation Guidelines](https://www.mozilla.org/en-US/about/governance/policies/participation/)
-* Please do not tag specific team members to try to get your issue looked at faster. We have a triage process that will tag and label issues correctly in due time. If you think an issue is very severe, you can ask about it in Matrix.
+* Issues are not the place to go off topic or debate.
+* While we do not yet have Community Participation Guidelines of our own, we ask that you show respect to everyone and treat others as you would like to be treated. Behavior that would violate [Mozilla's Community Participation Guidelines](https://www.mozilla.org/en-US/about/governance/policies/participation/) is almost certainly unwelcome. However, as a small project without community managers, we cannot promise prompt and consistent enforcement.
 
-Please keep in mind that even though a feature you have in mind may seem like a small ask, as a small team, we have to prioritize our planned work and every new feature adds complexity and maintenance and may take up design, research, marketing, product, and engineering time. We appreciate everyone’s passion but we will not be able to incorporate every feature request or even fix every bug. That being said, just because we haven't replied, doesn't mean we don't care about the issue, please be patient with our response times as we're very busy.
-
-## Build Instructions
-
-Pre-requisites:
-* Android SDK
-* To run command line tools, you'll need to configure Java: see [our how-to guide](https://github.com/mozilla-mobile/shared-docs/blob/master/android/configure_java.md).
-
-1. Clone or Download the repository:
-
-  ```shell
-  git clone https://github.com/mozilla-mobile/fenix
-  ```
-
-2. **Import** the project into Android Studio **or** build on the command line:
-
-  ```shell
-  ./gradlew clean app:assembleDebug
-  ```
-
-  If this errors out, make sure that you have an `ANDROID_SDK_ROOT` environment
-  variable pointing to the right path.
-
-3. Make sure to select the correct build variant in Android Studio. See the next section.
-
-4. Make sure to select "Default APK" under Installation Options inside Run/Debug configuration: see [this bug](https://bugzilla.mozilla.org/show_bug.cgi?id=1529082).
-
-### Build Variants
-For general development, we recommend the **debug** build variant. Here's an explanation of each variant:
-
-- **debug**: the default for developers, similar to most other Android apps. It is debuggable, uses a Nightly GeckoView with debug symbols, adds tools like LeakCanary for troublingshooting, and does not strip unused code.
-- **nightly**: what we ship to the Firefox Nightly channel, using GeckoView Nightly.
-- **beta**: what we ship to the Firefox Beta channel, using GeckoView Beta. It is more stable than nightly.
-- **release**: what we ship as Firefox for Android, using GeckoView Release. It is the most stable.
-
-nightly, beta, and release are unsigned and `debuggable=false` by default. If
-you want these variants to be:
-- automatically signed, see [Automatically signing release builds](#automatically-sign-release-builds)
-- `debuggable=true`, see [Building debuggable release variants](#building-debuggable-release-variants)
-
-#### Performance Build Variants
-For accurate performance measurements, read this section!
-
-To analyze performance during **local development** build a production variant locally (this could either be the Nightly, beta or release).  Otherwise, you could also grab a pre-existing APK if you don't need to test some local changes. Then, use the Firefox profiler to profile what you need!
-
-For more information on how to use the profiler or how to use the build, refer to this [how to measure performance with the build](https://wiki.mozilla.org/Performance/How_to_get_started_on_Fenix)
-
-If you want to run **performance tests/benchmarks** in automation or locally use a production build since it is much closer in behavior compared to what users see in the wild.
-
-Before you can install any release builds, **You will need to sign production build variants:** see [Automatically signing release builds](#automatically-sign-release-builds) for details.
-
-##### Known disabled-by-default features
-Some features are disabled by default when Fenix is built locally. This can be problematic at times for checking performance since you might want to know how your code behaves with those features.
-The known features that are disabled by default are:
-- Sentry
-- Adjust
-- Mozilla Location Services (also known as MLS)
-- Firebase Push Services
-- Telemetry (only disabled by default in debug builds)
-- Nimbus
-
-## Pre-push hooks
-To reduce review turn-around time, we'd like all pushes to run tests locally. We'd
-recommend you use our provided pre-push hook in `config/pre-push-recommended.sh`.
-Using this hook will guarantee your hook gets updated as the repository changes.
-This hook tries to run as much as possible without taking too much time.
-
-Before you can run the hook, you'll need to configure Java properly because it relies on command line tools: see
-[our how-to guide](https://github.com/mozilla-mobile/shared-docs/blob/master/android/configure_java.md).
-
-To add it on Mac/Linux, run this command from the project root:
-```sh
-ln -s ../../config/pre-push-recommended.sh .git/hooks/pre-push
-```
-or for Windows run this command using the Command Prompt with administrative privileges:
-```sh
-mklink .git\hooks\pre-push ..\..\config\pre-push-recommended.sh
-```
-or using PowerShell:
-```sh
-New-Item -ItemType SymbolicLink -Path .git\hooks\pre-push -Value (Resolve-Path config\pre-push-recommended.sh)
-```
-
-To push without running the pre-push hook (e.g. doc updates):
-```sh
-git push <remote> --no-verify
-```
-
-Note: If while pushing you encounter this error "Could not initialize class org.codehaus.groovy.runtime.InvokerHelper" and are currently on Java14 then downgrading your Java version to Java13 or lower can resolve the issue
-
-Steps to downgrade Java Version on Mac with Brew:
-1. Install Homebrew (https://brew.sh/)
-2. run ```brew update```
-3. To uninstall your current java version, run ```sudo rm -fr /Library/Java/JavaVirtualMachines/<jdk-version>```
-4. run ```brew tap homebrew/cask-versions```
-5. run ```brew search java```
-6. If you see java11, then run ```brew install java11```
-7. Verify java-version by running ```java -version```
-
-## local.properties helpers
-You can speed up local development by setting a few helper flags available in `local.properties`. Some flags will make it easy to
-work across multiple layers of the dependency stack - specifically, with android-components, geckoview or application-services.
-
-### Automatically sign release builds
-To sign your release builds with your debug key automatically, add the following to `<proj-root>/local.properties`:
-
-```sh
-autosignReleaseWithDebugKey
-```
-
-With this line, release build variants will automatically be signed with your debug key (like debug builds), allowing them to be built and installed directly through Android Studio or the command line.
-
-This is helpful when you're building release variants frequently, for example to test feature flags and or do performance analyses.
-
-### Building debuggable release variants
-
-Nightly, Beta and Release variants are getting published to Google Play and therefore are not debuggable. To locally create debuggable builds of those variants, add the following to `<proj-root>/local.properties`:
-
-```sh
-debuggable
-```
-
-### Setting raptor manifest flag
-
-To set the raptor manifest flag in Nightly, Beta and Release variants, add the following to `<proj-root>/local.properties`:
-
-```sh
-raptorEnabled
-```
-
-### Auto-publication workflow for android-components and application-services
-If you're making changes to these projects and want to test them in Fenix, auto-publication workflow is the fastest, most reliable
-way to do that.
-
-In `local.properties`, specify a relative path to your local `android-components` and/or `application-services` projects. E.g.:
-- `autoPublish.android-components.dir=../firefox-android/android-components`
-- `autoPublish.application-services.dir=../application-services`
-
-*Note that the Android Components project was already migrated to the new [firefox-android](https://github.com/mozilla-mobile/firefox-android) repository. Therefore, this auto publication workflow won't be neccessary for Android Components once Fenix is integrated in the new repository as well.*
-
-Once these flags are set, your Fenix builds will include any local modifications present in these projects.
-
-See a [demo of auto-publication workflow in action](https://www.youtube.com/watch?v=qZKlBzVvQGc).
-
-In order to build successfully, you need to check out a commit in the dependency repository that has no breaking changes. The two best ways to do this are:
-- Run the `<android-components>/tools/list_compatible_dependency_versions.py` script to output a compatible commit
-- Check out the latest commit from main in this repository and the dependency repository. However, this may fail if there were breaking changes added recently to the dependency.
-
-If you're trying to build fenix with a local ac AND a local GV, you'll have to use another method: see [this doc](https://github.com/mozilla-mobile/fenix/blob/main/docs/substituting-local-ac-and-gv.md).
-
-### Using Nimbus servers during local development
-If you're working with the Nimbus experiments platform, by default for local development Fenix configures Nimbus to not use a server.
-
-If you wish to use a Nimbus server during local development, you can add a `https://` or `file://` endpoint to the `local.properties` file.
-
-- `nimbus.remote-settings.url`
-
-Testing experimental branches should be possible without a server.
-
-### Using custom Glean servers during local development
-If you wish to use a custom Glean server during local development, you can add a `https://` endpoint to the `local.properties` file.
-
-- `glean.custom.server.url`
-
-### GeckoView
-Specify a relative path to your local `mozilla-central` checkout via `dependencySubstitutions.geckoviewTopsrcdir`,
-and optional a path to m-c object directory via `dependencySubstitutions.geckoviewTopobjdir`.
-
-If these are configured, local builds of GeckoView will be used instead of what's configured in Dependencies.kt.
-For more details, see https://firefox-source-docs.mozilla.org/mobile/android/geckoview/contributor/geckoview-quick-start.html#include-geckoview-as-a-dependency
-
-See notes on building successfully in the `android-components` auto-publication section.
+Please keep in mind that even though a feature you have in mind may seem like a small ask, as a small team, we have to prioritize our planned work and every new feature adds complexity and maintenance and may take up design, research, product, and engineering time. We appreciate everyone’s passion but we will not be able to incorporate every feature request or even fix every bug. That being said, just because we haven't replied, doesn't mean we don't care about the issue, please be patient with our response times as we're very busy.
 
 ## License
 
@@ -244,5 +135,3 @@ See notes on building successfully in the `android-components` auto-publication 
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at http://mozilla.org/MPL/2.0/
-
-[sec issue]: https://bugzilla.mozilla.org/enter_bug.cgi?assigned_to=nobody%40mozilla.org&bug_ignored=0&bug_severity=normal&bug_status=NEW&cf_fx_iteration=---&cf_fx_points=---&component=Security%3A%20Android&contenttypemethod=list&contenttypeselection=text%2Fplain&defined_groups=1&flag_type-4=X&flag_type-607=X&flag_type-791=X&flag_type-800=X&flag_type-803=X&flag_type-936=X&flag_type-937=X&form_name=enter_bug&groups=mobile-core-security&maketemplate=Remember%20values%20as%20bookmarkable%20template&op_sys=Unspecified&priority=--&product=Fenix&rep_platform=Unspecified&target_milestone=---&version=unspecified

@@ -48,7 +48,7 @@ object Config {
 
     @JvmStatic
     fun readVersionFromFile(): String {
-        return File("../version.txt").useLines { it.firstOrNull() ?: "" }
+        return File("./version.txt").useLines { it.firstOrNull() ?: "" }
     }
 
     /**

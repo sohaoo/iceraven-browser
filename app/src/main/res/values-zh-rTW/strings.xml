@@ -57,7 +57,7 @@
     <string name="recently_saved_menu_item_remove">移除</string>
 
     <!-- About content. The first parameter is the name of the application. (For example: Fenix) -->
-    <string name="about_content">%1$s 是由 Mozilla 所打造。</string>
+    <string name="about_content">%1$s 是由 @fork-maintainers 所打造。</string>
 
     <!-- Private Browsing -->
     <!-- Explanation for private browsing displayed to users on home view when they first enable private mode
@@ -1590,10 +1590,10 @@
     <string name="browser_toolbar_long_press_popup_paste_and_go">貼上並瀏覽</string>
     <!-- Paste the text in the clipboard -->
     <string name="browser_toolbar_long_press_popup_paste">貼上</string>
-  
+
     <!-- Snackbar message shown after an URL has been copied to clipboard. -->
     <string name="browser_toolbar_url_copied_to_clipboard_snackbar">已將網址複製至剪貼簿</string>
-  
+
     <!-- Title text for the Add To Homescreen dialog -->
     <string name="add_to_homescreen_title">新增至裝置主畫面</string>
     <!-- Cancel button text for the Add to Homescreen dialog -->
@@ -2073,4 +2073,25 @@
     <string name="a11y_action_label_read_article">閱讀此文章</string>
     <!-- Action label for links to the Firefox Pocket website. Talkback will append this to say "Double tap to open link to learn more". -->
     <string name="a11y_action_label_pocket_learn_more">開啟能讓您了解更多資訊的鏈結</string>
+
+    <!-- Preference for add-ons custom source -->
+    <string name="preferences_addons_customization">自定義附加元件收藏集</string>
+    <!-- Placeholder text shown in the search bar before a user enters text -->
+    <string name="addons_search_hint">搜尋元件</string>
+    <!-- Preference for showing display name instead of email -->
+    <string name="preferences_show_displayname_insteadof_email">展示顯示名而不是郵件地址</string>
+    <!-- Title for strip url preference in customization settings -->
+    <string name="preferences_strip_url_title">隱藏 URL 中的 HTTP/HTTPS/WWW 字元</string>
+    <!-- Description for strip url preference in customization settings -->
+    <string name="preferences_strip_url_description">開啟後隱藏工具欄和標籤頁 URL 中的 HTTP/HTTPS/WWW 字元</string>
+    <!-- Label for add-ons custom source account preference -->
+    <string name="addons_custom_source_account">收藏集所有者</string>
+    <!-- Label for add-ons custom source collection preference -->
+    <string name="addons_custom_source_collection">收藏集名稱</string>
+    <!-- Preference category for system behavior customization -->
+    <string name="preferences_system_behavior">設定系統行為</string>
+    <!-- Title for relinquish memory preference in customization settings -->
+    <string name="preferences_relinquish_memory_title">掛起標籤頁以避免因記憶體不足而程序被殺死</string>
+    <!-- Description for relinquish memory preference in customization settings -->
+    <string name="preferences_relinquish_memory_description">開啟後，當系統記憶體不足時，標籤頁會被掛起，同時頁面狀態會丟失</string>
 </resources>

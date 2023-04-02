@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.preference.EditTextPreference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreference
 import org.mozilla.fenix.FeatureFlags
@@ -51,6 +52,19 @@ class CustomizationFragment : PreferenceFragmentCompat() {
         setupRadioGroups()
         setupToolbarCategory()
         setupGesturesCategory()
+        setupAddonsCustomizationCategory()
+        setupSystemBehaviorCategory()
+        requirePreference<SwitchPreference>(R.string.pref_key_strip_url).apply {
+            isChecked = requireContext().settings().shouldStripUrl
+
+            onPreferenceChangeListener = SharedPreferenceUpdater()
+        }
+
+        requirePreference<SwitchPreference>(R.string.pref_key_show_displayname_insteadof_email).apply {
+            isChecked = requireContext().settings().showDisplayNameInsteadofEmail
+
+            onPreferenceChangeListener = SharedPreferenceUpdater()
+        }
     }
 
     private fun setupRadioGroups() {
@@ -150,6 +164,25 @@ class CustomizationFragment : PreferenceFragmentCompat() {
         }
         requirePreference<SwitchPreference>(R.string.pref_key_swipe_toolbar_switch_tabs).apply {
             isChecked = context.settings().isSwipeToolbarToSwitchTabsEnabled
+            onPreferenceChangeListener = SharedPreferenceUpdater()
+        }
+    }
+
+    private fun setupAddonsCustomizationCategory() {
+        requirePreference<EditTextPreference>(R.string.pref_key_addons_custom_account).apply {
+            text = requireContext().settings().customAddonsAccount
+            onPreferenceChangeListener = SharedPreferenceUpdater()
+        }
+
+        requirePreference<EditTextPreference>(R.string.pref_key_addons_custom_collection).apply {
+            text = requireContext().settings().customAddonsCollection
+            onPreferenceChangeListener = SharedPreferenceUpdater()
+        }
+    }
+
+    private fun setupSystemBehaviorCategory() {
+        requirePreference<SwitchPreference>(R.string.pref_key_relinquish_memory_under_pressure).apply {
+            isChecked = requireContext().settings().shouldRelinquishMemoryUnderPressure
             onPreferenceChangeListener = SharedPreferenceUpdater()
         }
     }

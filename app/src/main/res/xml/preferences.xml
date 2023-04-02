@@ -132,12 +132,6 @@
             android:key="@string/pref_key_notifications"
             app:iconSpaceReserved="false"
             android:title="@string/preferences_notifications" />
-
-        <androidx.preference.Preference
-            android:key="@string/pref_key_data_choices"
-            app:iconSpaceReserved="false"
-            android:title="@string/preferences_data_collection" />
-
     </androidx.preference.PreferenceCategory>
 
     <PreferenceCategory
@@ -184,11 +178,6 @@
         android:title="@string/preferences_category_about"
         app:iconSpaceReserved="false"
         android:layout="@layout/preference_category_no_icon_style">
-        <androidx.preference.Preference
-            android:key="@string/pref_key_rate"
-            app:iconSpaceReserved="false"
-            android:title="@string/preferences_rate" />
-
         <androidx.preference.Preference
             android:key="@string/pref_key_about"
             app:iconSpaceReserved="false"
