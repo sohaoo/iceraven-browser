@@ -1,4 +1,4 @@
-# Iceraven Browser! [![Release Automation](https://github.com/fork-maintainers/iceraven-browser/actions/workflows/iceraven-build.yml/badge.svg)](https://github.com/fork-maintainers/iceraven-browser/actions/workflows/iceraven-build.yml)
+# Iceraven Browser! [![Release Automation](https://github.com/fork-maintainers/iceraven-browser/actions/workflows/iceraven_build.yml/badge.svg)](https://github.com/fork-maintainers/iceraven-browser/actions/workflows/iceraven_build.yml)
 
 Definitely not brought to you by Mozilla!
 
