@@ -42,7 +42,7 @@ import org.mozilla.fenix.theme.defaultTypography
 private fun CookieBannerReEngagementDialogComposePreview() {
     FirefoxTheme {
         CookieBannerReEngagementDialogCompose(
-            dialogTitle = "Allow Firefox to reject cookie banners?",
+            dialogTitle = "Allow Iceraven to reject cookie banners?",
             dialogText =
             "Automatically reject cookie requests, when possible. Otherwise, " +
                 "accept all cookies to dismiss cookie banners.",
