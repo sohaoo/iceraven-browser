@@ -33,6 +33,11 @@ android {
         testBuildType project.property("testBuildType")
     }
 
+    // This allows overriding the target activity for MozillaOnline builds, which happens
+    // as part of the defaultConfig below, and applies to all other configurations (Nightly,
+    // Beta, and Release.)
+    def targetActivity = "HomeActivity"
+
     defaultConfig {
         applicationId "io.github.forkmaintainers"
         minSdkVersion Config.minSdkVersion
@@ -66,16 +71,18 @@ android {
         buildConfigField "String", "AMO_SERVER_URL", "\"https://services.addons.mozilla.org\""
         def deepLinkSchemeValue = "fenix-dev"
         buildConfigField "String", "DEEP_LINK_SCHEME", "\"$deepLinkSchemeValue\""
-        manifestPlaceholders = [
-                "deepLinkScheme": deepLinkSchemeValue
-        ]
 
         // Build flag for "Mozilla Online" variants. See `Config.isMozillaOnline`.
         if (project.hasProperty("mozillaOnline") || gradle.hasProperty("localProperties.mozillaOnline")) {
             buildConfigField "boolean", "MOZILLA_ONLINE", "true"
+            targetActivity = "MozillaOnlineHomeActivity"
         } else {
             buildConfigField "boolean", "MOZILLA_ONLINE", "false"
         }
+        manifestPlaceholders = [
+                "targetActivity": targetActivity,
+                "deepLinkScheme": deepLinkSchemeValue
+        ]
     }
 
     def releaseTemplate = {
@@ -112,7 +119,10 @@ android {
             buildConfigField "boolean", "USE_RELEASE_VERSIONING", "true"
             def deepLinkSchemeValue = "fenix-nightly"
             buildConfigField "String", "DEEP_LINK_SCHEME", "\"$deepLinkSchemeValue\""
-            manifestPlaceholders = ["deepLinkScheme": deepLinkSchemeValue]
+            manifestPlaceholders = [
+                    "deepLinkScheme": deepLinkSchemeValue,
+                    "targetActivity": targetActivity
+            ]
         }
         beta releaseTemplate >> {
             buildConfigField "boolean", "USE_RELEASE_VERSIONING", "true"
@@ -128,7 +138,8 @@ android {
                     //  - https://issuetracker.google.com/issues/36924841
                     //  - https://issuetracker.google.com/issues/36905922
                     "sharedUserId": "org.mozilla.firefox.sharedID",
-                    "deepLinkScheme": deepLinkSchemeValue
+                    "deepLinkScheme": deepLinkSchemeValue,
+                    "targetActivity": targetActivity
             ]
         }
         release releaseTemplate >> {
@@ -145,7 +156,8 @@ android {
                     //  - https://issuetracker.google.com/issues/36924841
                     //  - https://issuetracker.google.com/issues/36905922
                     "sharedUserId": "org.mozilla.firefox.sharedID",
-                    "deepLinkScheme": deepLinkSchemeValue
+                    "deepLinkScheme": deepLinkSchemeValue,
+                    "targetActivity": targetActivity,
             ]
         }
         forkDebug {
@@ -182,7 +194,7 @@ android {
         viewBinding true
     }
 
-    aaptOptions {
+    androidResources {
         // All JavaScript code used internally by GeckoView is packaged in a
         // file called omni.ja. If this file is compressed in the APK,
         // GeckoView must uncompress it before it can do anything else which
@@ -227,20 +239,20 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 
-    lintOptions {
+    lint {
         lintConfig file("lint.xml")
         baseline file("lint-baseline.xml")
     }
-
     packagingOptions {
-        exclude 'META-INF/atomicfu.kotlin_module'
-        exclude 'META-INF/AL2.0'
-        exclude 'META-INF/LGPL2.1'
+        resources {
+            excludes += ['META-INF/atomicfu.kotlin_module', 'META-INF/AL2.0', 'META-INF/LGPL2.1']
+        }
     }
+
 
     testOptions {
         unitTests.returnDefaultValues = true
@@ -264,6 +276,7 @@ android {
         kotlinCompilerExtensionVersion = FenixVersions.androidx_compose_compiler
     }
 
+    namespace 'org.mozilla.fenix'
 }
 
 android.applicationVariants.all { variant ->
@@ -277,7 +290,7 @@ android.applicationVariants.all { variant ->
 
     println("----------------------------------------------")
     println("Variant name:      " + variant.name)
-    println("Application ID:    " + [variant.mergedFlavor.applicationId, variant.buildType.applicationIdSuffix].findAll().join())
+    println("Application ID:    " + [variant.applicationId, variant.buildType.applicationIdSuffix].findAll().join())
     println("Build type:        " + variant.buildType.name)
     println("Flavor:            " + variant.flavorName)
     println("Telemetry enabled: " + !isDebug)
@@ -460,14 +473,12 @@ android.applicationVariants.all { variant ->
 
 // Generate Kotlin code for the Fenix Glean metrics.
 apply plugin: "org.mozilla.telemetry.glean-gradle-plugin"
-apply plugin: "org.mozilla.components.nimbus-gradle-plugin"
+apply plugin: "org.mozilla.appservices.nimbus-gradle-plugin"
 
 nimbus {
     // The path to the Nimbus feature manifest file
     manifestFile = "nimbus.fml.yaml"
     // The fully qualified class name for the generated features.
-    // If the classname begins with a '.' this is taken as a suffix to the app's package name
-    destinationClass = ".nimbus.FxNimbus"
     // Map from the variant name to the channel as experimenter and nimbus understand it.
     // If nimbus's channels were accurately set up well for this project, then this
     // shouldn't be needed.
@@ -483,6 +494,7 @@ nimbus {
     // and used to inform experiment configuration.
     experimenterManifest = ".experimenter.yaml"
 }
+
 configurations {
     // There's an interaction between Gradle's resolution of dependencies with different types
     // (@jar, @aar) for `implementation` and `testImplementation` and with Android Studio's built-in
@@ -512,7 +524,6 @@ dependencies {
 
     implementation project(':browser-engine-gecko')
 
-    implementation FenixDependencies.kotlin_stdlib
     implementation FenixDependencies.kotlin_coroutines
     implementation FenixDependencies.kotlin_coroutines_android
     testImplementation FenixDependencies.kotlin_coroutines_test
@@ -520,7 +531,7 @@ dependencies {
     implementation FenixDependencies.androidx_constraintlayout
     implementation FenixDependencies.androidx_coordinatorlayout
     implementation FenixDependencies.google_accompanist_drawablepainter
-    implementation FenixDependencies.google_accompanist_insets
+    implementation FenixDependencies.google_accompanist_pager
 
     implementation FenixDependencies.sentry
 
@@ -674,6 +685,7 @@ dependencies {
 
     androidTestImplementation FenixDependencies.androidx_junit
     androidTestImplementation FenixDependencies.androidx_test_extensions
+    androidTestImplementation FenixDependencies.androidx_tracing
     androidTestImplementation FenixDependencies.androidx_work_testing
     androidTestImplementation FenixDependencies.androidx_benchmark_junit4
     androidTestImplementation FenixDependencies.mockwebserver
@@ -868,20 +880,6 @@ if (gradle.hasProperty('localProperties.dependencySubstitutions.geckoviewTopsrcd
     }
     ext.topsrcdir = gradle."localProperties.dependencySubstitutions.geckoviewTopsrcdir"
     apply from: "${topsrcdir}/substitute-local-geckoview.gradle"
-}
-
-def acSrcDir = null
-if (gradle.hasProperty('localProperties.autoPublish.android-components.dir')) {
-  acSrcDir = gradle.getProperty('localProperties.autoPublish.android-components.dir')
-} else if (gradle.hasProperty('localProperties.branchBuild.android-components.dir')) {
-  acSrcDir = gradle.getProperty('localProperties.branchBuild.android-components.dir')
-}
-if (acSrcDir) {
-    if (acSrcDir.startsWith("/")) {
-        apply from: "${acSrcDir}/substitute-local-ac.gradle"
-    } else {
-        apply from: "../${acSrcDir}/substitute-local-ac.gradle"
-    }
 }
 
 def appServicesSrcDir = null

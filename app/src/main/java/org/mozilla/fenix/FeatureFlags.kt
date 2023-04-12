@@ -50,12 +50,12 @@ object FeatureFlags {
     /**
      * Enables the Unified Search feature.
      */
-    val unifiedSearchFeature = Config.channel.isNightlyOrDebug
+    const val unifiedSearchFeature = true
 
     /**
      * Enables compose on the tabs tray items.
      */
-    val composeTabsTray = Config.channel.isDebug
+    const val composeTabsTray = false
 
     /**
      * Enables the wallpaper v2 enhancements.
@@ -71,11 +71,4 @@ object FeatureFlags {
      * Enables the notification pre permission prompt.
      */
     const val notificationPrePermissionPromptEnabled = true
-
-    /**
-     * Enables storage maintenance feature.
-     *
-     * Feature flag tracking: https://github.com/mozilla-mobile/fenix/issues/27759
-     * */
-    val storageMaintenanceFeature = Config.channel.isNightlyOrDebug || Config.channel.isBeta
 }

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="org.mozilla.fenix">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -59,7 +58,7 @@
         <activity-alias
             android:name="${applicationId}.App"
             android:exported="true"
-            android:targetActivity=".HomeActivity">
+            android:targetActivity=".${targetActivity}">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -140,6 +139,9 @@
                     android:host="urls_history"/>
             </intent-filter>
         </activity>
+
+        <activity android:name=".MozillaOnlineHomeActivity"
+                android:exported="false"/>
 
         <activity android:name=".home.mozonline.PrivacyContentDisplayActivity"
                 android:exported="false"/>

@@ -75,11 +75,12 @@ import mozilla.components.lib.state.ext.consumeFlow
 import mozilla.components.lib.state.ext.consumeFrom
 import mozilla.components.service.glean.private.NoExtras
 import mozilla.components.support.base.feature.ViewBoundFeatureWrapper
+import mozilla.components.support.ktx.android.content.getColorFromAttr
 import mozilla.components.support.ktx.android.content.res.resolveAttribute
 import mozilla.components.support.ktx.kotlinx.coroutines.flow.ifChanged
-import org.mozilla.fenix.Config
 import org.mozilla.fenix.GleanMetrics.Events
 import org.mozilla.fenix.GleanMetrics.HomeScreen
+import org.mozilla.fenix.GleanMetrics.PrivateBrowsingShortcutCfr
 import org.mozilla.fenix.GleanMetrics.UnifiedSearch
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.R
@@ -104,7 +105,6 @@ import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.gleanplumb.DefaultMessageController
 import org.mozilla.fenix.gleanplumb.MessagingFeature
 import org.mozilla.fenix.gleanplumb.NimbusMessagingController
-import org.mozilla.fenix.home.mozonline.showPrivacyPopWindow
 import org.mozilla.fenix.home.pocket.DefaultPocketStoriesController
 import org.mozilla.fenix.home.pocket.PocketRecommendedStoriesCategory
 import org.mozilla.fenix.home.recentbookmarks.RecentBookmarksFeature
@@ -208,13 +208,6 @@ class HomeFragment : Fragment() {
         super.onCreate(savedInstanceState)
 
         bundleArgs = args.toBundle()
-
-        if (!onboarding.userHasBeenOnboarded() &&
-            requireContext().settings().shouldShowPrivacyPopWindow &&
-            Config.channel.isMozillaOnline
-        ) {
-            showPrivacyPopWindow(requireContext(), requireActivity())
-        }
 
         // DO NOT MOVE ANYTHING BELOW THIS addMarker CALL!
         requireComponents.core.engine.profiler?.addMarker(
@@ -396,7 +389,6 @@ class HomeFragment : Fragment() {
             recentTabController = DefaultRecentTabsController(
                 selectTabUseCase = components.useCases.tabsUseCases.selectTab,
                 navController = findNavController(),
-                store = components.core.store,
                 appStore = components.appStore,
             ),
             recentSyncedTabController = DefaultRecentSyncedTabController(
@@ -434,6 +426,8 @@ class HomeFragment : Fragment() {
         updateSessionControlView()
 
         appBarLayout = binding.homeAppBar
+
+        disableAppBarDragging()
 
         activity.themeManager.applyStatusBarTheme(activity)
 
@@ -501,6 +495,22 @@ class HomeFragment : Fragment() {
                 sessionControlView?.update(it, shouldReportMetrics = true)
             }
         }
+    }
+
+    private fun disableAppBarDragging() {
+        if (binding.homeAppBar.layoutParams != null) {
+            val appBarLayoutParams = binding.homeAppBar.layoutParams as CoordinatorLayout.LayoutParams
+            val appBarBehavior = AppBarLayout.Behavior()
+            appBarBehavior.setDragCallback(
+                object : AppBarLayout.Behavior.DragCallback() {
+                    override fun canDrag(appBarLayout: AppBarLayout): Boolean {
+                        return false
+                    }
+                },
+            )
+            appBarLayoutParams.behavior = appBarBehavior
+        }
+        binding.homeAppBar.setExpanded(true)
     }
 
     private fun updateLayout(view: View) {
@@ -624,7 +634,6 @@ class HomeFragment : Fragment() {
                     adapter.getItemViewType(it) == CollectionHeaderViewHolder.LAYOUT_ID
                 }
                 collectionPosition?.run {
-                    appBarLayout?.setExpanded(false)
                     val linearLayoutManager = recyclerView.layoutManager as LinearLayoutManager
                     smoothScroller.targetPosition = this
                     linearLayoutManager.startSmoothScroll(smoothScroller)
@@ -655,6 +664,11 @@ class HomeFragment : Fragment() {
                     text = it.name,
                     start = DrawableMenuIcon(
                         drawable = it.icon.toDrawable(resources),
+                        tint = if (it.type == SearchEngine.Type.APPLICATION) {
+                            requireContext().getColorFromAttr(R.attr.textPrimary)
+                        } else {
+                            null
+                        },
                     ),
                 ) {
                     sessionControlInteractor.onMenuItemTapped(SearchSelectorMenu.Item.SearchEngine(it))
@@ -906,12 +920,14 @@ class HomeFragment : Fragment() {
                 this.increaseTapArea(CFR_TAP_INCREASE_DPS)
 
                 setOnClickListener {
+                    PrivateBrowsingShortcutCfr.addShortcut.record(NoExtras())
                     PrivateShortcutCreateManager.createPrivateShortcut(context)
                     privateBrowsingRecommend.dismiss()
                 }
             }
             layout.findViewById<Button>(R.id.cfr_neg_button).apply {
                 setOnClickListener {
+                    PrivateBrowsingShortcutCfr.cancel.record()
                     privateBrowsingRecommend.dismiss()
                 }
             }

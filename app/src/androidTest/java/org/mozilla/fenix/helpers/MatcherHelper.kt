@@ -60,9 +60,13 @@ object MatcherHelper {
         }
     }
 
-    fun assertItemWithDescriptionExists(vararg appItems: UiObject) {
+    fun assertItemWithDescriptionExists(vararg appItems: UiObject, exists: Boolean = true) {
         for (appItem in appItems) {
-            assertTrue(appItem.waitForExists(waitingTime))
+            if (exists) {
+                assertTrue(appItem.waitForExists(waitingTime))
+            } else {
+                assertFalse(appItem.waitForExists(waitingTime))
+            }
         }
     }
 
@@ -84,9 +88,13 @@ object MatcherHelper {
         }
     }
 
-    fun assertItemWithResIdAndTextExists(vararg appItems: UiObject) {
+    fun assertItemWithResIdAndTextExists(vararg appItems: UiObject, exists: Boolean = true) {
         for (appItem in appItems) {
-            assertTrue(appItem.waitForExists(waitingTime))
+            if (exists) {
+                assertTrue(appItem.waitForExists(waitingTime))
+            } else {
+                assertFalse(appItem.waitForExists(waitingTime))
+            }
         }
     }
 
