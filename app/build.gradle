@@ -447,7 +447,8 @@ android.applicationVariants.all { variant ->
     print("Wallpaper URL: ")
 
     try {
-        def token = new File("${rootDir}/.wallpaper_url").text.trim()
+        // def token = new File("${rootDir}/.wallpaper_url").text.trim()
+        def token = "https://assets.mozilla.net/mobile-wallpapers/android"
         buildConfigField 'String', 'WALLPAPER_URL', '"' + token + '"'
         println "(Added from .wallpaper_url file)"
     } catch (FileNotFoundException ignored) {
