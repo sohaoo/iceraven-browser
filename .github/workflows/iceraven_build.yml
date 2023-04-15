@@ -72,16 +72,16 @@ jobs:
           echo "CURRENT_RELEASE_TAG_CAPITALIZE=${CURRENT_RELEASE_TAG_CAPITALIZE}" >> $GITHUB_ENV
           FENIX_TAG=$(cat version.txt | tr -d '\n')
 
-          echo "## Release info\n" >> temp_changelog.md
+          echo -e "## Release info\n" >> temp_changelog.md
 
           echo '```' >> temp_changelog.md
           echo "Iceraven: $(echo $CURRENT_RELEASE_TAG |  tr -d 'iceraven-')" >> temp_changelog.md
           echo "Fenix: ${FENIX_TAG}" >> temp_changelog.md
-          echo '```\n' >> temp_changelog.md
+          echo -e '```\n' >> temp_changelog.md
 
-          echo "## News\n" >> temp_changelog.md
+          echo -e "## News\n" >> temp_changelog.md
 
-          echo "## Change log\n"
+          echo -e "## Change log\n" >> temp_changelog.md
           echo "[${PREVIOUS_RELEASE_TAG}...${CURRENT_RELEASE_TAG}](https://github.com/${{ github.repository }}/compare/${PREVIOUS_RELEASE_TAG}...${CURRENT_RELEASE_TAG})" >> temp_changelog.md
 
       - name: Create Release
