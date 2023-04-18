@@ -16,9 +16,11 @@ import android.widget.ImageView
 import android.widget.RatingBar
 import android.widget.TextView
 import androidx.annotation.ColorRes
+import androidx.annotation.DimenRes
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.annotation.VisibleForTesting
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
@@ -30,7 +32,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import mozilla.components.feature.addons.Addon
 import mozilla.components.feature.addons.R
-import mozilla.components.ui.icons.R as iconsR
 import mozilla.components.feature.addons.ui.AddonsManagerAdapterDelegate
 import mozilla.components.feature.addons.ui.CustomViewHolder
 import mozilla.components.feature.addons.ui.CustomViewHolder.AddonViewHolder
@@ -43,6 +44,7 @@ import mozilla.components.support.ktx.android.content.res.resolveAttribute
 import java.io.IOException
 import java.text.NumberFormat
 import java.util.Locale
+import mozilla.components.ui.icons.R as iconsR
 
 private const val VIEW_HOLDER_TYPE_SECTION = 0
 private const val VIEW_HOLDER_TYPE_NOT_YET_SUPPORTED_SECTION = 1
@@ -57,12 +59,9 @@ private const val VIEW_HOLDER_TYPE_ADDON = 2
  * @property addonsManagerDelegate Delegate that will provides method for handling the add-on items.
  * @param addons The list of add-on based on the AMO store.
  * @property style Indicates how items should look like.
+ * @property excludedAddonIDs The list of add-on IDs to be excluded from the recommended section.
  */
-@Suppress("TooManyFunctions", "LargeClass")
-// We have an extra "Lint" Android Studio linter pass that Android Components
-// where the original code came from doesn't. So we tell it to ignore us. Make
-// sure to keep up with changes in Android Components though.
-@SuppressLint("all")
+@Suppress("LargeClass")
 class PagedAddonsManagerAdapter(
     private val addonCollectionProvider: PagedAddonCollectionProvider,
     private val addonsManagerDelegate: AddonsManagerAdapterDelegate,
@@ -154,7 +153,7 @@ class PagedAddonsManagerAdapter(
         val item = getItem(position)
 
         when (holder) {
-            is SectionViewHolder -> bindSection(holder, item as Section)
+            is SectionViewHolder -> bindSection(holder, item as Section, position)
             is AddonViewHolder -> bindAddon(holder, item as Addon)
             is UnsupportedSectionViewHolder -> bindNotYetSupportedSection(
                 holder,
@@ -164,10 +163,15 @@ class PagedAddonsManagerAdapter(
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    internal fun bindSection(holder: SectionViewHolder, section: Section) {
+    internal fun bindSection(holder: SectionViewHolder, section: Section, position: Int) {
         holder.titleView.setText(section.title)
-        style?.maybeSetSectionsTextColor(holder.titleView)
-        style?.maybeSetSectionsTypeFace(holder.titleView)
+
+        style?.let {
+            holder.divider.isVisible = it.visibleDividers && position != 0
+            it.maybeSetSectionsTextColor(holder.titleView)
+            it.maybeSetSectionsTypeFace(holder.titleView)
+            it.maybeSetSectionsDividerStyle(holder.divider)
+        }
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
@@ -256,13 +260,17 @@ class PagedAddonsManagerAdapter(
                 val iconBitmap = addonCollectionProvider.getAddonIconBitmap(addon)
                 val timeToFetch: Double = (System.currentTimeMillis() - startTime) / 1000.0
                 val isFromCache = timeToFetch < 1
-                iconBitmap?.let {
+                if (iconBitmap != null) {
                     scope.launch(Main) {
                         if (isFromCache) {
-                            iconView.setImageDrawable(BitmapDrawable(iconView.resources, it))
+                            iconView.setImageDrawable(BitmapDrawable(iconView.resources, iconBitmap))
                         } else {
-                            setWithCrossFadeAnimation(iconView, it)
+                            setWithCrossFadeAnimation(iconView, iconBitmap)
                         }
+                    }
+                } else if (addon.installedState?.icon != null) {
+                    scope.launch(Main) {
+                        iconView.setImageDrawable(BitmapDrawable(iconView.resources, addon.installedState!!.icon))
                     }
                 }
             } catch (e: IOException) {
@@ -270,7 +278,9 @@ class PagedAddonsManagerAdapter(
                     val context = iconView.context
                     val att = context.theme.resolveAttribute(android.R.attr.textColorPrimary)
                     iconView.setColorFilter(ContextCompat.getColor(context, att))
-                    iconView.setImageDrawable(context.getDrawable(iconsR.drawable.mozac_ic_extensions))
+                    iconView.setImageDrawable(
+                        AppCompatResources.getDrawable(context, iconsR.drawable.mozac_ic_extensions),
+                    )
                 }
                 logger.error("Attempt to fetch the ${addon.id} icon failed", e)
             }
@@ -279,7 +289,7 @@ class PagedAddonsManagerAdapter(
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     @Suppress("ComplexMethod")
-    internal fun createListWithSections(addons: List<Addon>): List<Any> {
+    internal fun createListWithSections(addons: List<Addon>, excludedAddonIDs: List<String> = emptyList()): List<Any> {
         val itemsWithSections = ArrayList<Any>()
         val installedAddons = ArrayList<Addon>()
         val recommendedAddons = ArrayList<Addon>()
@@ -297,20 +307,23 @@ class PagedAddonsManagerAdapter(
 
         // Add installed section and addons if available
         if (installedAddons.isNotEmpty()) {
-            itemsWithSections.add(Section(R.string.mozac_feature_addons_enabled))
+            itemsWithSections.add(Section(R.string.mozac_feature_addons_enabled, false))
             itemsWithSections.addAll(installedAddons)
         }
 
         // Add disabled section and addons if available
         if (disabledAddons.isNotEmpty()) {
-            itemsWithSections.add(Section(R.string.mozac_feature_addons_disabled_section))
+            itemsWithSections.add(Section(R.string.mozac_feature_addons_disabled_section, true))
             itemsWithSections.addAll(disabledAddons)
         }
 
         // Add recommended section and addons if available
         if (recommendedAddons.isNotEmpty()) {
-            itemsWithSections.add(Section(R.string.mozac_feature_addons_recommended_section))
-            itemsWithSections.addAll(recommendedAddons)
+            itemsWithSections.add(Section(R.string.mozac_feature_addons_recommended_section, true))
+            val filteredRecommendedAddons = recommendedAddons.filter {
+                it.id !in excludedAddonIDs
+            }
+            itemsWithSections.addAll(filteredRecommendedAddons)
         }
 
         // Add unsupported section
@@ -322,7 +335,7 @@ class PagedAddonsManagerAdapter(
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    internal data class Section(@StringRes val title: Int)
+    internal data class Section(@StringRes val title: Int, val visibleDivider: Boolean = true)
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal data class NotYetSupportedSection(@StringRes val title: Int)
@@ -340,6 +353,11 @@ class PagedAddonsManagerAdapter(
         val sectionsTypeFace: Typeface? = null,
         @DrawableRes
         val addonAllowPrivateBrowsingLabelDrawableRes: Int? = null,
+        val visibleDividers: Boolean = true,
+        @ColorRes
+        val dividerColor: Int? = null,
+        @DimenRes
+        val dividerHeight: Int? = null,
     ) {
         internal fun maybeSetSectionsTextColor(textView: TextView) {
             sectionsTextColor?.let {
@@ -371,6 +389,15 @@ class PagedAddonsManagerAdapter(
         internal fun maybeSetPrivateBrowsingLabelDrawale(imageView: ImageView) {
             addonAllowPrivateBrowsingLabelDrawableRes?.let {
                 imageView.setImageDrawable(ContextCompat.getDrawable(imageView.context, it))
+            }
+        }
+
+        internal fun maybeSetSectionsDividerStyle(divider: View) {
+            dividerColor?.let {
+                divider.setBackgroundColor(it)
+            }
+            dividerHeight?.let {
+                divider.layoutParams.height = divider.context.resources.getDimensionPixelOffset(it)
             }
         }
     }

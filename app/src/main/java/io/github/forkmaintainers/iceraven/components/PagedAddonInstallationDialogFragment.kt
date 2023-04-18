@@ -24,6 +24,7 @@ import android.widget.TextView
 import androidx.annotation.ColorRes
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatDialogFragment
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentManager
@@ -33,7 +34,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import mozilla.components.feature.addons.Addon
 import mozilla.components.feature.addons.R
-import mozilla.components.ui.icons.R as iconsR
 import mozilla.components.feature.addons.databinding.MozacFeatureAddonsFragmentDialogAddonInstalledBinding
 import mozilla.components.feature.addons.ui.translateName
 import mozilla.components.support.base.log.logger.Logger
@@ -41,6 +41,7 @@ import mozilla.components.support.ktx.android.content.appName
 import mozilla.components.support.ktx.android.content.res.resolveAttribute
 import mozilla.components.support.utils.ext.getParcelableCompat
 import java.io.IOException
+import mozilla.components.ui.icons.R as iconsR
 
 @VisibleForTesting internal const val KEY_INSTALLED_ADDON = "KEY_ADDON"
 private const val KEY_DIALOG_GRAVITY = "KEY_DIALOG_GRAVITY"
@@ -52,14 +53,10 @@ private const val KEY_CONFIRM_BUTTON_RADIUS = "KEY_CONFIRM_BUTTON_RADIUS"
 @VisibleForTesting internal const val KEY_ICON = "KEY_ICON"
 
 private const val DEFAULT_VALUE = Int.MAX_VALUE
-
+internal const val KEY_ADDON = "KEY_ADDON"
 /**
  * A dialog that shows [Addon] installation confirmation.
  */
-// We have an extra "Lint" Android Studio linter pass that Android Components
-// where the original code came from doesn't. So we tell it to ignore us. Make
-// sure to keep up with changes in Android Components though.
-@SuppressLint("all")
 class PagedAddonInstallationDialogFragment : AppCompatDialogFragment() {
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -72,13 +69,16 @@ class PagedAddonInstallationDialogFragment : AppCompatDialogFragment() {
     var onConfirmButtonClicked: ((Addon, Boolean) -> Unit)? = null
 
     /**
-     * Reference to the application's [PagedAddonCollectionProvider] to fetch add-on icons.
+     * Reference to the application's [PagedAddonInstallationDialogFragment] to fetch add-on icons.
      */
     var addonCollectionProvider: PagedAddonCollectionProvider? = null
 
     private val safeArguments get() = requireNotNull(arguments)
 
-    internal val addon get() = requireNotNull(safeArguments.getParcelableCompat(KEY_ADDON, Addon::class.java))
+    internal val addon: Addon
+        get() {
+            return requireNotNull(safeArguments.getParcelableCompat(KEY_ADDON, Addon::class.java))
+        }
     private var allowPrivateBrowsing: Boolean = false
 
     internal val confirmButtonRadius
@@ -189,7 +189,7 @@ class PagedAddonInstallationDialogFragment : AppCompatDialogFragment() {
 
         if (confirmButtonBackgroundColor != DEFAULT_VALUE) {
             val backgroundTintList =
-                ContextCompat.getColorStateList(requireContext(), confirmButtonBackgroundColor)
+                AppCompatResources.getColorStateList(requireContext(), confirmButtonBackgroundColor)
             confirmButton.backgroundTintList = backgroundTintList
         }
 
@@ -231,7 +231,7 @@ class PagedAddonInstallationDialogFragment : AppCompatDialogFragment() {
                     val att = context.theme.resolveAttribute(android.R.attr.textColorPrimary)
                     iconView.setColorFilter(ContextCompat.getColor(context, att))
                     iconView.setImageDrawable(
-                        ContextCompat.getDrawable(context, iconsR.drawable.mozac_ic_extensions),
+                        AppCompatResources.getDrawable(context, iconsR.drawable.mozac_ic_extensions),
                     )
                 }
                 logger.error("Attempt to fetch the ${addon.id} icon failed", e)
@@ -309,5 +309,3 @@ class PagedAddonInstallationDialogFragment : AppCompatDialogFragment() {
         val confirmButtonRadius: Float? = null,
     )
 }
-
-internal const val KEY_ADDON = "KEY_ADDON"

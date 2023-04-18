@@ -108,7 +108,7 @@ class Components(private val context: Context) {
     }
 
     fun clearAddonCache() {
-        addonCollectionProvider.deleteCacheFile(context)
+        addonCollectionProvider.deleteCacheFile()
     }
 
     @Suppress("MagicNumber")

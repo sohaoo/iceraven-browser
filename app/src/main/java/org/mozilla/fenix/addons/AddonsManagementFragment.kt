@@ -11,22 +11,24 @@ import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.view.Menu
-import android.view.MenuItem
 import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.accessibility.AccessibilityEvent
 import android.view.inputmethod.EditorInfo
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.widget.SearchView
-import androidx.core.view.isVisible
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import io.github.forkmaintainers.iceraven.components.PagedAddonInstallationDialogFragment
+import io.github.forkmaintainers.iceraven.components.PagedAddonsManagerAdapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
@@ -35,6 +37,7 @@ import mozilla.components.feature.addons.AddonManagerException
 import mozilla.components.feature.addons.ui.PermissionsDialogFragment
 import mozilla.components.feature.addons.ui.translateName
 import mozilla.components.support.base.log.logger.Logger
+import mozilla.components.support.ktx.android.view.hideKeyboard
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.FenixSnackbar
 import org.mozilla.fenix.databinding.FragmentAddOnsManagementBinding
@@ -45,9 +48,8 @@ import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.ext.showToolbar
 import org.mozilla.fenix.theme.ThemeManager
 import java.lang.ref.WeakReference
+import java.util.Locale
 import java.util.concurrent.CancellationException
-import io.github.forkmaintainers.iceraven.components.PagedAddonInstallationDialogFragment
-import io.github.forkmaintainers.iceraven.components.PagedAddonsManagerAdapter
 
 /**
  * Fragment use for managing add-ons.
@@ -83,14 +85,14 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         logger.info("View created for AddonsManagementFragment")
         super.onViewCreated(view, savedInstanceState)
-        setupMenu()
         binding = FragmentAddOnsManagementBinding.bind(view)
         bindRecyclerView()
+        setupMenu()
     }
 
 
     private fun setupMenu() {
-        val menuHost: MenuHost = requireActivity()
+        val menuHost = requireActivity() as MenuHost
 
         menuHost.addMenuProvider(
             object : MenuProvider {
@@ -104,11 +106,13 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
                     searchView.setOnQueryTextListener(
                         object : SearchView.OnQueryTextListener {
                             override fun onQueryTextSubmit(query: String): Boolean {
-                                return searchAddons(query.trim())
+                                searchAddons(query.trim())
+                                return false
                             }
 
                             override fun onQueryTextChange(newText: String): Boolean {
-                                return searchAddons(newText.trim())
+                                searchAddons(newText.trim())
+                                return false
                             }
                         },
                     )
@@ -123,18 +127,26 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
         )
     }
 
-    private fun searchAddons(addonNameSubStr: String): Boolean {
+    private fun searchAddons(addonSearchText: String): Boolean {
         if (adapter == null) {
             return false
         }
 
         val searchedAddons = arrayListOf<Addon>()
-
         addons?.forEach { addon ->
             val names = addon.translatableName
-            names["en-US"]?.let { name ->
-                if (name.lowercase().contains(addonNameSubStr.lowercase())) {
+            val language = Locale.getDefault().language
+            names[language]?.let { name ->
+                if (name.lowercase().contains(addonSearchText.lowercase())) {
                     searchedAddons.add(addon)
+                }
+            }
+            val description = addon.translatableDescription
+            description[language]?.let { desc ->
+                if (desc.lowercase().contains(addonSearchText.lowercase())) {
+                    if (!searchedAddons.contains(addon)) {
+                        searchedAddons.add(addon)
+                    }
                 }
             }
         }
@@ -161,6 +173,7 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
 
         super.onResume()
         showToolbar(getString(R.string.preferences_addons))
+        view?.hideKeyboard()
     }
 
     override fun onStart() {
