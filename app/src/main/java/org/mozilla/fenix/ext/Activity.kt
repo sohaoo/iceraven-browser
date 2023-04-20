@@ -95,9 +95,8 @@ fun Activity.openSetDefaultBrowserOption(
         }
         else -> {
             (this as HomeActivity).openToBrowserAndLoad(
-                searchTermOrURL = SupportUtils.getSumoURLForTopic(
-                    this,
-                    SupportUtils.SumoTopic.SET_AS_DEFAULT_BROWSER,
+                searchTermOrURL = SupportUtils.getGenericSumoURLForTopic(
+                    topic = SupportUtils.SumoTopic.SET_AS_DEFAULT_BROWSER,
                 ),
                 newTab = true,
                 from = from,
