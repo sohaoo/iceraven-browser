@@ -11,7 +11,7 @@ plugins {
     id 'mozac.DependenciesPlugin'
 }
 
-apply from: file('../shared-settings.gradle')
+apply from: file('./shared-settings.gradle')
 
 include ':app'
 include ':mozilla-detekt-rules'

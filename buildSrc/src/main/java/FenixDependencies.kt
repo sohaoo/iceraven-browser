@@ -117,8 +117,6 @@ object FenixDependencies {
     const val protobuf_javalite = "com.google.protobuf:protobuf-javalite:${FenixVersions.protobuf}"
     const val protobuf_compiler = "com.google.protobuf:protoc:${FenixVersions.protobuf}"
 
-    const val jna = "net.java.dev.jna:jna:${FenixVersions.jna}@jar"
-
     const val junit = "junit:junit:${FenixVersions.junit}"
     const val mockk = "io.mockk:mockk:${FenixVersions.mockk}"
     const val mockk_android = "io.mockk:mockk-android:${FenixVersions.mockk}"

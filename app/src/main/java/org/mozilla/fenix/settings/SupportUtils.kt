@@ -38,7 +38,7 @@ object SupportUtils {
     const val MEITUAN_URL = "https://tb.j5k6.com/6ZSOp"
     const val GOOGLE_US_URL = "https://www.google.com/webhp?client=firefox-b-1-m&channel=ts"
     const val GOOGLE_XX_URL = "https://www.google.com/webhp?client=firefox-b-m&channel=ts"
-    const val WHATS_NEW_URL = "https://www.mozilla.org/firefox/android/notes"
+    const val WHATS_NEW_URL = "https://github.com/fork-maintainers/iceraven-browser/releases"
 
     enum class SumoTopic(internal val topicStr: String) {
         HELP("faq-android"),
@@ -98,12 +98,6 @@ object SupportUtils {
         val path = page.path
         val langTag = getLanguageTag(locale)
         return "https://www.mozilla.org/$langTag/$path"
-    }
-
-    fun getWhatsNewUrl(context: Context) = if (Config.channel.isFork) {
-        "https://github.com/fork-maintainers/iceraven-browser/releases"
-    } else {
-        getSumoURLForTopic(context, SumoTopic.WHATS_NEW)
     }
 
     fun createCustomTabIntent(context: Context, url: String): Intent = CustomTabsIntent.Builder()
