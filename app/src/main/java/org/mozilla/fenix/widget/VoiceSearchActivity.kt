@@ -12,6 +12,7 @@ import android.speech.RecognizerIntent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import androidx.annotation.VisibleForTesting
 import mozilla.components.support.locale.LocaleManager

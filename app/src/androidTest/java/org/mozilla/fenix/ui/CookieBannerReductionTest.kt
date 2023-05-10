@@ -5,7 +5,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.customannotations.SmokeTest
 import org.mozilla.fenix.helpers.HomeActivityIntentTestRule
-import org.mozilla.fenix.helpers.TestHelper
 import org.mozilla.fenix.helpers.TestHelper.exitMenu
 import org.mozilla.fenix.helpers.TestHelper.restartApp
 import org.mozilla.fenix.ui.robots.browserScreen
@@ -28,10 +27,13 @@ class CookieBannerReductionTest {
             verifyCookieBannerExists(exists = true)
         }.openThreeDotMenu {
         }.openSettings {
+            verifySettingsOptionSummary("Cookie Banner Reduction", "Off")
         }.openCookieBannerReductionSubMenu {
             verifyCookieBannerView(isCookieBannerReductionChecked = false)
             clickCookieBannerReductionToggle()
             verifyCheckedCookieBannerReductionToggle(isCookieBannerReductionChecked = true)
+        }.goBack {
+            verifySettingsOptionSummary("Cookie Banner Reduction", "On")
         }
 
         exitMenu()
@@ -40,7 +42,7 @@ class CookieBannerReductionTest {
             verifyCookieBannerExists(exists = false)
         }
 
-        TestHelper.restartApp(activityTestRule)
+        restartApp(activityTestRule)
 
         browserScreen {
             verifyCookieBannerExists(exists = false)
@@ -74,12 +76,17 @@ class CookieBannerReductionTest {
             verifyCookieBannerExists(exists = true)
         }.openThreeDotMenu {
         }.openSettings {
+            verifySettingsOptionSummary("Cookie Banner Reduction", "Off")
         }.openCookieBannerReductionSubMenu {
             verifyCookieBannerView(isCookieBannerReductionChecked = false)
             clickCookieBannerReductionToggle()
             verifyCheckedCookieBannerReductionToggle(isCookieBannerReductionChecked = true)
-            exitMenu()
+        }.goBack {
+            verifySettingsOptionSummary("Cookie Banner Reduction", "On")
         }
+
+        exitMenu()
+
         browserScreen {
             verifyCookieBannerExists(exists = false)
         }

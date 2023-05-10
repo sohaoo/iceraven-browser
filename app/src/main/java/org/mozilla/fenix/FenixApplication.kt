@@ -51,6 +51,7 @@ import mozilla.components.service.glean.net.ConceptFetchHttpUploader
 import mozilla.components.support.base.facts.register
 import mozilla.components.support.base.log.Log
 import mozilla.components.support.base.log.logger.Logger
+import mozilla.components.support.ktx.android.arch.lifecycle.addObservers
 import mozilla.components.support.ktx.android.content.isMainProcess
 import mozilla.components.support.ktx.android.content.runOnlyInMainProcess
 import mozilla.components.support.locale.LocaleAwareApplication
@@ -85,6 +86,7 @@ import org.mozilla.fenix.ext.isKnownSearchDomain
 import org.mozilla.fenix.ext.isNotificationChannelEnabled
 import org.mozilla.fenix.ext.setCustomEndpointIfAvailable
 import org.mozilla.fenix.ext.settings
+import org.mozilla.fenix.lifecycle.StoreLifecycleObserver
 import org.mozilla.fenix.nimbus.FxNimbus
 import org.mozilla.fenix.onboarding.FenixOnboarding
 import org.mozilla.fenix.onboarding.MARKETING_CHANNEL_ID
@@ -278,7 +280,13 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
         components.startupActivityLog.registerInAppOnCreate(this)
         initVisualCompletenessQueueAndQueueTasks()
 
-        ProcessLifecycleOwner.get().lifecycle.addObserver(TelemetryLifecycleObserver(components.core.store))
+        ProcessLifecycleOwner.get().lifecycle.addObservers(
+            TelemetryLifecycleObserver(components.core.store),
+            StoreLifecycleObserver(
+                appStore = components.appStore,
+                browserStore = components.core.store,
+            ),
+        )
 
         components.analytics.metricsStorage.tryRegisterAsUsageRecorder(this)
 
@@ -510,7 +518,8 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
         }
     }
 
-    private fun restoreMessaging() {
+    @VisibleForTesting
+    internal fun restoreMessaging() {
         if (settings().isExperimentationEnabled) {
             components.appStore.dispatch(AppAction.MessagingAction.Restore)
         }
@@ -731,6 +740,12 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
             adjustNetwork.set(settings.adjustNetwork)
 
             searchWidgetInstalled.set(settings.searchWidgetInstalled)
+
+            if (settings.sharedPrefsUUID.isEmpty()) {
+                settings.sharedPrefsUUID = sharedPrefsUuid.generateAndSet().toString()
+            } else {
+                sharedPrefsUuid.set(UUID.fromString(settings.sharedPrefsUUID))
+            }
 
             val openTabsCount = settings.openTabsCount
             hasOpenTabs.set(openTabsCount > 0)

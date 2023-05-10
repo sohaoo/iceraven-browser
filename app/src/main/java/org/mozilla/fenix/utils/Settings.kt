@@ -191,6 +191,16 @@ class Settings(private val appContext: Context) : PreferencesHolder {
         default = "",
     )
 
+    /**
+     * A UUID stored in Shared Preferences used to analyze technical differences
+     * between storage mechanisms in Android, specifically the Glean DB and
+     * Shared Preferences.
+     */
+    var sharedPrefsUUID by stringPreference(
+        appContext.getPreferenceKey(R.string.pref_key_shared_prefs_uuid),
+        default = "",
+    )
+
     var currentWallpaperName by stringPreference(
         appContext.getPreferenceKey(R.string.pref_key_current_wallpaper),
         default = Wallpaper.Default.name,
@@ -670,7 +680,7 @@ class Settings(private val appContext: Context) : PreferencesHolder {
     /**
      * Indicates if the re-engagement notification feature is enabled
      */
-    public val reEngagementNotificationType: Int
+    val reEngagementNotificationType: Int
         get() =
             FxNimbus.features.reEngagementNotification.value().type
 
@@ -1584,7 +1594,7 @@ class Settings(private val appContext: Context) : PreferencesHolder {
      * Indicates if the Unified Search feature should be visible.
      */
     var showUnifiedSearchFeature by lazyFeatureFlagPreference(
-        key = appContext.getPreferenceKey(R.string.pref_key_show_unified_search),
+        key = appContext.getPreferenceKey(R.string.pref_key_show_unified_search_2),
         default = { FxNimbus.features.unifiedSearch.value().enabled },
         featureFlag = FeatureFlags.unifiedSearchFeature,
     )
@@ -1613,6 +1623,26 @@ class Settings(private val appContext: Context) : PreferencesHolder {
         key = appContext.getPreferenceKey(R.string.pref_key_is_notification_pre_permission_prompt_shown),
         default = false,
     )
+
+    /**
+     * Indicates if juno onboarding feature is enabled.
+     */
+    val junoOnboardingEnabled: Boolean
+        get() = FxNimbus.features.junoOnboarding.value().enabled
+
+    /**
+     * Returns whether juno onboarding should be shown to the user.
+     * @param isLauncherIntent Boolean to indicate whether the app was launched on tapping on the
+     * app icon.
+     */
+    fun shouldShowJunoOnboarding(hasUserBeenOnboarded: Boolean, isLauncherIntent: Boolean): Boolean {
+        return if (!hasUserBeenOnboarded && isLauncherIntent) {
+            FxNimbus.features.junoOnboarding.recordExposure()
+            junoOnboardingEnabled
+        } else {
+            false
+        }
+    }
 
     /**
      * Get the current mode for how https-only is enabled.

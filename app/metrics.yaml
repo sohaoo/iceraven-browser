@@ -967,6 +967,361 @@ onboarding:
       tags:
         - Notifications
         - Onboarding
+  set_to_default_card:
+    type: event
+    description: |
+      User viewed juno onboarding set to default card.
+    extra_keys:
+      element_type:
+        type: string
+        description: |
+          Type of element that was viewed.
+      action:
+        type: string
+        description: |
+          Type of action taken by the user.
+      sequence_position:
+        type: string
+        description: |
+          Position of the onboarding card in the onboarding flow.
+      sequence_id:
+        type: string
+        description: |
+          Identifier for the sequence.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1821726
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1554
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 126
+    metadata:
+      tags:
+        - Onboarding
+  sign_in_card:
+    type: event
+    description: |
+      User viewed juno onboarding sign in card.
+    extra_keys:
+      element_type:
+        type: string
+        description: |
+          Type of element that was viewed.
+      action:
+        type: string
+        description: |
+          Type of action taken by the user.
+      sequence_position:
+        type: string
+        description: |
+          Position of the onboarding card in the onboarding flow.
+      sequence_id:
+        type: string
+        description: |
+          Identifier for the sequence.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1821726
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1554
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 126
+    metadata:
+      tags:
+        - Onboarding
+  turn_on_notifications_card:
+    type: event
+    description: |
+      User viewed juno onboarding notification permission card.
+    extra_keys:
+      element_type:
+        type: string
+        description: |
+          Type of element that was viewed.
+      action:
+        type: string
+        description: |
+          Type of action taken by the user.
+      sequence_position:
+        type: string
+        description: |
+          Position of the onboarding card in the onboarding flow.
+      sequence_id:
+        type: string
+        description: |
+          Identifier for the sequence.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1821726
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1554
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 126
+    metadata:
+      tags:
+        - Onboarding
+  set_to_default:
+    type: event
+    description: |
+      User tapped on set to default button in juno onboarding.
+    extra_keys:
+      element_type:
+        type: string
+        description: |
+          Type of element that was viewed.
+      action:
+        type: string
+        description: |
+          Type of action taken by the user.
+      sequence_position:
+        type: string
+        description: |
+          Position of the onboarding card in the onboarding flow.
+      sequence_id:
+        type: string
+        description: |
+          Identifier for the sequence.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1821726
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1554
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 126
+    metadata:
+      tags:
+        - Onboarding
+  skip_default:
+    type: event
+    description: |
+      User tapped on skip set to default button in juno onboarding.
+    extra_keys:
+      element_type:
+        type: string
+        description: |
+          Type of element that was viewed.
+      action:
+        type: string
+        description: |
+          Type of action taken by the user.
+      sequence_position:
+        type: string
+        description: |
+          Position of the onboarding card in the onboarding flow.
+      sequence_id:
+        type: string
+        description: |
+          Identifier for the sequence.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1821726
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1554
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 126
+    metadata:
+      tags:
+        - Onboarding
+  sign_in:
+    type: event
+    description: |
+      User tapped on sign in button in juno onboarding.
+    extra_keys:
+      element_type:
+        type: string
+        description: |
+          Type of element that was viewed.
+      action:
+        type: string
+        description: |
+          Type of action taken by the user.
+      sequence_position:
+        type: string
+        description: |
+          Position of the onboarding card in the onboarding flow.
+      sequence_id:
+        type: string
+        description: |
+          Identifier for the sequence.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1821726
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1554
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 126
+    metadata:
+      tags:
+        - Onboarding
+  skip_sign_in:
+    type: event
+    description: |
+      User tapped on skip sign in button in juno onboarding.
+    extra_keys:
+      element_type:
+        type: string
+        description: |
+          Type of element that was viewed.
+      action:
+        type: string
+        description: |
+          Type of action taken by the user.
+      sequence_position:
+        type: string
+        description: |
+          Position of the onboarding card in the onboarding flow.
+      sequence_id:
+        type: string
+        description: |
+          Identifier for the sequence.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1821726
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1554
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 126
+    metadata:
+      tags:
+        - Onboarding
+  turn_on_notifications:
+    type: event
+    description: |
+      User tapped on turn on notifications button in juno onboarding.
+    extra_keys:
+      element_type:
+        type: string
+        description: |
+          Type of element that was viewed.
+      action:
+        type: string
+        description: |
+          Type of action taken by the user.
+      sequence_position:
+        type: string
+        description: |
+          Position of the onboarding card in the onboarding flow.
+      sequence_id:
+        type: string
+        description: |
+          Identifier for the sequence.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1821726
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1554
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 126
+    metadata:
+      tags:
+        - Onboarding
+  skip_turn_on_notifications:
+    type: event
+    description: |
+      User tapped on skip turn on notification button in juno onboarding.
+    extra_keys:
+      element_type:
+        type: string
+        description: |
+          Type of element that was viewed.
+      action:
+        type: string
+        description: |
+          Type of action taken by the user.
+      sequence_position:
+        type: string
+        description: |
+          Position of the onboarding card in the onboarding flow.
+      sequence_id:
+        type: string
+        description: |
+          Identifier for the sequence.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1821726
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1554
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 126
+    metadata:
+      tags:
+        - Onboarding
+  privacy_policy:
+    type: event
+    description: |
+      User tapped on privacy policy link in juno onboarding.
+    extra_keys:
+      element_type:
+        type: string
+        description: |
+          Type of element that was viewed.
+      action:
+        type: string
+        description: |
+          Type of action taken by the user.
+      sequence_position:
+        type: string
+        description: |
+          Position of the onboarding card in the onboarding flow.
+      sequence_id:
+        type: string
+        description: |
+          Identifier for the sequence.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1821726
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1554
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 126
+    metadata:
+      tags:
+        - Onboarding
+  completed:
+    type: event
+    description: |
+      User completed the juno onboarding.
+    extra_keys:
+      sequence_position:
+        type: string
+        description: |
+          Position of the onboarding card in the onboarding flow.
+      sequence_id:
+        type: string
+        description: |
+          Identifier for the sequence.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1821726
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1554
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 126
+    metadata:
+      tags:
+        - Onboarding
 
 search_shortcuts:
   selected:
@@ -1916,6 +2271,26 @@ metrics:
     metadata:
       tags:
         - Notifications
+  shared_prefs_uuid:
+    type: uuid
+    lifetime: ping
+    description: |
+      A UUID stored in Shared Preferences used to analyze technical differences
+      between storage mechanisms in Android, specifically the Glean DB and
+      Shared Preferences.
+    send_in_pings:
+      - metrics
+    notification_emails:
+      - android-probes@mozilla.com
+      - raphael@mozilla.com
+      - fbertsch@mozilla.com
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1822119
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1822119
+    data_sensitivity:
+      - technical
+    expires: 116
 
 customize_home:
   most_visited_sites:
@@ -6440,7 +6815,26 @@ first_session:
     metadata:
       tags:
         - Performance
-
+  adjust_attribution_time:
+    type: timing_distribution
+    time_unit: millisecond
+    send_in_pings:
+      - first-session
+    description: >
+      The time that it takes to derive the attribution parameters by
+      the Adjust SDK.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1823492
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1341#pullrequestreview-1354835757
+    data_sensitivity:
+      - technical
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 124
+    metadata:
+      tags:
+        - Performance
 browser.search:
   with_ads:
     type: labeled_counter
@@ -7218,6 +7612,63 @@ cookie_banners:
     metadata:
       tags:
         - Privacy&Security
+  report_site_domain:
+    type: url
+    description: |
+      A user can report a site domain(Ex. for https://edition.cnn.com/
+      site domain will be cnn.com) when the cookie banner reducer is not
+      working from the cookie banner details panel.
+    lifetime: ping
+    send_in_pings:
+      - cookie-banner-report-site
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1805450
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1298#pullrequestreview-1350344223
+    data_sensitivity:
+      - technical
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 119
+    metadata:
+      tags:
+        - Privacy&Security
+  report_site_cancel_button:
+    type: event
+    description: |
+      The user has pressed the report site domain cancel button
+      from the cookie banner reducer details panel.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1805450
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1298#pullrequestreview-1350344223
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 119
+    metadata:
+      tags:
+        - Privacy&Security
+  report_domain_site_button:
+    type: event
+    description: |
+      The user has pressed the report site domain button
+      from the cookie banner reducer details panel.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1805450
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1298#pullrequestreview-1350344223
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 119
+    metadata:
+      tags:
+        - Privacy&Security
+
 site_permissions:
   prompt_shown:
     type: event
@@ -7676,6 +8127,31 @@ engine_tab:
     metadata:
       tags:
         - Performance
+  tab_killed:
+    type: event
+    description: |
+      A tab was killed by the engine to free memory.
+    extra_keys:
+      foreground_tab:
+        description: |
+          Whether or not the tab was the currently active tab.
+        type: boolean
+      app_foreground:
+        description: |
+          Whether or not the app was in the foreground when the tab was killed.
+        type: boolean
+      had_form_data:
+        description: |
+          Whether or not the tab had unsubmitted form data when it was killed.
+        type: boolean
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1820211
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1343#issuecomment-1478535296
+    notification_emails:
+      - android-probes@mozilla.com
+      - kbrosnan@mozilla.com
+    expires: never
 
 synced_tabs:
   synced_tabs_suggestion_clicked:
@@ -8693,106 +9169,6 @@ addresses:
       tags:
         - Autofill
 
-messaging:
-  message_shown:
-    type: event
-    description: |
-      A message was shown to the user.
-    extra_keys:
-      message_key:
-        description: The id of the message
-        type: string
-    bugs:
-      - https://github.com/mozilla-mobile/fenix/issues/24224
-    data_reviews:
-      - https://github.com/mozilla-mobile/fenix/pull/24426
-      - https://github.com/mozilla-mobile/firefox-android/pull/1101
-    notification_emails:
-      - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
-    data_sensitivity:
-      - interaction
-    expires: never
-  message_dismissed:
-    type: event
-    description: |
-      A message was dismissed by the user.
-    extra_keys:
-      message_key:
-        description: The id of the message
-        type: string
-    bugs:
-      - https://github.com/mozilla-mobile/fenix/issues/24224
-    data_reviews:
-      - https://github.com/mozilla-mobile/fenix/issues/24224
-      - https://github.com/mozilla-mobile/firefox-android/pull/1101
-    notification_emails:
-      - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
-    data_sensitivity:
-      - interaction
-    expires: never
-  message_clicked:
-    type: event
-    description: |
-      A message was clicked by the user.
-    extra_keys:
-      message_key:
-        description: The id of the message
-        type: string
-      action_uuid:
-        description: The uuid of the action
-        type: string
-    bugs:
-      - https://github.com/mozilla-mobile/fenix/issues/24224
-    data_reviews:
-      - https://github.com/mozilla-mobile/fenix/issues/24224
-      - https://github.com/mozilla-mobile/firefox-android/pull/1101
-    notification_emails:
-      - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
-    data_sensitivity:
-      - interaction
-    expires: never
-  message_expired:
-    type: event
-    description: |
-      A message maxDisplayCount has been surpassed.
-    extra_keys:
-      message_key:
-        description: The id of the message
-        type: string
-    bugs:
-      - https://github.com/mozilla-mobile/fenix/issues/24224
-    data_reviews:
-      - https://github.com/mozilla-mobile/fenix/issues/24224
-      - https://github.com/mozilla-mobile/firefox-android/pull/1101
-    notification_emails:
-      - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
-    data_sensitivity:
-      - interaction
-    expires: never
-  malformed:
-    type: event
-    description: |
-      A message was malformed.
-    extra_keys:
-      message_key:
-        description: The id of the message
-        type: string
-    bugs:
-      - https://github.com/mozilla-mobile/fenix/issues/24224
-    data_reviews:
-      - https://github.com/mozilla-mobile/fenix/issues/24224
-      - https://github.com/mozilla-mobile/firefox-android/pull/1101
-    notification_emails:
-      - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
-    data_sensitivity:
-      - interaction
-    expires: never
-
 wallpapers:
   wallpaper_settings_opened:
     type: event
@@ -9129,3 +9505,36 @@ private_browsing_shortcut_cfr:
     notification_emails:
       - android-probes@mozilla.com
     expires: 122
+
+pull_to_refresh_in_browser:
+  enabled:
+    type: boolean
+    description: |
+      Whether or not pull-to-refresh functionality
+      is enabled from Settings screen.
+      default: true
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1825413
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1775#pullrequestreview-1401966483
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 126
+    metadata:
+      tags:
+        - Settings
+  executed:
+    type: event
+    description: |
+      Whether the pull-to-refresh gesture was executed by the user.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1825413
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1775#pullrequestreview-1401966483
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 126

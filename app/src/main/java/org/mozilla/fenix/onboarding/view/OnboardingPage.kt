@@ -8,12 +8,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -24,7 +26,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.mozilla.fenix.R
 import org.mozilla.fenix.compose.annotation.LightDarkPreview
@@ -33,32 +39,44 @@ import org.mozilla.fenix.compose.button.SecondaryButton
 import org.mozilla.fenix.theme.FirefoxTheme
 
 /**
- * The ratio of the image height to the window height. This was determined from the designs in figma
+ * The ratio of the image height to the parent height. This was determined from the designs in figma
  * taking the ratio of the image height to the mockup height.
  */
-private const val IMAGE_HEIGHT_RATIO = 0.4f
+private const val IMAGE_HEIGHT_RATIO_DEFAULT = 0.4f
+
+/**
+ * The ratio of the image height to the parent height for medium sized devices.
+ */
+private const val IMAGE_HEIGHT_RATIO_MEDIUM = 0.36f
+
+/**
+ * The ratio of the image height to the parent height for small devices like Nexus 4, Nexus 1.
+ */
+private const val IMAGE_HEIGHT_RATIO_SMALL = 0.28f
+
+/**
+ * The tag used for links in the text for annotated strings.
+ */
+private const val URL_TAG = "URL_TAG"
 
 /**
  * A composable for displaying onboarding page content.
  *
  * @param pageState [OnboardingPageState] The page content that's displayed.
- * @param onDismiss Invoked when the user clicks the close button.
- * @param onPrimaryButtonClick Invoked when the user clicks the primary button.
- * @param onSecondaryButtonClick Invoked when the user clicks the secondary button.
  * @param modifier The modifier to be applied to the Composable.
+ * @param onDismiss Invoked when the user clicks the close button. This defaults to null. When null,
+ * it doesn't show the close button.
  */
 @Composable
 fun OnboardingPage(
     pageState: OnboardingPageState,
-    onDismiss: () -> Unit,
-    onPrimaryButtonClick: () -> Unit,
-    onSecondaryButtonClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onDismiss: (() -> Unit)? = null,
 ) {
     BoxWithConstraints(
         modifier = Modifier
             .background(FirefoxTheme.colors.layer1)
-            .padding(bottom = if (pageState.secondaryButtonText == null) 32.dp else 24.dp)
+            .padding(bottom = if (pageState.secondaryButton == null) 32.dp else 24.dp)
             .then(modifier),
     ) {
         val boxWithConstraintsScope = this
@@ -69,15 +87,19 @@ fun OnboardingPage(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
-            IconButton(
-                onClick = onDismiss,
-                modifier = Modifier.align(Alignment.End),
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.mozac_ic_close),
-                    contentDescription = stringResource(R.string.onboarding_home_content_description_close_button),
-                    tint = FirefoxTheme.colors.iconPrimary,
-                )
+            if (onDismiss != null) {
+                IconButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.align(Alignment.End),
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.mozac_ic_close),
+                        contentDescription = stringResource(R.string.onboarding_home_content_description_close_button),
+                        tint = FirefoxTheme.colors.iconPrimary,
+                    )
+                }
+            } else {
+                Spacer(Modifier)
             }
 
             Column(
@@ -87,8 +109,7 @@ fun OnboardingPage(
                 Image(
                     painter = painterResource(id = pageState.image),
                     contentDescription = null,
-                    modifier = Modifier
-                        .height(boxWithConstraintsScope.maxHeight.times(IMAGE_HEIGHT_RATIO)),
+                    modifier = Modifier.height(imageHeight(boxWithConstraintsScope)),
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -102,11 +123,9 @@ fun OnboardingPage(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text(
-                    text = pageState.description,
-                    color = FirefoxTheme.colors.textSecondary,
-                    textAlign = TextAlign.Center,
-                    style = FirefoxTheme.typography.body2,
+                DescriptionText(
+                    description = pageState.description,
+                    linkTextState = pageState.linkTextState,
                 )
             }
 
@@ -115,15 +134,15 @@ fun OnboardingPage(
                 modifier = Modifier.padding(horizontal = 16.dp),
             ) {
                 PrimaryButton(
-                    text = pageState.primaryButtonText,
-                    onClick = onPrimaryButtonClick,
+                    text = pageState.primaryButton.text,
+                    onClick = pageState.primaryButton.onClick,
                 )
 
-                if (pageState.secondaryButtonText != null) {
+                if (pageState.secondaryButton != null) {
                     Spacer(modifier = Modifier.height(8.dp))
                     SecondaryButton(
-                        text = pageState.secondaryButtonText,
-                        onClick = onSecondaryButtonClick,
+                        text = pageState.secondaryButton.text,
+                        onClick = pageState.secondaryButton.onClick,
                     )
                 }
             }
@@ -133,6 +152,83 @@ fun OnboardingPage(
             }
         }
     }
+}
+
+@Composable
+private fun DescriptionText(
+    description: String,
+    linkTextState: LinkTextState?,
+) {
+    if (linkTextState != null) {
+        LinkText(
+            text = description,
+            linkTextState = linkTextState,
+        )
+    } else {
+        Text(
+            text = description,
+            color = FirefoxTheme.colors.textSecondary,
+            textAlign = TextAlign.Center,
+            style = FirefoxTheme.typography.body2,
+        )
+    }
+}
+
+/**
+ * A composable for displaying text that contains a clickable link text.
+ *
+ * @param text The complete text.
+ * @param linkTextState The clickable part of the text.
+ */
+@Composable
+private fun LinkText(
+    text: String,
+    linkTextState: LinkTextState,
+) {
+    val annotatedString = buildAnnotatedString {
+        val startIndex = text.indexOf(linkTextState.text)
+        val endIndex = startIndex + linkTextState.text.length
+        append(text)
+        addStyle(
+            style = SpanStyle(color = FirefoxTheme.colors.textAccent),
+            start = startIndex,
+            end = endIndex,
+        )
+
+        addStringAnnotation(
+            tag = URL_TAG,
+            annotation = linkTextState.url,
+            start = startIndex,
+            end = endIndex,
+        )
+    }
+
+    ClickableText(
+        text = annotatedString,
+        style = FirefoxTheme.typography.body2.copy(
+            textAlign = TextAlign.Center,
+            color = FirefoxTheme.colors.textSecondary,
+        ),
+        onClick = {
+            val range: AnnotatedString.Range<String>? =
+                annotatedString.getStringAnnotations(URL_TAG, it, it).firstOrNull()
+            range?.let { stringAnnotation ->
+                linkTextState.onClick(stringAnnotation.item)
+            }
+        },
+    )
+}
+
+/**
+ * Calculates the image height to be set. The ratio is selected based on parent height.
+ */
+private fun imageHeight(boxWithConstraintsScope: BoxWithConstraintsScope): Dp {
+    val imageHeightRatio: Float = when {
+        boxWithConstraintsScope.maxHeight <= 550.dp -> IMAGE_HEIGHT_RATIO_SMALL
+        boxWithConstraintsScope.maxHeight <= 650.dp -> IMAGE_HEIGHT_RATIO_MEDIUM
+        else -> IMAGE_HEIGHT_RATIO_DEFAULT
+    }
+    return boxWithConstraintsScope.maxHeight.times(imageHeightRatio)
 }
 
 @LightDarkPreview
@@ -150,16 +246,18 @@ private fun OnboardingPagePreview() {
                     id = R.string.onboarding_home_enable_notifications_description,
                     formatArgs = arrayOf(stringResource(R.string.app_name)),
                 ),
-                primaryButtonText = stringResource(
-                    id = R.string.onboarding_home_enable_notifications_positive_button,
+                primaryButton = Action(
+                    text = stringResource(
+                        id = R.string.onboarding_home_enable_notifications_positive_button,
+                    ),
+                    onClick = {},
                 ),
-                secondaryButtonText = stringResource(
-                    id = R.string.onboarding_home_enable_notifications_negative_button,
+                secondaryButton = Action(
+                    text = stringResource(id = R.string.onboarding_home_enable_notifications_negative_button),
+                    onClick = {},
                 ),
                 onRecordImpressionEvent = {},
             ),
-            onPrimaryButtonClick = {},
-            onSecondaryButtonClick = {},
             onDismiss = {},
         )
     }

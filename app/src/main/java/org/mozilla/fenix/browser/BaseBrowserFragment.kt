@@ -100,9 +100,11 @@ import mozilla.components.support.ktx.android.view.hideKeyboard
 import mozilla.components.support.ktx.kotlin.getOrigin
 import mozilla.components.support.ktx.kotlinx.coroutines.flow.ifAnyChanged
 import mozilla.components.support.ktx.kotlinx.coroutines.flow.ifChanged
+import mozilla.components.support.locale.ActivityContextWrapper
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.FeatureFlags
 import org.mozilla.fenix.GleanMetrics.MediaState
+import org.mozilla.fenix.GleanMetrics.PullToRefreshInBrowser
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.IntentReceiverActivity
 import org.mozilla.fenix.NavGraphDirections
@@ -251,6 +253,8 @@ abstract class BaseBrowserFragment :
 
         val activity = activity as HomeActivity
         activity.themeManager.applyStatusBarTheme(activity)
+        val originalContext = ActivityContextWrapper.getOriginalContext(activity)
+        binding.engineView.setActivityContext(originalContext)
 
         browserFragmentStore = StoreProvider.get(this) {
             BrowserFragmentStore(
@@ -495,8 +499,9 @@ abstract class BaseBrowserFragment :
             httpClient = context.components.core.client,
             store = store,
             tabId = customTabSessionId,
-            snackbarParent = binding.dynamicSnackbarContainer,
-            snackbarDelegate = FenixSnackbarDelegate(binding.dynamicSnackbarContainer),
+            onCopyConfirmation = {
+                showSnackbarForClipboardCopy()
+            },
         )
 
         val downloadFeature = DownloadsFeature(
@@ -509,6 +514,7 @@ abstract class BaseBrowserFragment :
                 context.applicationContext,
                 store,
                 DownloadService::class,
+                notificationsDelegate = context.components.notificationsDelegate,
             ),
             shouldForwardToThirdParties = {
                 PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
@@ -877,6 +883,7 @@ abstract class BaseBrowserFragment :
                     requireComponents.core.store,
                     context.components.useCases.sessionUseCases.reload,
                     binding.swipeRefresh,
+                    { PullToRefreshInBrowser.executed.record(NoExtras()) },
                     customTabSessionId,
                 ),
                 owner = this,
@@ -898,6 +905,22 @@ abstract class BaseBrowserFragment :
         )
 
         initializeEngineView(toolbarHeight)
+    }
+
+    /**
+     * Show a [Snackbar] when data is set to the device clipboard. To avoid duplicate displays of
+     * information only show a [Snackbar] for Android 12 and lower.
+     *
+     * [See details](https://developer.android.com/develop/ui/views/touch-and-input/copy-paste#duplicate-notifications).
+     */
+    private fun showSnackbarForClipboardCopy() {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+            FenixSnackbarDelegate(binding.dynamicSnackbarContainer).show(
+                snackBarParentView = binding.dynamicSnackbarContainer,
+                text = R.string.snackbar_copy_image_to_clipboard_confirmation,
+                duration = Snackbar.LENGTH_LONG,
+            )
+        }
     }
 
     /**
@@ -1491,7 +1514,9 @@ abstract class BaseBrowserFragment :
             message = "onDestroyView()",
         )
 
+        binding.engineView.setActivityContext(null)
         requireContext().accessibilityManager.removeAccessibilityStateChangeListener(this)
+
         _browserToolbarView = null
         _browserToolbarInteractor = null
         _binding = null

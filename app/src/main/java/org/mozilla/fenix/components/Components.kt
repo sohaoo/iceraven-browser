@@ -10,11 +10,13 @@ import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import io.github.forkmaintainers.iceraven.components.PagedAddonCollectionProvider
+import androidx.core.app.NotificationManagerCompat
 import mozilla.components.feature.addons.AddonManager
 import mozilla.components.feature.addons.migration.DefaultSupportedAddonsChecker
 import mozilla.components.feature.addons.update.DefaultAddonUpdater
 import mozilla.components.feature.autofill.AutofillConfiguration
 import mozilla.components.lib.publicsuffixlist.PublicSuffixList
+import mozilla.components.support.base.android.NotificationsDelegate
 import mozilla.components.support.base.worker.Frequency
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.Config
@@ -29,10 +31,10 @@ import org.mozilla.fenix.ext.asRecentTabs
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.filterState
 import org.mozilla.fenix.ext.sort
-import org.mozilla.fenix.gleanplumb.state.MessagingMiddleware
 import org.mozilla.fenix.home.PocketUpdatesMiddleware
 import org.mozilla.fenix.home.blocklist.BlocklistHandler
 import org.mozilla.fenix.home.blocklist.BlocklistMiddleware
+import org.mozilla.fenix.messaging.state.MessagingMiddleware
 import org.mozilla.fenix.perf.AppStartReasonProvider
 import org.mozilla.fenix.perf.StartupActivityLog
 import org.mozilla.fenix.perf.StartupStateProvider
@@ -85,6 +87,14 @@ class Components(private val context: Context) {
         )
     }
 
+    private val notificationManagerCompat = NotificationManagerCompat.from(context)
+
+    val notificationsDelegate: NotificationsDelegate by lazyMonitored {
+        NotificationsDelegate(
+            notificationManagerCompat,
+        )
+    }
+
     val intentProcessors by lazyMonitored {
         IntentProcessors(
             context,
@@ -113,7 +123,7 @@ class Components(private val context: Context) {
 
     @Suppress("MagicNumber")
     val addonUpdater by lazyMonitored {
-        DefaultAddonUpdater(context, Frequency(12, TimeUnit.HOURS))
+        DefaultAddonUpdater(context, Frequency(12, TimeUnit.HOURS), notificationsDelegate)
     }
 
     @Suppress("MagicNumber")

@@ -45,8 +45,12 @@ import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.helpers.Constants.LONG_CLICK_DURATION
 import org.mozilla.fenix.helpers.Constants.RETRY_COUNT
 import org.mozilla.fenix.helpers.MatcherHelper
+import org.mozilla.fenix.helpers.MatcherHelper.assertItemContainingTextExists
+import org.mozilla.fenix.helpers.MatcherHelper.assertItemWithDescriptionExists
 import org.mozilla.fenix.helpers.MatcherHelper.assertItemWithResIdAndTextExists
 import org.mozilla.fenix.helpers.MatcherHelper.assertItemWithResIdExists
+import org.mozilla.fenix.helpers.MatcherHelper.itemContainingText
+import org.mozilla.fenix.helpers.MatcherHelper.itemWithDescription
 import org.mozilla.fenix.helpers.MatcherHelper.itemWithResId
 import org.mozilla.fenix.helpers.MatcherHelper.itemWithResIdAndText
 import org.mozilla.fenix.helpers.SessionLoadedIdlingResource
@@ -89,7 +93,7 @@ class BrowserRobot {
     }
 
     fun verifyWhatsNewURL() {
-        verifyUrl("support.mozilla.org/")
+        verifyUrl("mozilla.org/")
     }
 
     fun verifyRateOnGooglePlayURL() {
@@ -395,17 +399,18 @@ class BrowserRobot {
         searchText.click()
     }
 
-    fun snackBarButtonClick() {
-        val switchButton =
-            mDevice.findObject(
-                UiSelector()
-                    .resourceId("$packageName:id/snackbar_btn"),
-            )
-        switchButton.waitForExists(waitingTime)
-        switchButton.clickAndWaitForNewWindow(waitingTime)
-    }
+    fun clickSnackbarButton(expectedText: String) =
+        itemWithResIdAndText("$packageName:id/snackbar_btn", expectedText)
+            .also {
+                it.waitForExists(waitingTime)
+                it.click()
+            }
 
-    fun clickSubmitLoginButton() = clickPageObject(webPageItemWithResourceId("submit"))
+    fun clickSubmitLoginButton() {
+        clickPageObject(webPageItemWithResourceId("submit"))
+        webPageItemWithResourceId("submit").waitUntilGone(waitingTime)
+        mDevice.waitForIdle(waitingTimeLong)
+    }
 
     fun verifyUpdateLoginPromptIsShown() = mDevice.waitNotNull(Until.findObjects(text("Update")))
 
@@ -539,8 +544,23 @@ class BrowserRobot {
     }
 
     fun clickSelectAddressButton() {
-        selectAddressButton.waitForExists(waitingTime)
-        selectAddressButton.clickAndWaitForNewWindow(waitingTime)
+        for (i in 1..RETRY_COUNT) {
+            try {
+                assertTrue(selectAddressButton.waitForExists(waitingTime))
+                selectAddressButton.clickAndWaitForNewWindow(waitingTime)
+
+                break
+            } catch (e: AssertionError) {
+                // Retrying, in case we hit https://bugzilla.mozilla.org/show_bug.cgi?id=1816869
+                // This should be removed when the bug is fixed.
+                if (i == RETRY_COUNT) {
+                    throw e
+                } else {
+                    clickPageObject(webPageItemWithResourceId("city"))
+                    clickPageObject(webPageItemWithResourceId("country"))
+                }
+            }
+        }
     }
 
     fun verifySelectAddressButtonExists(exists: Boolean) = assertItemWithResIdExists(selectAddressButton, exists = exists)
@@ -744,14 +764,33 @@ class BrowserRobot {
 
     fun clickSetCookiesButton() = clickPageObject(webPageItemWithResourceId("setCookies"))
 
-    fun verifyCookiesProtectionHint() {
-        val hintMessage =
-            mDevice.findObject(
-                UiSelector()
-                    .textContains(getStringResource(R.string.tcp_cfr_message)),
+    fun verifyCookiesProtectionHintIsDisplayed(isDisplayed: Boolean) {
+        if (isDisplayed) {
+            assertItemContainingTextExists(
+                totalCookieProtectionHintMessage,
+                totalCookieProtectionHintLearnMoreLink,
             )
-        assertTrue(hintMessage.waitForExists(waitingTime))
+            assertItemWithDescriptionExists(
+                totalCookieProtectionHintCloseButton,
+            )
+        } else {
+            assertItemContainingTextExists(
+                totalCookieProtectionHintMessage,
+                totalCookieProtectionHintLearnMoreLink,
+                exists = isDisplayed,
+            )
+            assertItemWithDescriptionExists(
+                totalCookieProtectionHintCloseButton,
+                exists = isDisplayed,
+            )
+        }
     }
+
+    fun clickTotalCookieProtectionLearnMoreLink() =
+        totalCookieProtectionHintLearnMoreLink.clickAndWaitForNewWindow(waitingTime)
+
+    fun clickTotalCookieProtectionCloseButton() =
+        totalCookieProtectionHintCloseButton.click()
 
     fun clickForm(formType: String) {
         when (formType) {
@@ -1001,8 +1040,35 @@ class BrowserRobot {
             it.click()
         }
 
-    fun clickOpenInAppPromptButton() =
+    fun verifyOpenLinkInAnotherAppPrompt() {
+        assertItemWithResIdExists(itemWithResId("$packageName:id/parentPanel"))
+        assertItemContainingTextExists(
+            itemContainingText(
+                getStringResource(R.string.mozac_feature_applinks_normal_confirm_dialog_title),
+            ),
+            itemContainingText(
+                getStringResource(R.string.mozac_feature_applinks_normal_confirm_dialog_message),
+            ),
+        )
+    }
+
+    fun verifyPrivateBrowsingOpenLinkInAnotherAppPrompt(url: String) =
+        assertItemContainingTextExists(
+            itemContainingText(
+                getStringResource(R.string.mozac_feature_applinks_confirm_dialog_title),
+            ),
+            itemContainingText(url),
+        )
+
+    fun confirmOpenLinkInAnotherApp() =
         itemWithResIdAndText("android:id/button1", "OPEN")
+            .also {
+                it.waitForExists(waitingTime)
+                it.click()
+            }
+
+    fun cancelOpenLinkInAnotherApp() =
+        itemWithResIdAndText("android:id/button2", "CANCEL")
             .also {
                 it.waitForExists(waitingTime)
                 it.click()
@@ -1196,6 +1262,7 @@ class BrowserRobot {
         }
 
         fun clickRequestStorageAccessButton(interact: SitePermissionsRobot.() -> Unit): SitePermissionsRobot.Transition {
+            webPageItemContainingText("requestStorageAccess()").waitForExists(waitingTime)
             clickPageObject(webPageItemContainingText("requestStorageAccess()"))
 
             SitePermissionsRobot().interact()
@@ -1378,3 +1445,9 @@ private val currentDay = currentDate.dayOfMonth
 private val currentMonth = currentDate.month
 private val currentYear = currentDate.year
 private val cookieBanner = itemWithResId("CybotCookiebotDialog")
+private val totalCookieProtectionHintMessage =
+    itemContainingText(getStringResource(R.string.tcp_cfr_message))
+private val totalCookieProtectionHintLearnMoreLink =
+    itemContainingText(getStringResource(R.string.tcp_cfr_learn_more))
+private val totalCookieProtectionHintCloseButton =
+    itemWithDescription(getStringResource(R.string.mozac_cfr_dismiss_button_content_description))

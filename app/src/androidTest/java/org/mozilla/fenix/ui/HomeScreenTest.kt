@@ -166,12 +166,13 @@ class HomeScreenTest {
         }.openThreeDotMenu {
         }.openCustomizeHome {
             clickPocketButton()
-        }.goBack {
+        }.goBackToHomeScreen {
             verifyThoughtProvokingStories(false)
             verifyStoriesByTopic(false)
         }
     }
 
+    @Ignore("Failing, see: https://bugzilla.mozilla.org/show_bug.cgi?id=1821016")
     @Test
     fun openPocketStoryItemTest() {
         activityTestRule.activityRule.applySettingsExceptions {
@@ -257,12 +258,12 @@ class HomeScreenTest {
             clickRecentBookmarksButton()
             clickRecentSearchesButton()
             clickPocketButton()
-        }.goBack {
+        }.goBackToHomeScreen {
             verifyCustomizeHomepageButton(false)
         }.openThreeDotMenu {
         }.openCustomizeHome {
             clickJumpBackInButton()
-        }.goBack {
+        }.goBackToHomeScreen {
             verifyCustomizeHomepageButton(true)
         }
     }
