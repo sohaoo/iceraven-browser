@@ -14,7 +14,6 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
-import androidx.annotation.VisibleForTesting
 import mozilla.components.support.locale.LocaleManager
 import mozilla.components.support.utils.ext.getParcelableCompat
 import mozilla.telemetry.glean.private.NoExtras

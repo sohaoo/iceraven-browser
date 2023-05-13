@@ -187,6 +187,7 @@ class CustomizationFragment : PreferenceFragmentCompat() {
             isChecked = requireContext().settings().shouldRelinquishMemoryUnderPressure
             onPreferenceChangeListener = SharedPreferenceUpdater()
         }
+    }
 
     override fun onPreferenceTreeClick(preference: Preference): Boolean {
         when (preference.key) {
