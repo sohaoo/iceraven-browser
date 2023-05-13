@@ -9,6 +9,8 @@ channels:
   - beta
   - nightly
   - developer
+  - forkDebug
+  - forkRelease
 import:
   - path: ../android-components/components/service/nimbus/messaging.fml.yaml
     channel: release

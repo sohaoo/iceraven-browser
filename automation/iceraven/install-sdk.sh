@@ -20,7 +20,7 @@ popd
 export ANDROID_SDK_ROOT=$HOME/android-sdk/android-sdk-linux
 
 # Install the weirdly missing NDK
-${ANDROID_SDK_ROOT}/cmdline-tools/tools/bin/sdkmanager "ndk;21.0.6113669"
+${ANDROID_SDK_ROOT}/cmdline-tools/tools/bin/sdkmanager "ndk;25.2.9519653"
 
 # Point the build at the tools
 echo "sdk.dir=${ANDROID_SDK_ROOT}" >> local.properties
