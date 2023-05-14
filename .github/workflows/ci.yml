@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - iceraven
-    tags:
-      - "*"
-  create:
 
 jobs:
   release-automation:
@@ -53,7 +50,6 @@ jobs:
           arguments: -v ./gradlew app:assemblefenixForkRelease -x lintVitalFenixForkRelease -PversionName=${{ env.VERSION_NAME }} --stacktrace
 
       - name: Create signed APKs
-        if: "contains(toJSON(github.event.ref_type), 'tag') && contains(toJSON(github.event.ref), 'iceraven')"
         uses: abhijitvalluri/sign-apks@v0.8
         with:
           releaseDirectory: app/build/outputs/apk/fenix/forkRelease/
@@ -62,81 +58,26 @@ jobs:
           keyStorePassword: ${{ secrets.DEBUG_KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.DEBUG_KEY_PASSWORD }}
 
-      - name: Create changelog
-        if: "contains(toJSON(github.event.ref_type), 'tag') && contains(toJSON(github.event.ref), 'iceraven')"
-        run: |
-          PREVIOUS_RELEASE_TAG=$(git tag --list iceraven-* --sort=-creatordate | tail -n+2 | head -n 1)
-          CURRENT_RELEASE_TAG=${{ github.event.ref }}
-          CURRENT_RELEASE_TAG_CAPITALIZE=${CURRENT_RELEASE_TAG^}
-          CURRENT_RELEASE_TAG_CAPITALIZE=$(echo $CURRENT_RELEASE_TAG_CAPITALIZE | tr '-' ' ')
-          echo "CURRENT_RELEASE_TAG_CAPITALIZE=${CURRENT_RELEASE_TAG_CAPITALIZE}" >> $GITHUB_ENV
-          FENIX_TAG=$(cat version.txt | tr -d '\n')
-
-          echo -e "## Release info\n" >> temp_changelog.md
-
-          echo '```' >> temp_changelog.md
-          echo "Iceraven: $(echo $CURRENT_RELEASE_TAG |  tr -d 'iceraven-')" >> temp_changelog.md
-          echo "Fenix: ${FENIX_TAG}" >> temp_changelog.md
-          echo -e '```\n' >> temp_changelog.md
-
-          echo -e "## News\n" >> temp_changelog.md
-
-          echo -e "## Change log\n" >> temp_changelog.md
-          echo "[${PREVIOUS_RELEASE_TAG}...${CURRENT_RELEASE_TAG}](https://github.com/${{ github.repository }}/compare/${PREVIOUS_RELEASE_TAG}...${CURRENT_RELEASE_TAG})" >> temp_changelog.md
-
-      - name: Create Release
-        if: "contains(toJSON(github.event.ref_type), 'tag') && contains(toJSON(github.event.ref), 'iceraven')"
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.event.ref }}
-          release_name: "${{ env.CURRENT_RELEASE_TAG_CAPITALIZE }}"
-          draft: false
-          prerelease: false
-          body_path: temp_changelog.md
-
       - name: Upload arm64 apk
-        if: "contains(toJSON(github.event.ref_type), 'tag') && contains(toJSON(github.event.ref), 'iceraven')"
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/upload-artifact@v3
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: app/build/outputs/apk/fenix/forkRelease/app-fenix-arm64-v8a-forkRelease.apk
-          asset_name: ${{ github.event.ref }}-browser-arm64-v8a-forkRelease.apk
-          asset_content_type: application/vnd.android.package-archive
+          path: app/build/outputs/apk/fenix/forkRelease/app-fenix-arm64-v8a-forkRelease.apk
+          name: ${{ env.VERSION_NAME }}-browser-arm64-v8a-forkRelease.apk
 
       - name: Upload armeabi apk
-        if: "contains(toJSON(github.event.ref_type), 'tag') && contains(toJSON(github.event.ref), 'iceraven')"
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/upload-artifact@v3
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: app/build/outputs/apk/fenix/forkRelease/app-fenix-armeabi-v7a-forkRelease.apk
-          asset_name: ${{ github.event.ref }}-browser-armeabi-v7a-forkRelease.apk
-          asset_content_type: application/vnd.android.package-archive
+          path: app/build/outputs/apk/fenix/forkRelease/app-fenix-armeabi-v7a-forkRelease.apk
+          name: ${{ env.VERSION_NAME }}-browser-armeabi-v7a-forkRelease.apk
 
       - name: Upload x86 apk
-        if: "contains(toJSON(github.event.ref_type), 'tag') && contains(toJSON(github.event.ref), 'iceraven')"
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/upload-artifact@v3
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: app/build/outputs/apk/fenix/forkRelease/app-fenix-x86-forkRelease.apk
-          asset_name: ${{ github.event.ref }}-browser-x86-forkRelease.apk
-          asset_content_type: application/vnd.android.package-archive
+          path: app/build/outputs/apk/fenix/forkRelease/app-fenix-x86-forkRelease.apk
+          name: ${{ env.VERSION_NAME }}-browser-x86-forkRelease.apk
 
       - name: Upload x86_64 apk
-        if: "contains(toJSON(github.event.ref_type), 'tag') && contains(toJSON(github.event.ref), 'iceraven')"
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/upload-artifact@v3
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: app/build/outputs/apk/fenix/forkRelease/app-fenix-x86_64-forkRelease.apk
-          asset_name: ${{ github.event.ref }}-browser-x86_64-forkRelease.apk
-          asset_content_type: application/vnd.android.package-archive
+          path: app/build/outputs/apk/fenix/forkRelease/app-fenix-x86_64-forkRelease.apk
+          name: ${{ env.VERSION_NAME }}-browser-x86_64-forkRelease.apk
