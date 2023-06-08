@@ -212,6 +212,13 @@
     <string name="pref_key_adjust_adgroup" translatable="false">pref_key_adjust_adgroup</string>
     <string name="pref_key_adjust_creative" translatable="false">pref_key_adjust_creative</string>
 
+    <string name="pref_key_utm_params_known" translatable="false">pref_key_utm_params_known</string>
+    <string name="pref_key_utm_source" translatable="false">pref_key_utm_source</string>
+    <string name="pref_key_utm_medium" translatable="false">pref_key_utm_medium</string>
+    <string name="pref_key_utm_campaign" translatable="false">pref_key_utm_campaign</string>
+    <string name="pref_key_utm_term" translatable="false">pref_key_utm_term</string>
+    <string name="pref_key_utm_content" translatable="false">pref_key_utm_content</string>
+
     <string name="pref_key_contile_context_id" translatable="false">pref_key_contile_context_id</string>
 
     <!-- Wallpaper Settings -->
@@ -282,6 +289,12 @@
     <string name="pref_key_login_exceptions" translatable="false">pref_key_login_exceptions</string>
 
     <string name="pref_key_show_collections_placeholder_home" translatable="false">pref_key_show_collections_home</string>
+
+    <!-- Adjust Activated User values-->
+    <string name="pref_key_growth_user_activated_sent" translatable="false">pref_key_growth_user_activated_sent</string>
+    <string name="pref_key_growth_early_browse_count" translatable="false">pref_key_growth_early_browse_count</string>
+    <string name="pref_key_growth_early_browse_count_last_increment" translatable="false">pref_key_growth_early_browse_count_last_increment</string>
+    <string name="pref_key_growth_early_search" translatable="false">pref_key_growth_early_search</string>
 
     <!-- Tabs Settings -->
     <!-- pref_key_tab_view_list_do_not_use is needed for UI implementation only and should be expected to be useful. -->

@@ -41,7 +41,6 @@ import org.mozilla.fenix.components.settings.lazyFeatureFlagPreference
 import org.mozilla.fenix.components.toolbar.ToolbarPosition
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.getPreferenceKey
-import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.nimbus.CookieBannersSection
 import org.mozilla.fenix.nimbus.FxNimbus
 import org.mozilla.fenix.nimbus.HomeScreenSection
@@ -183,6 +182,36 @@ class Settings(private val appContext: Context) : PreferencesHolder {
 
     var adjustCreative by stringPreference(
         appContext.getPreferenceKey(R.string.pref_key_adjust_creative),
+        default = "",
+    )
+
+    var utmParamsKnown by booleanPreference(
+        appContext.getPreferenceKey(R.string.pref_key_utm_params_known),
+        default = false,
+    )
+
+    var utmSource by stringPreference(
+        appContext.getPreferenceKey(R.string.pref_key_utm_source),
+        default = "",
+    )
+
+    var utmMedium by stringPreference(
+        appContext.getPreferenceKey(R.string.pref_key_utm_medium),
+        default = "",
+    )
+
+    var utmCampaign by stringPreference(
+        appContext.getPreferenceKey(R.string.pref_key_utm_campaign),
+        default = "",
+    )
+
+    var utmTerm by stringPreference(
+        appContext.getPreferenceKey(R.string.pref_key_utm_term),
+        default = "",
+    )
+
+    var utmContent by stringPreference(
+        appContext.getPreferenceKey(R.string.pref_key_utm_content),
         default = "",
     )
 
@@ -533,9 +562,13 @@ class Settings(private val appContext: Context) : PreferencesHolder {
      * Get the display string for the current open links in apps setting
      */
     fun getOpenLinksInAppsString(): String =
-        when (appContext.settings().openLinksInExternalApp) {
+        when (openLinksInExternalApp) {
             appContext.getString(R.string.pref_key_open_links_in_apps_always) -> {
-                appContext.getString(R.string.preferences_open_links_in_apps_always)
+                if (lastKnownMode == BrowsingMode.Normal) {
+                    appContext.getString(R.string.preferences_open_links_in_apps_always)
+                } else {
+                    appContext.getString(R.string.preferences_open_links_in_apps_ask)
+                }
             }
             appContext.getString(R.string.pref_key_open_links_in_apps_ask) -> {
                 appContext.getString(R.string.preferences_open_links_in_apps_ask)
@@ -1224,11 +1257,12 @@ class Settings(private val appContext: Context) : PreferencesHolder {
     /**
      * Check to see if we should open the link in an external app
      */
-    fun shouldOpenLinksInApp(): Boolean {
+    fun shouldOpenLinksInApp(isCustomTab: Boolean = false): Boolean {
         return when (openLinksInExternalApp) {
             appContext.getString(R.string.pref_key_open_links_in_apps_always) -> true
             appContext.getString(R.string.pref_key_open_links_in_apps_ask) -> true
-            appContext.getString(R.string.pref_key_open_links_in_apps_never) -> false
+            /* Some applications will not work if custom tab never open links in apps, return true if it's custom tab */
+            appContext.getString(R.string.pref_key_open_links_in_apps_never) -> isCustomTab
             else -> false
         }
     }
@@ -1725,5 +1759,34 @@ class Settings(private val appContext: Context) : PreferencesHolder {
     var enableTabsTrayToCompose by booleanPreference(
         key = appContext.getPreferenceKey(R.string.pref_key_enable_tabs_tray_to_compose),
         default = FeatureFlags.composeTabsTray,
+    )
+
+    /**
+     * Adjust Activated User sent
+     */
+    var growthUserActivatedSent by booleanPreference(
+        key = appContext.getPreferenceKey(R.string.pref_key_growth_user_activated_sent),
+        default = false,
+    )
+
+    /**
+     * Indicates how many days in the first week user opened the app.
+     */
+    val growthEarlyUseCount = counterPreference(
+        appContext.getPreferenceKey(R.string.pref_key_growth_early_browse_count),
+        maxCount = 3,
+    )
+
+    var growthEarlyUseCountLastIncrement by longPreference(
+        key = appContext.getPreferenceKey(R.string.pref_key_growth_early_browse_count_last_increment),
+        default = 0L,
+    )
+
+    /**
+     * Indicates how many days in the first week user searched in the app.
+     */
+    var growthEarlySearchUsed by booleanPreference(
+        key = appContext.getPreferenceKey(R.string.pref_key_growth_early_search),
+        default = false,
     )
 }

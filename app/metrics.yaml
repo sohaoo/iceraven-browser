@@ -33,7 +33,7 @@ events:
     notification_emails:
       - telemetry-client-dev@mozilla.com
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -61,7 +61,7 @@ events:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -89,7 +89,7 @@ events:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -123,7 +123,7 @@ events:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -179,7 +179,7 @@ events:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -242,7 +242,7 @@ events:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -269,7 +269,7 @@ events:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     no_lint:
       - BASELINE_PING
@@ -322,7 +322,7 @@ events:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -374,7 +374,7 @@ events:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -394,7 +394,7 @@ events:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -416,7 +416,7 @@ events:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -437,7 +437,7 @@ events:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -545,7 +545,7 @@ events:
       - https://github.com/mozilla-mobile/fenix/pull/28118#issuecomment-1341620815
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     data_sensitivity:
       - interaction
     expires: never
@@ -568,6 +568,26 @@ events:
     metadata:
       tags:
         - Performance
+  default_engine_selected:
+    type: event
+    description: |
+      A user selected a new default search engine to use
+    extra_keys:
+      engine:
+        type: string
+        description: |
+          The name of the default search engine the user selected as a string.
+          Custom search engine user created will have the name `Custom`.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1827686
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1674
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 127
+    metadata:
+      tags:
+        - Search
 
 onboarding:
   syn_cfr_shown:
@@ -636,7 +656,7 @@ onboarding:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -657,7 +677,7 @@ onboarding:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -678,7 +698,7 @@ onboarding:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -705,7 +725,7 @@ onboarding:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -732,7 +752,7 @@ onboarding:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -759,7 +779,7 @@ onboarding:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -780,7 +800,7 @@ onboarding:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -1359,11 +1379,12 @@ unified_search:
       - https://github.com/mozilla-mobile/fenix/issues/24522
     data_reviews:
       - https://github.com/mozilla-mobile/fenix/pull/25544
+      - https://github.com/mozilla-mobile/firefox-android/pull/1875
     data_sensitivity:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-    expires: 115
+    expires: 123
     metadata:
       tags:
         - Search
@@ -1381,9 +1402,10 @@ unified_search:
       - https://github.com/mozilla-mobile/fenix/issues/24522
     data_reviews:
       - https://github.com/mozilla-mobile/fenix/pull/25544
+      - https://github.com/mozilla-mobile/firefox-android/pull/1875
     notification_emails:
       - android-probes@mozilla.com
-    expires: 115
+    expires: 123
     metadata:
       tags:
         - Search
@@ -1411,7 +1433,7 @@ toolbar_settings:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -1447,7 +1469,7 @@ context_menu:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -1556,7 +1578,7 @@ metrics:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -1579,7 +1601,7 @@ metrics:
       - technical
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     no_lint:
       - BASELINE_PING
@@ -1609,7 +1631,7 @@ metrics:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -1633,7 +1655,7 @@ metrics:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -1661,7 +1683,7 @@ metrics:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -1713,7 +1735,7 @@ metrics:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -1737,7 +1759,7 @@ metrics:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -1832,7 +1854,7 @@ metrics:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     no_lint:
       - BASELINE_PING
@@ -2124,7 +2146,7 @@ metrics:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -2211,7 +2233,7 @@ metrics:
       - technical
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
   inactive_tabs_count:
     type: quantity
@@ -2422,7 +2444,7 @@ customize_home:
     lifetime: application
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
   preference_toggled:
     type: event
@@ -2520,7 +2542,7 @@ preferences:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -2571,7 +2593,7 @@ preferences:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -2720,7 +2742,7 @@ preferences:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -2822,7 +2844,7 @@ preferences:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -2848,7 +2870,7 @@ preferences:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -2869,7 +2891,7 @@ preferences:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -2893,7 +2915,7 @@ preferences:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -2944,7 +2966,7 @@ search.default_engine:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     no_lint:
       - BASELINE_PING
@@ -2974,7 +2996,7 @@ search.default_engine:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     no_lint:
       - BASELINE_PING
@@ -3022,7 +3044,7 @@ bookmarks_management:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -3043,7 +3065,7 @@ bookmarks_management:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -3064,7 +3086,7 @@ bookmarks_management:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -3102,7 +3124,7 @@ bookmarks_management:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -3124,7 +3146,7 @@ bookmarks_management:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -3162,7 +3184,7 @@ bookmarks_management:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -3184,7 +3206,7 @@ bookmarks_management:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -3206,7 +3228,7 @@ bookmarks_management:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -3228,7 +3250,7 @@ bookmarks_management:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -3250,7 +3272,7 @@ bookmarks_management:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -3272,7 +3294,7 @@ bookmarks_management:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -3294,7 +3316,7 @@ bookmarks_management:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -3316,7 +3338,7 @@ bookmarks_management:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -3377,7 +3399,7 @@ activation:
       - highly_sensitive
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -3403,7 +3425,7 @@ activation:
       - highly_sensitive
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     no_lint:
       - USER_LIFETIME_EXPIRATION
@@ -3544,7 +3566,7 @@ sync_auth:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     send_in_pings:
       - client-deduplication
     expires: never
@@ -3568,7 +3590,7 @@ sync_auth:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -3590,7 +3612,7 @@ sync_auth:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -3955,7 +3977,7 @@ history:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -3975,7 +3997,7 @@ history:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -3994,7 +4016,7 @@ history:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -4292,7 +4314,7 @@ reader_mode:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -4313,7 +4335,7 @@ reader_mode:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -4334,7 +4356,7 @@ reader_mode:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -4355,7 +4377,7 @@ reader_mode:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -4378,7 +4400,7 @@ tabs_tray:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -4399,7 +4421,7 @@ tabs_tray:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -4426,7 +4448,7 @@ tabs_tray:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -4453,7 +4475,7 @@ tabs_tray:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -4474,7 +4496,7 @@ tabs_tray:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -4495,7 +4517,7 @@ tabs_tray:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -4514,7 +4536,7 @@ tabs_tray:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -4536,7 +4558,7 @@ tabs_tray:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -4557,7 +4579,7 @@ tabs_tray:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -4578,7 +4600,7 @@ tabs_tray:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -4599,7 +4621,7 @@ tabs_tray:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -4622,7 +4644,7 @@ tabs_tray:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -4644,7 +4666,7 @@ tabs_tray:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -4659,11 +4681,13 @@ tabs_tray:
     data_reviews:
       - https://github.com/mozilla-mobile/fenix/pull/20508#issuecomment-901336677
       - https://github.com/mozilla-mobile/fenix/pull/25405#issuecomment-1139058237
+      - https://github.com/mozilla-mobile/firefox-android/pull/1875
     data_sensitivity:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-    expires: 116
+      - cgordon@mozilla.com
+    expires: never
     metadata:
       tags:
         - Tabs
@@ -4677,11 +4701,13 @@ tabs_tray:
     data_reviews:
       - https://github.com/mozilla-mobile/fenix/pull/20508#issuecomment-901336677
       - https://github.com/mozilla-mobile/fenix/pull/25405#issuecomment-1139058237
+      - https://github.com/mozilla-mobile/firefox-android/pull/1875
     data_sensitivity:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-    expires: 116
+      - cgordon@mozilla.com
+    expires: never
     metadata:
       tags:
         - Tabs
@@ -4946,7 +4972,7 @@ tabs_tray:
       - https://github.com/mozilla-mobile/firefox-android/pull/1101
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     data_sensitivity:
       - interaction
     expires: never
@@ -4971,7 +4997,7 @@ collections:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -4994,7 +5020,7 @@ collections:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -5017,7 +5043,7 @@ collections:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -5040,7 +5066,7 @@ collections:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -5063,7 +5089,7 @@ collections:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -5086,7 +5112,7 @@ collections:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -5116,7 +5142,7 @@ collections:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -5146,7 +5172,7 @@ collections:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -5170,7 +5196,7 @@ collections:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -5192,7 +5218,7 @@ collections:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -5214,7 +5240,7 @@ collections:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -5238,7 +5264,7 @@ collections:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     extra_keys:
       from_screen:
@@ -5266,7 +5292,7 @@ collections:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -5749,7 +5775,7 @@ logins:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -5949,7 +5975,7 @@ top_sites:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -5969,7 +5995,7 @@ top_sites:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -6010,7 +6036,7 @@ top_sites:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -6031,7 +6057,7 @@ top_sites:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -6057,7 +6083,7 @@ top_sites:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -6086,7 +6112,7 @@ top_sites:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -6107,7 +6133,7 @@ top_sites:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -6128,7 +6154,7 @@ top_sites:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -6149,7 +6175,7 @@ top_sites:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -6261,7 +6287,7 @@ top_sites:
       - highly_sensitive
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -6283,7 +6309,7 @@ top_sites:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     unit: integer
     metadata:
@@ -6306,7 +6332,7 @@ top_sites:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -6329,7 +6355,7 @@ top_sites:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -6357,7 +6383,7 @@ top_sites:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -6385,7 +6411,7 @@ top_sites:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -6437,7 +6463,7 @@ pocket:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     no_lint:
       - COMMON_PREFIX
@@ -6695,11 +6721,12 @@ first_session:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
         - Performance
+        - Attribution
   network:
     type: string
     send_in_pings:
@@ -6719,11 +6746,12 @@ first_session:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
         - Performance
+        - Attribution
   adgroup:
     type: string
     send_in_pings:
@@ -6743,11 +6771,12 @@ first_session:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
         - Telemetry
+        - Attribution
   creative:
     send_in_pings:
       - first-session
@@ -6767,11 +6796,12 @@ first_session:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
         - Performance
+        - Attribution
   distribution_id:
     type: string
     description: |
@@ -6810,16 +6840,18 @@ first_session:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
         - Performance
+        - Attribution
   adjust_attribution_time:
     type: timing_distribution
     time_unit: millisecond
     send_in_pings:
       - first-session
+      - metrics
     description: >
       The time that it takes to derive the attribution parameters by
       the Adjust SDK.
@@ -6834,6 +6866,124 @@ first_session:
     expires: 124
     metadata:
       tags:
+        - Performance
+        - Attribution
+play_store_attribution:
+  source:
+    type: string
+    send_in_pings:
+      - first-session
+    description: |
+      The name of the utm_source that is responsible for this installation.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1832069
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1991#issuecomment-1545842578
+    data_sensitivity:
+      - technical
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 124
+    metadata:
+      tags:
+        - Attribution
+  medium:
+    type: string
+    send_in_pings:
+      - first-session
+    description: |
+      The name of the utm_medium that is responsible for this installation.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1832069
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1991#issuecomment-1545842578
+    data_sensitivity:
+      - technical
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 124
+    metadata:
+      tags:
+        - Attribution
+  campaign:
+    type: string
+    send_in_pings:
+      - first-session
+    description: |
+      The name of the utm_campaign that is responsible for this installation.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1832069
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1991#issuecomment-1545842578
+    data_sensitivity:
+      - technical
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 124
+    metadata:
+      tags:
+        - Attribution
+  term:
+    type: string
+    send_in_pings:
+      - first-session
+    description: |
+      The name of the utm_term that is responsible for this installation.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1832069
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1991#issuecomment-1545842578
+    data_sensitivity:
+      - technical
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 124
+    metadata:
+      tags:
+        - Attribution
+  content:
+    type: string
+    send_in_pings:
+      - first-session
+    description: |
+      The name of the utm_content that is responsible for this installation.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1832069
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1991#issuecomment-1545842578
+    data_sensitivity:
+      - technical
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 124
+    metadata:
+      tags:
+        - Attribution
+  attribution_time:
+    type: timing_distribution
+    time_unit: millisecond
+    send_in_pings:
+      - metrics
+    description: >
+      The time that it takes to derive the attribution parameters by
+      the Google Play Install Referrer library.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1832069
+    data_reviews:
+      - https://github.com/mozilla-mobile/firefox-android/pull/1991#issuecomment-1545842578
+    data_sensitivity:
+      - technical
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: 124
+    metadata:
+      tags:
+        - Attribution
         - Performance
 browser.search:
   with_ads:
@@ -6867,7 +7017,7 @@ browser.search:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     no_lint:
       - BASELINE_PING
@@ -6901,7 +7051,7 @@ browser.search:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     no_lint:
       - BASELINE_PING
@@ -6925,7 +7075,7 @@ browser.search:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     no_lint:
       - BASELINE_PING
@@ -6945,11 +7095,13 @@ addons:
       - https://github.com/mozilla-mobile/fenix/pull/19924#issuecomment-861423789
       - https://github.com/mozilla-mobile/fenix/pull/21316#issuecomment-944615938
       - https://github.com/mozilla-mobile/fenix/pull/25405#issuecomment-1139058237
+      - https://github.com/mozilla-mobile/firefox-android/pull/1875
     data_sensitivity:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-    expires: 116
+      - cgordon@mozilla.com
+    expires: never
     metadata:
       tags:
         - WebExtensions
@@ -6972,11 +7124,13 @@ addons:
       - https://github.com/mozilla-mobile/fenix/pull/19924#issuecomment-861423789
       - https://github.com/mozilla-mobile/fenix/pull/21316#issuecomment-944615938
       - https://github.com/mozilla-mobile/fenix/pull/25405#issuecomment-1139058237
+      - https://github.com/mozilla-mobile/firefox-android/pull/1875
     data_sensitivity:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-    expires: 116
+      - cgordon@mozilla.com
+    expires: never
     metadata:
       tags:
         - WebExtensions
@@ -6999,7 +7153,7 @@ addons:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -7023,7 +7177,7 @@ addons:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -7047,7 +7201,7 @@ addons:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -7068,11 +7222,13 @@ addons:
       - https://github.com/mozilla-mobile/fenix/pull/19924#issuecomment-861423789
       - https://github.com/mozilla-mobile/fenix/pull/21316#issuecomment-944615938
       - https://github.com/mozilla-mobile/fenix/pull/25405#issuecomment-1139058237
+      - https://github.com/mozilla-mobile/firefox-android/pull/1875
     data_sensitivity:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-    expires: 116
+      - cgordon@mozilla.com
+    expires: never
     metadata:
       tags:
         - WebExtensions
@@ -7683,11 +7839,12 @@ site_permissions:
       - https://github.com/mozilla-mobile/fenix/issues/25658
     data_reviews:
       - https://github.com/mozilla-mobile/fenix/pull/25664#issuecomment-1159151213
+      - https://github.com/mozilla-mobile/firefox-android/pull/1875
     data_sensitivity:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-    expires: 115
+    expires: 123
     metadata:
       tags:
         - SitePermissions
@@ -7704,11 +7861,12 @@ site_permissions:
       - https://github.com/mozilla-mobile/fenix/issues/25658
     data_reviews:
       - https://github.com/mozilla-mobile/fenix/pull/25664#issuecomment-1159151213
+      - https://github.com/mozilla-mobile/firefox-android/pull/1875
     data_sensitivity:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-    expires: 115
+    expires: 123
     metadata:
       tags:
         - SitePermissions
@@ -7725,11 +7883,12 @@ site_permissions:
       - https://github.com/mozilla-mobile/fenix/issues/25658
     data_reviews:
       - https://github.com/mozilla-mobile/fenix/pull/25664#issuecomment-1159151213
+      - https://github.com/mozilla-mobile/firefox-android/pull/1875
     data_sensitivity:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-    expires: 115
+    expires: 123
     metadata:
       tags:
         - SitePermissions
@@ -7917,7 +8076,7 @@ tabs:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -7939,7 +8098,7 @@ contextual_menu:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -7960,7 +8119,7 @@ contextual_menu:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -7981,7 +8140,7 @@ contextual_menu:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -8002,7 +8161,7 @@ contextual_menu:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -8010,123 +8169,6 @@ contextual_menu:
         - TextSelection
 
 engine_tab:
-  kills:
-    type: labeled_counter
-    labels:
-      - foreground
-      - background
-    description: |
-      How often was the content process of a foreground (selected) or
-      background tab killed.
-    bugs:
-      - https://github.com/mozilla-mobile/android-components/issues/9366
-    data_reviews:
-      - https://github.com/mozilla-mobile/fenix/pull/17864
-      - https://github.com/mozilla-mobile/fenix/pull/19924#issuecomment-861423789
-      - https://github.com/mozilla-mobile/fenix/pull/21779#issuecomment-938089467
-      - https://github.com/mozilla-mobile/fenix/pull/25405#issuecomment-1139058237
-    data_sensitivity:
-      - technical
-    notification_emails:
-      - android-probes@mozilla.com
-    expires: 116
-    metadata:
-      tags:
-        - Performance
-  kill_foreground_age:
-    type: timing_distribution
-    time_unit: millisecond
-    description: |
-      Measures the age of the engine session of a foreground (selected) tab
-      at the time its content process got killed.
-    bugs:
-      - https://github.com/mozilla-mobile/android-components/issues/9366
-    data_reviews:
-      - https://github.com/mozilla-mobile/fenix/pull/17864
-      - https://github.com/mozilla-mobile/fenix/pull/19924#issuecomment-861423789
-      - https://github.com/mozilla-mobile/fenix/pull/21779#issuecomment-938089467
-      - https://github.com/mozilla-mobile/fenix/pull/25405#issuecomment-1139058237
-    data_sensitivity:
-      - technical
-    notification_emails:
-      - android-probes@mozilla.com
-    expires: 116
-    metadata:
-      tags:
-        - Performance
-  kill_background_age:
-    type: timing_distribution
-    time_unit: millisecond
-    description: |
-      Measures the age of the engine session of a background tab at the
-      time its content process got killed.
-    bugs:
-      - https://github.com/mozilla-mobile/android-components/issues/9366
-    data_reviews:
-      - https://github.com/mozilla-mobile/fenix/pull/17864
-      - https://github.com/mozilla-mobile/fenix/pull/19924#issuecomment-861423789
-      - https://github.com/mozilla-mobile/fenix/pull/21779#issuecomment-938089467
-      - https://github.com/mozilla-mobile/fenix/pull/25405#issuecomment-1139058237
-    data_sensitivity:
-      - technical
-    notification_emails:
-      - android-probes@mozilla.com
-    expires: 116
-    metadata:
-      tags:
-        - Performance
-  foreground_metrics:
-    type: event
-    description: |
-      Event collecting data about the state of tabs when the app comes back to
-      the foreground.
-    bugs:
-      - https://github.com/mozilla-mobile/android-components/issues/9997
-    data_reviews:
-      - https://github.com/mozilla-mobile/fenix/pull/18747#issuecomment-815731764
-      - https://github.com/mozilla-mobile/fenix/pull/19924#issuecomment-861423789
-      - https://github.com/mozilla-mobile/fenix/pull/21779#issuecomment-938089467
-      - https://github.com/mozilla-mobile/fenix/pull/25405#issuecomment-1139058237
-    data_sensitivity:
-      - technical
-    notification_emails:
-      - android-probes@mozilla.com
-    expires: 116
-    extra_keys:
-      background_active_tabs:
-        description: |
-          Number of active tabs (with an engine session assigned) when the app
-          went to the background.
-        type: string
-      background_crashed_tabs:
-        description: |
-          Number of tabs marked as crashed when the app went to the background.
-        type: string
-      background_total_tabs:
-        description: |
-          Number of total tabs when the app went to the background.
-        type: string
-      foreground_active_tabs:
-        description: |
-          Number of active tabs (with an engine session assigned) when the
-          app came back to the foreground.
-        type: string
-      foreground_crashed_tabs:
-        description: |
-          Number of tabs marked as crashed when the app came back to the
-          foreground.
-        type: string
-      foreground_total_tabs:
-        description: |
-          Number of total tabs when the app came back to the foreground.
-        type: string
-      time_in_background:
-        description: |
-          Time (in milliseconds) the app was in the background.
-        type: string
-    metadata:
-      tags:
-        - Performance
   tab_killed:
     type: event
     description: |
@@ -8150,7 +8192,7 @@ engine_tab:
       - https://github.com/mozilla-mobile/firefox-android/pull/1343#issuecomment-1478535296
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
 
 synced_tabs:
@@ -8191,7 +8233,7 @@ awesomebar:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -8211,7 +8253,7 @@ awesomebar:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -8231,7 +8273,7 @@ awesomebar:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -8251,7 +8293,7 @@ awesomebar:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -8271,7 +8313,7 @@ awesomebar:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -8291,7 +8333,7 @@ awesomebar:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -8308,7 +8350,7 @@ awesomebar:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -8488,7 +8530,7 @@ home_menu:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -8511,7 +8553,7 @@ home_screen:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -8559,7 +8601,7 @@ start_on_home:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -8578,7 +8620,7 @@ start_on_home:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -8617,7 +8659,7 @@ recent_tabs:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
-      - kbrosnan@mozilla.com
+      - cgordon@mozilla.com
     expires: never
     metadata:
       tags:
@@ -9210,11 +9252,12 @@ wallpapers:
     data_reviews:
       - https://github.com/mozilla-mobile/fenix/pull/23382
       - https://github.com/mozilla-mobile/fenix/pull/26893
+      - https://github.com/mozilla-mobile/firefox-android/pull/1875
     notification_emails:
       - android-probes@mozilla.com
     data_sensitivity:
       - interaction
-    expires: 116
+    expires: 123
     no_lint:
       - COMMON_PREFIX
     metadata:
@@ -9228,11 +9271,12 @@ wallpapers:
       - https://github.com/mozilla-mobile/fenix/issues/26215
     data_reviews:
       - https://github.com/mozilla-mobile/fenix/pull/26893
+      - https://github.com/mozilla-mobile/firefox-android/pull/1875
     notification_emails:
       - android-probes@mozilla.com
     data_sensitivity:
       - interaction
-    expires: 116
+    expires: 123
     metadata:
       tags:
         - Wallpapers
@@ -9248,11 +9292,12 @@ wallpapers:
       - https://github.com/mozilla-mobile/fenix/issues/26215
     data_reviews:
       - https://github.com/mozilla-mobile/fenix/pull/26893
+      - https://github.com/mozilla-mobile/firefox-android/pull/1875
     notification_emails:
       - android-probes@mozilla.com
     data_sensitivity:
       - interaction
-    expires: 116
+    expires: 123
     metadata:
       tags:
         - Wallpapers
@@ -9264,11 +9309,12 @@ wallpapers:
       - https://github.com/mozilla-mobile/fenix/issues/26215
     data_reviews:
       - https://github.com/mozilla-mobile/fenix/pull/26893
+      - https://github.com/mozilla-mobile/firefox-android/pull/1875
     notification_emails:
       - android-probes@mozilla.com
     data_sensitivity:
       - interaction
-    expires: 116
+    expires: 123
     metadata:
       tags:
         - Wallpapers
@@ -9287,11 +9333,12 @@ wallpapers:
       - https://github:com/mozilla-mobile/fenix/issues/26945
     data_reviews:
       - https://github.com/mozilla-mobile/fenix/pull/26990
+      - https://github.com/mozilla-mobile/firefox-android/pull/1875
     notification_emails:
       - android-probes@mozilla.com
     data_sensitivity:
       - interaction
-    expires: 116
+    expires: 123
     metadata:
       tags:
         - Wallpapers
@@ -9505,6 +9552,23 @@ private_browsing_shortcut_cfr:
     notification_emails:
       - android-probes@mozilla.com
     expires: 122
+
+server_knobs:
+  validation:
+    disabled: true
+    type: event
+    description: |
+      Temporary metric recorded at the same time as
+      "tabs_tray.new_tab_tapped" to validate that the Glean Server Knobs
+      functionality is working correctly.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1823682
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1823682#c2
+    notification_emails:
+      - android-probes@mozilla.com
+      - brosa@mozilla.com
+    expires: 116
 
 pull_to_refresh_in_browser:
   enabled:
