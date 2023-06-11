@@ -8,8 +8,6 @@ import android.content.Context
 import android.net.UrlQuerySanitizer
 import android.os.RemoteException
 import androidx.annotation.VisibleForTesting
-import com.android.installreferrer.api.InstallReferrerClient
-import com.android.installreferrer.api.InstallReferrerStateListener
 import org.mozilla.fenix.GleanMetrics.PlayStoreAttribution
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.utils.Settings
@@ -23,59 +21,13 @@ import java.net.URLDecoder
 class InstallReferrerMetricsService(private val context: Context) : MetricsService {
     override val type = MetricServiceType.Marketing
 
-    private var referrerClient: InstallReferrerClient? = null
-
     override fun start() {
         if (context.settings().utmParamsKnown) {
             return
         }
-
-        val timerId = PlayStoreAttribution.attributionTime.start()
-        val client = InstallReferrerClient.newBuilder(context).build()
-        referrerClient = client
-
-        client.startConnection(
-            object : InstallReferrerStateListener {
-                override fun onInstallReferrerSetupFinished(responseCode: Int) {
-                    PlayStoreAttribution.attributionTime.stopAndAccumulate(timerId)
-                    when (responseCode) {
-                        InstallReferrerClient.InstallReferrerResponse.OK -> {
-                            // Connection established.
-                            try {
-                                val response = client.installReferrer
-                                recordInstallReferrer(context.settings(), response.installReferrer)
-                                context.settings().utmParamsKnown = true
-                            } catch (e: RemoteException) {
-                                // NOOP.
-                                // We can't do anything about this.
-                            }
-                        }
-
-                        InstallReferrerClient.InstallReferrerResponse.FEATURE_NOT_SUPPORTED -> {
-                            // API not available on the current Play Store app.
-                            context.settings().utmParamsKnown = true
-                        }
-
-                        InstallReferrerClient.InstallReferrerResponse.SERVICE_UNAVAILABLE -> {
-                            // Connection couldn't be established.
-                        }
-                    }
-                    // End the connection, and null out the client.
-                    stop()
-                }
-
-                override fun onInstallReferrerServiceDisconnected() {
-                    // Try to restart the connection on the next request to
-                    // Google Play by calling the startConnection() method.
-                    referrerClient = null
-                }
-            },
-        )
     }
 
     override fun stop() {
-        referrerClient?.endConnection()
-        referrerClient = null
     }
 
     override fun track(event: Event) = Unit

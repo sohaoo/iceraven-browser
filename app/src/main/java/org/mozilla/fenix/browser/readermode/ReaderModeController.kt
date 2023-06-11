@@ -8,7 +8,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.RadioButton
 import androidx.appcompat.content.res.AppCompatResources
-import com.google.android.gms.common.util.VisibleForTesting
+import androidx.annotation.VisibleForTesting
 import mozilla.components.feature.readerview.ReaderViewFeature
 import mozilla.components.support.base.feature.ViewBoundFeatureWrapper
 import org.mozilla.fenix.R
