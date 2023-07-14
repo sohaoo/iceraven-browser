@@ -3,54 +3,61 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // If you ever need to force a toolchain rebuild (taskcluster) then edit the following comment.
-// FORCE REBUILD 2023-05-05
+// FORCE REBUILD 2023-05-12
 
 object FenixVersions {
     const val kotlin = "1.8.21"
     const val coroutines = "1.6.4"
+    const val python_envs_plugin = "0.0.31"
 
     // These versions are linked: lint should be X+23.Y.Z of gradle_plugin version, according to:
     // https://github.com/alexjlockwood/android-lint-checks-demo/blob/0245fc027463137b1b4afb97c5295d60dce998b6/dependencies.gradle#L3
     const val android_gradle_plugin = "7.4.2"
     const val android_lint_api = "30.4.2"
 
-    const val sentry = "6.18.1"
-    const val leakcanary = "2.10"
+    const val sentry = "6.21.0"
+    const val leakcanary = "2.11"
     const val osslicenses_plugin = "0.10.4"
-    const val detekt = "1.19.0"
+    const val detekt = "1.23.0"
+    const val ktlint = "0.48.2"
 
-    const val androidx_activity = "1.6.1"
+    const val maven_ant_tasks = "2.1.3"
+    const val jacoco = "0.8.10"
+    const val falcon = "2.2.0"
+    const val fastlane = "2.1.1"
+
+    const val androidx_activity = "1.7.2"
     const val androidx_compose = "1.4.3"
     const val androidx_compose_compiler = "1.4.7"
     const val androidx_appcompat = "1.6.1"
     const val androidx_benchmark = "1.1.1"
     const val androidx_biometric = "1.1.0"
-    const val androidx_coordinator_layout = "1.1.0"
-    const val androidx_constraint_layout = "2.0.4"
+    const val androidx_coordinator_layout = "1.2.0"
+    const val androidx_constraint_layout = "2.1.4"
     const val androidx_preference = "1.1.1"
-    const val androidx_profileinstaller = "1.2.2"
+    const val androidx_profileinstaller = "1.3.1"
     const val androidx_legacy = "1.0.0"
     const val androidx_annotation = "1.6.0"
     const val androidx_lifecycle = "2.6.1"
     const val androidx_fragment = "1.5.7"
     const val androidx_navigation = "2.5.3"
     const val androidx_recyclerview = "1.3.0"
-    const val androidx_core = "1.10.0"
+    const val androidx_core = "1.10.1"
     const val androidx_paging = "3.1.1"
     const val androidx_transition = "1.4.1"
     const val androidx_work = "2.7.1"
     const val androidx_datastore = "1.0.0"
     const val androidx_datastore_preferences = "1.0.0"
-    const val google_material = "1.2.1"
-    const val google_accompanist = "0.28.0"
+    const val google_material = "1.9.0"
+    const val google_accompanist = "0.30.1"
 
     const val adjust = "4.33.0"
     const val installreferrer = "2.2"
 
-    const val junit = "5.5.2"
-    const val mockk = "1.12.0"
+    const val junit = "5.9.3"
+    const val mockk = "1.13.5"
 
-    const val mockwebserver = "4.10.0"
+    const val mockwebserver = "4.11.0"
     const val uiautomator = "2.2.0"
     const val robolectric = "4.10.1"
 
@@ -58,7 +65,9 @@ object FenixVersions {
 
     const val google_play_review_version = "2.0.0"
 
-    const val protobuf = "3.21.10" // keep in sync with the version used in AS.
+    // keep in sync with the versions used in AS.
+    const val protobuf = "3.21.10"
+    const val protobuf_plugin = "0.9.3"
 }
 
 @Suppress("unused")
@@ -116,7 +125,6 @@ object FenixDependencies {
 
     const val google_material = "com.google.android.material:material:${FenixVersions.google_material}"
     const val google_accompanist_drawablepainter = "com.google.accompanist:accompanist-drawablepainter:${FenixVersions.google_accompanist}"
-    const val google_accompanist_pager = "com.google.accompanist:accompanist-pager:${FenixVersions.google_accompanist}"
 
     const val protobuf_javalite = "com.google.protobuf:protobuf-javalite:${FenixVersions.protobuf}"
     const val protobuf_compiler = "com.google.protobuf:protoc:${FenixVersions.protobuf}"
@@ -124,6 +132,9 @@ object FenixDependencies {
     const val junit = "junit:junit:${FenixVersions.junit}"
     const val mockk = "io.mockk:mockk:${FenixVersions.mockk}"
     const val mockk_android = "io.mockk:mockk-android:${FenixVersions.mockk}"
+    const val maven_ant_tasks = "org.apache.maven:maven-ant-tasks:${FenixVersions.maven_ant_tasks}"
+    const val falcon = "com.jraska:falcon:${FenixVersions.falcon}"
+    const val fastlane = "tools.fastlane:screengrab:${FenixVersions.fastlane}"
 
     // --- START AndroidX test dependencies --- //
     // N.B.: the versions of these dependencies appear to be pinned together. To avoid bugs, they

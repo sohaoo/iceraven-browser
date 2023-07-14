@@ -58,6 +58,11 @@ object FeatureFlags {
     const val composeTabsTray = false
 
     /**
+     * Enables compose on the top sites.
+     */
+    const val composeTopSites = false
+
+    /**
      * Enables the save to PDF feature.
      */
     const val saveToPDF = true
@@ -66,4 +71,10 @@ object FeatureFlags {
      * Enables the notification pre permission prompt.
      */
     const val notificationPrePermissionPromptEnabled = true
+
+    /**
+     * Enables new search settings UI with two extra fragments, for managing the default engine
+     * and managing search shortcuts in the quick search menu.
+     */
+    const val unifiedSearchSettings = true
 }

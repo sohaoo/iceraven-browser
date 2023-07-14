@@ -2,13 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+@file:OptIn(ExperimentalFoundationApi::class)
+
 package org.mozilla.fenix.tabstray
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -19,17 +24,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.rememberPagerState
-import mozilla.components.browser.state.selector.normalTabs
 import mozilla.components.browser.state.state.BrowserState
 import mozilla.components.browser.state.state.ContentState
 import mozilla.components.browser.state.state.TabSessionState
@@ -59,7 +60,6 @@ import mozilla.components.browser.storage.sync.Tab as SyncTab
  * @param onTabClose Invoked when the user clicks to close a tab.
  * @param onTabMediaClick Invoked when the user interacts with a tab's media controls.
  * @param onTabClick Invoked when the user clicks on a tab.
- * @param onTabMultiSelectClick Invoked when the user clicks on a tab while in multi-select mode.
  * @param onTabLongClick Invoked when the user long clicks a tab.
  * @param onInactiveTabsHeaderClick Invoked when the user clicks on the inactive tabs section header.
  * @param onDeleteAllInactiveTabsClick Invoked when the user clicks on the delete all inactive tabs button.
@@ -72,8 +72,19 @@ import mozilla.components.browser.storage.sync.Tab as SyncTab
  * @param onInactiveTabClick Invoked when the user clicks on an inactive tab.
  * @param onInactiveTabClose Invoked when the user clicks on an inactive tab's close button.
  * @param onSyncedTabClick Invoked when the user clicks on a synced tab.
+ * @param onSaveToCollectionClick Invoked when the user clicks on the save to collection button from
+ * the multi select banner.
+ * @param onShareSelectedTabsClick Invoked when the user clicks on the share button from the
+ * multi select banner.
+ * @param onShareAllTabsClick Invoked when the user clicks on the share all tabs banner menu item.
+ * @param onTabSettingsClick Invoked when the user clicks on the tab settings banner menu item.
+ * @param onRecentlyClosedClick Invoked when the user clicks on the recently closed banner menu item.
+ * @param onAccountSettingsClick Invoked when the user clicks on the account settings banner menu item.
+ * @param onDeleteAllTabsClick Invoked when the user clicks on the close all tabs banner menu item.
+ * @param onBookmarkSelectedTabsClick Invoked when the user clicks on the bookmark banner menu item.
+ * @param onDeleteSelectedTabsClick Invoked when the user clicks on the close selected tabs banner menu item.
+ * @param onForceSelectedTabsAsInactiveClick Invoked when the user clicks on the make inactive banner menu item.
  */
-@OptIn(ExperimentalPagerApi::class, ExperimentalComposeUiApi::class)
 @Suppress("LongMethod", "LongParameterList", "ComplexMethod")
 @Composable
 fun TabsTray(
@@ -87,7 +98,6 @@ fun TabsTray(
     onTabClose: (TabSessionState) -> Unit,
     onTabMediaClick: (TabSessionState) -> Unit,
     onTabClick: (TabSessionState) -> Unit,
-    onTabMultiSelectClick: (TabSessionState) -> Unit,
     onTabLongClick: (TabSessionState) -> Unit,
     onInactiveTabsHeaderClick: (Boolean) -> Unit,
     onDeleteAllInactiveTabsClick: () -> Unit,
@@ -97,23 +107,23 @@ fun TabsTray(
     onInactiveTabClick: (TabSessionState) -> Unit,
     onInactiveTabClose: (TabSessionState) -> Unit,
     onSyncedTabClick: (SyncTab) -> Unit,
+    onSaveToCollectionClick: () -> Unit,
+    onShareSelectedTabsClick: () -> Unit,
+    onShareAllTabsClick: () -> Unit,
+    onTabSettingsClick: () -> Unit,
+    onRecentlyClosedClick: () -> Unit,
+    onAccountSettingsClick: () -> Unit,
+    onDeleteAllTabsClick: () -> Unit,
+    onBookmarkSelectedTabsClick: () -> Unit,
+    onDeleteSelectedTabsClick: () -> Unit,
+    onForceSelectedTabsAsInactiveClick: () -> Unit,
 ) {
-    val normalTabCount = browserStore
-        .observeAsComposableState { state -> state.normalTabs.size }.value ?: 0
     val multiselectMode = tabsTrayStore
         .observeAsComposableState { state -> state.mode }.value ?: TabsTrayState.Mode.Normal
     val selectedPage = tabsTrayStore
         .observeAsComposableState { state -> state.selectedPage }.value ?: Page.NormalTabs
     val pagerState = rememberPagerState(initialPage = selectedPage.ordinal)
     val isInMultiSelectMode = multiselectMode is TabsTrayState.Mode.Select
-
-    val handleTabClick: ((TabSessionState) -> Unit) = { tab ->
-        if (isInMultiSelectMode) {
-            onTabMultiSelectClick(tab)
-        } else {
-            onTabClick(tab)
-        }
-    }
 
     val shapeModifier = if (isInMultiSelectMode) {
         Modifier
@@ -129,16 +139,24 @@ fun TabsTray(
         modifier = Modifier
             .fillMaxSize()
             .then(shapeModifier)
-            .background(FirefoxTheme.colors.layer1),
+            .background(FirefoxTheme.colors.layer1)
+            .testTag(TabsTrayTestTag.tabsTray),
     ) {
         Box(modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection())) {
             TabsTrayBanner(
-                selectMode = multiselectMode,
-                selectedPage = selectedPage,
-                normalTabCount = normalTabCount,
+                tabsTrayStore = tabsTrayStore,
                 isInDebugMode = isInDebugMode,
                 onTabPageIndicatorClicked = onTabPageClick,
-                onExitSelectModeClick = { tabsTrayStore.dispatch(TabsTrayAction.ExitSelectMode) },
+                onSaveToCollectionClick = onSaveToCollectionClick,
+                onShareSelectedTabsClick = onShareSelectedTabsClick,
+                onShareAllTabsClick = onShareAllTabsClick,
+                onTabSettingsClick = onTabSettingsClick,
+                onRecentlyClosedClick = onRecentlyClosedClick,
+                onAccountSettingsClick = onAccountSettingsClick,
+                onDeleteAllTabsClick = onDeleteAllTabsClick,
+                onBookmarkSelectedTabsClick = onBookmarkSelectedTabsClick,
+                onDeleteSelectedTabsClick = onDeleteSelectedTabsClick,
+                onForceSelectedTabsAsInactiveClick = onForceSelectedTabsAsInactiveClick,
             )
         }
 
@@ -146,7 +164,7 @@ fun TabsTray(
 
         Box(modifier = Modifier.fillMaxSize()) {
             HorizontalPager(
-                count = Page.values().size,
+                pageCount = Page.values().size,
                 modifier = Modifier.fillMaxSize(),
                 state = pagerState,
                 userScrollEnabled = false,
@@ -158,10 +176,9 @@ fun TabsTray(
                             browserStore = browserStore,
                             tabsTrayStore = tabsTrayStore,
                             displayTabsInGrid = displayTabsInGrid,
-                            selectionMode = multiselectMode,
                             onTabClose = onTabClose,
                             onTabMediaClick = onTabMediaClick,
-                            onTabClick = handleTabClick,
+                            onTabClick = onTabClick,
                             onTabLongClick = onTabLongClick,
                             shouldShowInactiveTabsAutoCloseDialog = shouldShowInactiveTabsAutoCloseDialog,
                             onInactiveTabsHeaderClick = onInactiveTabsHeaderClick,
@@ -179,10 +196,9 @@ fun TabsTray(
                             browserStore = browserStore,
                             tabsTrayStore = tabsTrayStore,
                             displayTabsInGrid = displayTabsInGrid,
-                            selectionMode = multiselectMode,
                             onTabClose = onTabClose,
                             onTabMediaClick = onTabMediaClick,
-                            onTabClick = handleTabClick,
+                            onTabClick = onTabClick,
                             onTabLongClick = onTabLongClick,
                         )
                     }
@@ -206,7 +222,6 @@ private fun NormalTabsPage(
     browserStore: BrowserStore,
     tabsTrayStore: TabsTrayStore,
     displayTabsInGrid: Boolean,
-    selectionMode: TabsTrayState.Mode,
     onTabClose: (TabSessionState) -> Unit,
     onTabMediaClick: (TabSessionState) -> Unit,
     onTabClick: (TabSessionState) -> Unit,
@@ -228,6 +243,8 @@ private fun NormalTabsPage(
         .observeAsComposableState { state -> state.normalTabs }.value ?: emptyList()
     val inactiveTabs = tabsTrayStore
         .observeAsComposableState { state -> state.inactiveTabs }.value ?: emptyList()
+    val selectionMode = tabsTrayStore
+        .observeAsComposableState { state -> state.mode }.value ?: TabsTrayState.Mode.Normal
 
     if (normalTabs.isNotEmpty() || inactiveTabs.isNotEmpty()) {
         val showInactiveTabsAutoCloseDialog =
@@ -267,6 +284,7 @@ private fun NormalTabsPage(
             displayTabsInGrid = displayTabsInGrid,
             selectedTabId = selectedTabId,
             selectionMode = selectionMode,
+            modifier = Modifier.testTag(TabsTrayTestTag.normalTabsList),
             onTabClose = onTabClose,
             onTabMediaClick = onTabMediaClick,
             onTabClick = onTabClick,
@@ -284,7 +302,6 @@ private fun PrivateTabsPage(
     browserStore: BrowserStore,
     tabsTrayStore: TabsTrayStore,
     displayTabsInGrid: Boolean,
-    selectionMode: TabsTrayState.Mode,
     onTabClose: (TabSessionState) -> Unit,
     onTabMediaClick: (TabSessionState) -> Unit,
     onTabClick: (TabSessionState) -> Unit,
@@ -294,6 +311,8 @@ private fun PrivateTabsPage(
         .observeAsComposableState { state -> state.selectedTabId }.value
     val privateTabs = tabsTrayStore
         .observeAsComposableState { state -> state.privateTabs }.value ?: emptyList()
+    val selectionMode = tabsTrayStore
+        .observeAsComposableState { state -> state.mode }.value ?: TabsTrayState.Mode.Normal
 
     if (privateTabs.isNotEmpty()) {
         TabLayout(
@@ -301,6 +320,7 @@ private fun PrivateTabsPage(
             displayTabsInGrid = displayTabsInGrid,
             selectedTabId = selectedTabId,
             selectionMode = selectionMode,
+            modifier = Modifier.testTag(TabsTrayTestTag.privateTabsList),
             onTabClose = onTabClose,
             onTabMediaClick = onTabMediaClick,
             onTabClick = onTabClick,
@@ -328,15 +348,23 @@ private fun SyncedTabsPage(
 
 @Composable
 private fun EmptyTabPage(isPrivate: Boolean) {
-    Box(modifier = Modifier.fillMaxSize()) {
+    val testTag: String
+    val emptyTextId: Int
+    if (isPrivate) {
+        testTag = TabsTrayTestTag.emptyPrivateTabsList
+        emptyTextId = R.string.no_private_tabs_description
+    } else {
+        testTag = TabsTrayTestTag.emptyNormalTabsList
+        emptyTextId = R.string.no_open_tabs_description
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .testTag(testTag),
+    ) {
         Text(
-            text = stringResource(
-                id = if (isPrivate) {
-                    R.string.no_private_tabs_description
-                } else {
-                    R.string.no_open_tabs_description
-                },
-            ),
+            text = stringResource(id = emptyTextId),
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(top = 80.dp),
@@ -466,12 +494,16 @@ private fun TabsTrayPreviewRoot(
                 }
             },
             onTabMediaClick = {},
-            onTabClick = {},
-            onTabMultiSelectClick = { tab ->
-                if (tabsTrayStore.state.mode.selectedTabs.contains(tab)) {
-                    tabsTrayStore.dispatch(TabsTrayAction.RemoveSelectTab(tab))
-                } else {
-                    tabsTrayStore.dispatch(TabsTrayAction.AddSelectTab(tab))
+            onTabClick = { tab ->
+                when (tabsTrayStore.state.mode) {
+                    TabsTrayState.Mode.Normal -> {}
+                    is TabsTrayState.Mode.Select -> {
+                        if (tabsTrayStore.state.mode.selectedTabs.contains(tab)) {
+                            tabsTrayStore.dispatch(TabsTrayAction.RemoveSelectTab(tab))
+                        } else {
+                            tabsTrayStore.dispatch(TabsTrayAction.AddSelectTab(tab))
+                        }
+                    }
                 }
             },
             onTabLongClick = { tab ->
@@ -491,6 +523,16 @@ private fun TabsTrayPreviewRoot(
             onInactiveTabClick = {},
             onInactiveTabClose = inactiveTabsState::remove,
             onSyncedTabClick = {},
+            onSaveToCollectionClick = {},
+            onShareSelectedTabsClick = {},
+            onShareAllTabsClick = {},
+            onTabSettingsClick = {},
+            onRecentlyClosedClick = {},
+            onAccountSettingsClick = {},
+            onDeleteAllTabsClick = {},
+            onDeleteSelectedTabsClick = {},
+            onBookmarkSelectedTabsClick = {},
+            onForceSelectedTabsAsInactiveClick = {},
         )
     }
 }

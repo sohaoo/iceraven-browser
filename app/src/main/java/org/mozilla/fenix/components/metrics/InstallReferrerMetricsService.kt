@@ -8,6 +8,8 @@ import android.content.Context
 import android.net.UrlQuerySanitizer
 import android.os.RemoteException
 import androidx.annotation.VisibleForTesting
+import com.android.installreferrer.api.InstallReferrerClient
+import com.android.installreferrer.api.InstallReferrerStateListener
 import org.mozilla.fenix.GleanMetrics.PlayStoreAttribution
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.utils.Settings
@@ -21,6 +23,8 @@ import java.net.URLDecoder
 class InstallReferrerMetricsService(private val context: Context) : MetricsService {
     override val type = MetricServiceType.Marketing
 
+    private var referrerClient: InstallReferrerClient? = null
+
     override fun start() {
         if (context.settings().utmParamsKnown) {
             return
@@ -28,6 +32,8 @@ class InstallReferrerMetricsService(private val context: Context) : MetricsServi
     }
 
     override fun stop() {
+        referrerClient?.endConnection()
+        referrerClient = null
     }
 
     override fun track(event: Event) = Unit

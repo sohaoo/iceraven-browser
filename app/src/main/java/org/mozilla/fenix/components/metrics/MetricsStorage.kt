@@ -65,7 +65,7 @@ internal class DefaultMetricsStorage(
     /**
      * Checks local state to see whether the [event] should be sent.
      */
-    @Suppress("ComplexMethod", "CyclomaticComplexMethod")
+    @Suppress("CyclomaticComplexMethod")
     override suspend fun shouldTrack(event: Event): Boolean =
         withContext(dispatcher) {
             // The side-effect of storing days of use always needs to happen.

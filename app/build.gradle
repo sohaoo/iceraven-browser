@@ -2,8 +2,8 @@ import org.apache.tools.ant.util.StringUtils
 import org.mozilla.fenix.gradle.tasks.ApkSizeTask
 
 plugins {
-    id "com.jetbrains.python.envs" version "0.0.26"
-    id "com.google.protobuf" version "0.8.19"
+    id "com.jetbrains.python.envs" version "$python_envs_plugin"
+    id "com.google.protobuf" version "$protobuf_plugin"
 }
 
 apply plugin: 'com.android.application'
@@ -31,11 +31,6 @@ android {
         // in order to run UI tests against other build variants than debug in automation.
         testBuildType project.property("testBuildType")
     }
-
-    // This allows overriding the target activity for MozillaOnline builds, which happens
-    // as part of the defaultConfig below, and applies to all other configurations (Nightly,
-    // Beta, and Release.)
-    def targetActivity = "HomeActivity"
 
     defaultConfig {
         applicationId "io.github.forkmaintainers"
@@ -68,8 +63,13 @@ android {
                 "}"
         // This should be the base URL used to call the AMO API.
         buildConfigField "String", "AMO_SERVER_URL", "\"https://services.addons.mozilla.org\""
+
         def deepLinkSchemeValue = "fenix-dev"
         buildConfigField "String", "DEEP_LINK_SCHEME", "\"$deepLinkSchemeValue\""
+
+        // This allows overriding the target activity for MozillaOnline builds, which happens
+        // as part of the defaultConfig below.
+        def targetActivity = "HomeActivity"
 
         // Build flag for "Mozilla Online" variants. See `Config.isMozillaOnline`.
         if (project.hasProperty("mozillaOnline") || gradle.hasProperty("localProperties.mozillaOnline")) {
@@ -78,6 +78,7 @@ android {
         } else {
             buildConfigField "boolean", "MOZILLA_ONLINE", "false"
         }
+
         manifestPlaceholders = [
                 "targetActivity": targetActivity,
                 "deepLinkScheme": deepLinkSchemeValue
@@ -118,46 +119,43 @@ android {
             buildConfigField "boolean", "USE_RELEASE_VERSIONING", "true"
             def deepLinkSchemeValue = "fenix-nightly"
             buildConfigField "String", "DEEP_LINK_SCHEME", "\"$deepLinkSchemeValue\""
-            manifestPlaceholders = [
-                    "deepLinkScheme": deepLinkSchemeValue,
-                    "targetActivity": targetActivity
-            ]
+            manifestPlaceholders.putAll([
+                    "deepLinkScheme": deepLinkSchemeValue
+            ])
         }
         beta releaseTemplate >> {
             buildConfigField "boolean", "USE_RELEASE_VERSIONING", "true"
             applicationIdSuffix ".firefox_beta"
             def deepLinkSchemeValue = "fenix-beta"
             buildConfigField "String", "DEEP_LINK_SCHEME", "\"$deepLinkSchemeValue\""
-            manifestPlaceholders = [
+            manifestPlaceholders.putAll([
                     // This release type is meant to replace Firefox (Beta channel) and therefore needs to inherit
                     // its sharedUserId for all eternity. See:
-                    // https://searchfox.org/mozilla-central/search?q=moz_android_shared_id&case=false&regexp=false&path=
+                    // https://searchfox.org/mozilla-esr68/search?q=moz_android_shared_id&case=false&regexp=false&path=
                     // Shipping an app update without sharedUserId can have
                     // fatal consequences. For example see:
                     //  - https://issuetracker.google.com/issues/36924841
                     //  - https://issuetracker.google.com/issues/36905922
                     "sharedUserId": "org.mozilla.firefox.sharedID",
                     "deepLinkScheme": deepLinkSchemeValue,
-                    "targetActivity": targetActivity
-            ]
+            ])
         }
         release releaseTemplate >> {
             buildConfigField "boolean", "USE_RELEASE_VERSIONING", "true"
             applicationIdSuffix ".firefox"
             def deepLinkSchemeValue = "fenix"
             buildConfigField "String", "DEEP_LINK_SCHEME", "\"$deepLinkSchemeValue\""
-            manifestPlaceholders = [
+            manifestPlaceholders.putAll([
                     // This release type is meant to replace Firefox (Release channel) and therefore needs to inherit
                     // its sharedUserId for all eternity. See:
-                    // https://searchfox.org/mozilla-central/search?q=moz_android_shared_id&case=false&regexp=false&path=
+                    // https://searchfox.org/mozilla-esr68/search?q=moz_android_shared_id&case=false&regexp=false&path=
                     // Shipping an app update without sharedUserId can have
                     // fatal consequences. For example see:
                     //  - https://issuetracker.google.com/issues/36924841
                     //  - https://issuetracker.google.com/issues/36905922
                     "sharedUserId": "org.mozilla.firefox.sharedID",
                     "deepLinkScheme": deepLinkSchemeValue,
-                    "targetActivity": targetActivity,
-            ]
+            ])
         }
         forkDebug {
             shrinkResources false
@@ -260,7 +258,8 @@ android {
     }
     packagingOptions {
         resources {
-            excludes += ['META-INF/atomicfu.kotlin_module', 'META-INF/AL2.0', 'META-INF/LGPL2.1']
+            excludes += ['META-INF/atomicfu.kotlin_module', 'META-INF/AL2.0', 'META-INF/LGPL2.1',
+                         'META-INF/LICENSE.md', 'META-INF/LICENSE-notice.md']
         }
     }
 
@@ -513,7 +512,6 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     kotlinOptions {
         freeCompilerArgs += [
                 "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-                "-opt-in=com.google.accompanist.pager.ExperimentalPagerApi",
         ]
     }
 }
@@ -528,7 +526,6 @@ dependencies {
     implementation FenixDependencies.androidx_constraintlayout
     implementation FenixDependencies.androidx_coordinatorlayout
     implementation FenixDependencies.google_accompanist_drawablepainter
-    implementation FenixDependencies.google_accompanist_pager
 
     implementation FenixDependencies.sentry
 
@@ -655,9 +652,9 @@ dependencies {
     implementation FenixDependencies.google_material
 
     androidTestImplementation FenixDependencies.uiautomator
-    androidTestImplementation "tools.fastlane:screengrab:2.0.0"
+    androidTestImplementation FenixDependencies.fastlane
     // This Falcon version is added to maven central now required for Screengrab
-    androidTestImplementation 'com.jraska:falcon:2.2.0'
+    androidTestImplementation FenixDependencies.falcon
 
     androidTestImplementation FenixDependencies.androidx_compose_ui_test
 
@@ -700,7 +697,7 @@ dependencies {
         exclude group: 'org.apache.maven'
     }
 
-    testImplementation 'org.apache.maven:maven-ant-tasks:2.1.3'
+    testImplementation FenixDependencies.maven_ant_tasks
     implementation project(':support-rusthttp')
 
     androidTestImplementation FenixDependencies.mockk_android
@@ -714,14 +711,8 @@ dependencies {
 }
 
 protobuf {
-    // Mac M1 workaround until we can bump the version. Dependent on A-S.
-    // See https://github.com/mozilla-mobile/fenix/issues/22321
     protoc {
-        if (osdetector.os == "osx") {
-            artifact = "${FenixDependencies.protobuf_compiler}:osx-x86_64"
-        } else {
-            artifact = FenixDependencies.protobuf_compiler
-        }
+        artifact = FenixDependencies.protobuf_compiler
     }
 
     // Generates the java Protobuf-lite code for the Protobufs in this project. See
@@ -745,7 +736,7 @@ if (project.hasProperty("coverage")) {
     }
 
     jacoco {
-        toolVersion = "0.8.7"
+        toolVersion = FenixVersions.jacoco
     }
 
     android.applicationVariants.all { variant ->
@@ -882,20 +873,6 @@ if (gradle.hasProperty('localProperties.dependencySubstitutions.geckoviewTopsrcd
     }
     ext.topsrcdir = StringUtils.removeSuffix(gradle."localProperties.dependencySubstitutions.geckoviewTopsrcdir", File.separator)
     apply from: "${topsrcdir}/substitute-local-geckoview.gradle"
-}
-
-def appServicesSrcDir = null
-if (gradle.hasProperty('localProperties.autoPublish.application-services.dir')) {
-  appServicesSrcDir = gradle.getProperty('localProperties.autoPublish.application-services.dir')
-} else if (gradle.hasProperty('localProperties.branchBuild.application-services.dir')) {
-  appServicesSrcDir = gradle.getProperty('localProperties.branchBuild.application-services.dir')
-}
-if (appServicesSrcDir) {
-    if (appServicesSrcDir.startsWith("/")) {
-        apply from: "${appServicesSrcDir}/build-scripts/substitute-local-appservices.gradle"
-    } else {
-        apply from: "../${appServicesSrcDir}/build-scripts/substitute-local-appservices.gradle"
-    }
 }
 
 if (gradle.hasProperty('localProperties.autoPublish.glean.dir')) {

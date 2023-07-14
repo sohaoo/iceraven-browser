@@ -93,7 +93,6 @@ class SearchTest {
         }
     }
 
-    @Ignore("Failing, see: https://bugzilla.mozilla.org/show_bug.cgi?id=1821993")
     @SmokeTest
     @Test
     fun scanButtonDenyPermissionTest() {
@@ -284,7 +283,6 @@ class SearchTest {
         }
     }
 
-    @Ignore("Test run timing out: https://github.com/mozilla-mobile/fenix/issues/27704")
     @SmokeTest
     @Test
     fun noSearchGroupFromPrivateBrowsingTest() {

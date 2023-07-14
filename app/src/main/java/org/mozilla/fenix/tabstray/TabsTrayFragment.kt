@@ -194,6 +194,12 @@ class TabsTrayFragment : AppCompatDialogFragment() {
         return tabsTrayDialog
     }
 
+    override fun onPause() {
+        super.onPause()
+
+        dialog?.window?.setWindowAnimations(R.style.DialogFragmentRestoreAnimation)
+    }
+
     @Suppress("LongMethod")
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -240,9 +246,6 @@ class TabsTrayFragment : AppCompatDialogFragment() {
                         onTabClick = { tab ->
                             tabsTrayInteractor.onTabSelected(tab, TABS_TRAY_FEATURE_NAME)
                         },
-                        onTabMultiSelectClick = { tab ->
-                            tabsTrayInteractor.onMultiSelectClicked(tab, TABS_TRAY_FEATURE_NAME)
-                        },
                         onTabLongClick = tabsTrayInteractor::onTabLongClicked,
                         onInactiveTabsHeaderClick = tabsTrayInteractor::onInactiveTabsHeaderClicked,
                         onDeleteAllInactiveTabsClick = tabsTrayInteractor::onDeleteAllInactiveTabsClicked,
@@ -258,6 +261,26 @@ class TabsTrayFragment : AppCompatDialogFragment() {
                         onInactiveTabClick = tabsTrayInteractor::onInactiveTabClicked,
                         onInactiveTabClose = tabsTrayInteractor::onInactiveTabClosed,
                         onSyncedTabClick = tabsTrayInteractor::onSyncedTabClicked,
+                        onSaveToCollectionClick = tabsTrayInteractor::onAddSelectedTabsToCollectionClicked,
+                        onShareSelectedTabsClick = tabsTrayInteractor::onShareSelectedTabs,
+                        onShareAllTabsClick = {
+                            TabsTray.shareAllTabs.record(NoExtras())
+                            navigationInteractor.onShareTabsOfTypeClicked(
+                                private = tabsTrayStore.state.selectedPage == Page.PrivateTabs,
+                            )
+                        },
+                        onTabSettingsClick = navigationInteractor::onTabSettingsClicked,
+                        onRecentlyClosedClick = navigationInteractor::onOpenRecentlyClosedClicked,
+                        onAccountSettingsClick = navigationInteractor::onAccountSettingsClicked,
+                        onDeleteAllTabsClick = {
+                            TabsTray.closeAllTabs.record(NoExtras())
+                            navigationInteractor.onCloseAllTabsClicked(
+                                private = tabsTrayStore.state.selectedPage == Page.PrivateTabs,
+                            )
+                        },
+                        onDeleteSelectedTabsClick = tabsTrayInteractor::onDeleteSelectedTabsClicked,
+                        onBookmarkSelectedTabsClick = tabsTrayInteractor::onBookmarkSelectedTabsClicked,
+                        onForceSelectedTabsAsInactiveClick = tabsTrayInteractor::onForceSelectedTabsAsInactiveClicked,
                     )
                 }
             }
@@ -580,11 +603,7 @@ class TabsTrayFragment : AppCompatDialogFragment() {
             },
             operation = { },
             elevation = ELEVATION,
-            anchorView = when {
-                requireContext().settings().enableTabsTrayToCompose -> fabButtonComposeBinding.root
-                fabButtonBinding.newTabButton.isVisible -> fabButtonBinding.newTabButton
-                else -> null
-            },
+            anchorView = getSnackbarAnchor(),
         )
     }
 
@@ -716,12 +735,10 @@ class TabsTrayFragment : AppCompatDialogFragment() {
         return parentFragmentManager.findFragmentByTag(DOWNLOAD_CANCEL_DIALOG_FRAGMENT_TAG) as? DownloadCancelDialogFragment
     }
 
-    private fun getSnackbarAnchor(): View? {
-        return if (requireComponents.settings.accessibilityServicesEnabled) {
-            null
-        } else {
-            fabButtonBinding.newTabButton
-        }
+    private fun getSnackbarAnchor(): View? = when {
+        requireContext().settings().enableTabsTrayToCompose -> fabButtonComposeBinding.root
+        fabButtonBinding.newTabButton.isVisible -> fabButtonBinding.newTabButton
+        else -> null
     }
 
     private fun showInactiveTabsAutoCloseConfirmationSnackbar() {

@@ -76,7 +76,6 @@ import org.mozilla.fenix.utils.IntentUtils
 import org.mozilla.gecko.util.ThreadUtils
 import java.io.File
 import java.util.Locale
-import java.util.regex.Pattern
 
 object TestHelper {
 
@@ -136,6 +135,15 @@ object TestHelper {
         mDevice.findObject(
             UiSelector().resourceId("$packageName:id/snackbar_layout"),
         ).waitUntilGone(waitingTime)
+    }
+
+    fun verifySnackBarText(expectedText: String) {
+        assertTrue(
+            mDevice.findObject(
+                UiSelector()
+                    .textContains(expectedText),
+            ).waitForExists(waitingTime),
+        )
     }
 
     fun verifyUrl(urlSubstring: String, resourceName: String, resId: Int) {
@@ -334,7 +342,7 @@ object TestHelper {
         )
     }
 
-    fun getStringResource(id: Int) = appContext.resources.getString(id, appName)
+    fun getStringResource(id: Int, argument: String = appName) = appContext.resources.getString(id, argument)
 
     fun setCustomSearchEngine(searchEngine: SearchEngine) {
         with(appContext.components.useCases.searchUseCases) {
@@ -345,37 +353,29 @@ object TestHelper {
 
     // Permission allow dialogs differ on various Android APIs
     fun grantSystemPermission() {
+        val whileUsingTheAppPermissionButton: UiObject =
+            mDevice.findObject(UiSelector().textContains("While using the app"))
+
+        val allowPermissionButton: UiObject =
+            mDevice.findObject(
+                UiSelector()
+                    .textContains("Allow")
+                    .className("android.widget.Button"),
+            )
+
         if (Build.VERSION.SDK_INT >= 23) {
-            if (mDevice.findObject(UiSelector().textContains("While using the app")).waitForExists(
-                    waitingTimeShort,
-                )
-            ) {
-                mDevice.findObject(UiSelector().textContains("While using the app")).click()
-            } else {
-                mDevice.findObject(
-                    UiSelector()
-                        .textContains("Allow")
-                        .className("android.widget.Button"),
-                ).click()
+            if (whileUsingTheAppPermissionButton.waitForExists(waitingTimeShort)) {
+                whileUsingTheAppPermissionButton.click()
+            } else if (allowPermissionButton.waitForExists(waitingTimeShort)) {
+                allowPermissionButton.click()
             }
         }
     }
 
     // Permission deny dialogs differ on various Android APIs
     fun denyPermission() {
-        if (Build.VERSION.SDK_INT >= 23) {
-            mDevice.findObject(
-                By.text(
-                    when (Build.VERSION.SDK_INT) {
-                        Build.VERSION_CODES.R -> Pattern.compile(
-                            "DENY",
-                            Pattern.CASE_INSENSITIVE,
-                        )
-                        else -> Pattern.compile("Deny", Pattern.CASE_INSENSITIVE)
-                    },
-                ),
-            ).click()
-        }
+        mDevice.findObject(UiSelector().textContains("Deny")).waitForExists(waitingTime)
+        mDevice.findObject(UiSelector().textContains("Deny")).click()
     }
 
     fun isTestLab(): Boolean {
