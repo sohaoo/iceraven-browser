@@ -36,7 +36,6 @@ class AdjustMetricsService(private val application: Application) : MetricsServic
             AdjustConfig.ENVIRONMENT_PRODUCTION,
             true,
         )
-        config.setPreinstallTrackingEnabled(true)
 
         val installationPing = FirstSessionPing(application)
 
