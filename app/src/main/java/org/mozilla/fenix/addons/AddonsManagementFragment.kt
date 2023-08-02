@@ -9,7 +9,11 @@ import android.graphics.Typeface
 import android.graphics.fonts.FontStyle.FONT_WEIGHT_MEDIUM
 import android.os.Build
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.MenuHost
@@ -29,9 +33,10 @@ import kotlinx.coroutines.launch
 import mozilla.components.concept.engine.webextension.WebExtensionInstallException
 import mozilla.components.feature.addons.Addon
 import mozilla.components.feature.addons.AddonManagerException
-import mozilla.components.feature.addons.ui.AddonsManagerAdapter
 import mozilla.components.feature.addons.ui.translateName
 import mozilla.components.support.base.feature.ViewBoundFeatureWrapper
+import mozilla.components.support.base.log.logger.Logger
+import mozilla.components.support.ktx.android.view.hideKeyboard
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.Config
 import org.mozilla.fenix.R
@@ -45,6 +50,7 @@ import org.mozilla.fenix.ext.showToolbar
 import org.mozilla.fenix.extension.WebExtensionPromptFeature
 import org.mozilla.fenix.theme.ThemeManager
 import java.util.concurrent.CancellationException
+import java.util.Locale
 
 /**
  * Fragment use for managing add-ons.
@@ -59,7 +65,6 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
     private var binding: FragmentAddOnsManagementBinding? = null
 
     private val webExtensionPromptFeature = ViewBoundFeatureWrapper<WebExtensionPromptFeature>()
-    private var addons: List<Addon> = emptyList()
 
     /**
      * Whether or not an add-on installation is in progress.
@@ -89,7 +94,7 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
         webExtensionPromptFeature.set(
             feature = WebExtensionPromptFeature(
                 store = requireComponents.core.store,
-                provideAddons = { addons },
+                provideAddons = { addons!! },
                 context = requireContext(),
                 fragmentManager = parentFragmentManager,
                 view = view,

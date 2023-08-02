@@ -18,7 +18,7 @@ import mozilla.components.browser.state.state.extension.WebExtensionPromptReques
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.feature.addons.Addon
 import mozilla.components.feature.addons.toInstalledState
-import mozilla.components.feature.addons.ui.AddonInstallationDialogFragment
+import io.github.forkmaintainers.iceraven.components.PagedAddonInstallationDialogFragment as AddonInstallationDialogFragment
 import mozilla.components.feature.addons.ui.PermissionsDialogFragment
 import mozilla.components.lib.state.ext.flowScoped
 import mozilla.components.support.base.feature.LifecycleAwareFeature
@@ -34,7 +34,7 @@ import java.lang.ref.WeakReference
  */
 class WebExtensionPromptFeature(
     private val store: BrowserStore,
-    private val provideAddons: suspend () -> List<Addon>,
+    private val provideAddons: suspend () -> List<Addon>?,
     private val context: Context,
     private val view: View,
     private val fragmentManager: FragmentManager,
@@ -56,7 +56,7 @@ class WebExtensionPromptFeature(
             flow.mapNotNull { state ->
                 state.webExtensionPromptRequest
             }.distinctUntilChanged().collect { promptRequest ->
-                val addon = provideAddons().find { addon ->
+                val addon = provideAddons()?.find { addon ->
                     addon.id == promptRequest.extension.id
                 }
                 when (promptRequest) {

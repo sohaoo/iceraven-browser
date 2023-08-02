@@ -6,6 +6,7 @@ package io.github.forkmaintainers.iceraven.components
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.DialogInterface
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
@@ -69,6 +70,11 @@ class PagedAddonInstallationDialogFragment : AppCompatDialogFragment() {
     var onConfirmButtonClicked: ((Addon, Boolean) -> Unit)? = null
 
     /**
+     * A lambda called when the dialog is dismissed.
+     */
+    var onDismissed: (() -> Unit)? = null
+
+    /**
      * Reference to the application's [PagedAddonInstallationDialogFragment] to fetch add-on icons.
      */
     var addonCollectionProvider: PagedAddonCollectionProvider? = null
@@ -112,6 +118,11 @@ class PagedAddonInstallationDialogFragment : AppCompatDialogFragment() {
     override fun onStop() {
         super.onStop()
         iconJob?.cancel()
+    }
+
+    override fun onCancel(dialog: DialogInterface) {
+        super.onCancel(dialog)
+        onDismissed?.invoke()
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -267,6 +278,7 @@ class PagedAddonInstallationDialogFragment : AppCompatDialogFragment() {
                 gravity = Gravity.BOTTOM,
                 shouldWidthMatchParent = true,
             ),
+            onDismissed: (() -> Unit)? = null,
             onConfirmButtonClicked: ((Addon, Boolean) -> Unit)? = null,
         ): PagedAddonInstallationDialogFragment {
             val fragment = PagedAddonInstallationDialogFragment()
@@ -290,6 +302,7 @@ class PagedAddonInstallationDialogFragment : AppCompatDialogFragment() {
                 }
             }
             fragment.onConfirmButtonClicked = onConfirmButtonClicked
+            fragment.onDismissed = onDismissed
             fragment.arguments = arguments
             fragment.addonCollectionProvider = addonCollectionProvider
             return fragment
