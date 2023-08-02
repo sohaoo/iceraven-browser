@@ -37,6 +37,7 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import mozilla.components.browser.state.selector.findTab
@@ -51,6 +52,7 @@ import mozilla.components.concept.sync.AccountObserver
 import mozilla.components.concept.sync.AuthType
 import mozilla.components.concept.sync.OAuthAccount
 import mozilla.components.feature.tab.collections.TabCollection
+import mozilla.components.feature.top.sites.TopSite
 import mozilla.components.feature.top.sites.TopSitesConfig
 import mozilla.components.feature.top.sites.TopSitesFeature
 import mozilla.components.feature.top.sites.TopSitesFrecencyConfig
@@ -59,7 +61,6 @@ import mozilla.components.lib.state.ext.consumeFlow
 import mozilla.components.lib.state.ext.consumeFrom
 import mozilla.components.service.glean.private.NoExtras
 import mozilla.components.support.base.feature.ViewBoundFeatureWrapper
-import mozilla.components.support.ktx.kotlinx.coroutines.flow.ifChanged
 import org.mozilla.fenix.GleanMetrics.HomeScreen
 import org.mozilla.fenix.GleanMetrics.PrivateBrowsingShortcutCfr
 import org.mozilla.fenix.HomeActivity
@@ -351,6 +352,7 @@ class HomeFragment : Fragment() {
                 viewLifecycleScope = viewLifecycleOwner.lifecycleScope,
                 registerCollectionStorageObserver = ::registerCollectionStorageObserver,
                 removeCollectionWithUndo = ::removeCollectionWithUndo,
+                showUndoSnackbarForTopSite = ::showUndoSnackbarForTopSite,
                 showTabTray = ::openTabsTray,
             ),
             recentTabController = DefaultRecentTabsController(
@@ -461,6 +463,24 @@ class HomeFragment : Fragment() {
         )
     }
 
+    @VisibleForTesting
+    internal fun showUndoSnackbarForTopSite(topSite: TopSite) {
+        lifecycleScope.allowUndo(
+            view = requireView(),
+            message = getString(R.string.snackbar_top_site_removed),
+            undoActionTitle = getString(R.string.snackbar_deleted_undo),
+            onCancel = {
+                requireComponents.useCases.topSitesUseCase.addPinnedSites(
+                    topSite.title.toString(),
+                    topSite.url,
+                )
+            },
+            operation = { },
+            elevation = TOAST_ELEVATION,
+            paddedForBottomToolbar = true,
+        )
+    }
+
     /**
      * The [SessionControlView] is forced to update with our current state when we call
      * [HomeFragment.onCreateView] in order to be able to draw everything at once with the current
@@ -505,6 +525,9 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         HomeScreen.homeScreenDisplayed.record(NoExtras())
         HomeScreen.homeScreenViewCount.add()
+        if (!browsingModeManager.mode.isPrivate) {
+            HomeScreen.standardHomepageViewCount.add()
+        }
 
         observeSearchEngineNameChanges()
         observeWallpaperUpdates()
@@ -617,7 +640,7 @@ class HomeFragment : Fragment() {
                     else -> null
                 }
             }
-                .ifChanged()
+                .distinctUntilChanged()
                 .collect {
                     topSitesFeature.withFeature {
                         it.storage.notifyObservers { onStorageUpdated() }

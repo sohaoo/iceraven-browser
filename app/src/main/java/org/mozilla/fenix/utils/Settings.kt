@@ -29,6 +29,7 @@ import mozilla.components.support.ktx.android.content.longPreference
 import mozilla.components.support.ktx.android.content.stringPreference
 import mozilla.components.support.ktx.android.content.stringSetPreference
 import mozilla.components.support.locale.LocaleManager
+import mozilla.components.support.utils.BrowsersCache
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.Config
 import org.mozilla.fenix.FeatureFlags
@@ -185,6 +186,11 @@ class Settings(private val appContext: Context) : PreferencesHolder {
         default = "",
     )
 
+    var nimbusExperimentsFetched by booleanPreference(
+        appContext.getPreferenceKey(R.string.pref_key_nimbus_experiments_fetched),
+        default = false,
+    )
+
     var utmParamsKnown by booleanPreference(
         appContext.getPreferenceKey(R.string.pref_key_utm_params_known),
         default = false,
@@ -217,16 +223,6 @@ class Settings(private val appContext: Context) : PreferencesHolder {
 
     var contileContextId by stringPreference(
         appContext.getPreferenceKey(R.string.pref_key_contile_context_id),
-        default = "",
-    )
-
-    /**
-     * A UUID stored in Shared Preferences used to analyze technical differences
-     * between storage mechanisms in Android, specifically the Glean DB and
-     * Shared Preferences.
-     */
-    var sharedPrefsUUID by stringPreference(
-        appContext.getPreferenceKey(R.string.pref_key_shared_prefs_uuid),
         default = "",
     )
 
@@ -442,6 +438,11 @@ class Settings(private val appContext: Context) : PreferencesHolder {
     var isFirstNimbusRun: Boolean by booleanPreference(
         appContext.getPreferenceKey(R.string.pref_key_is_first_run),
         default = true,
+    )
+
+    var isFirstSplashScreenShown: Boolean by booleanPreference(
+        appContext.getPreferenceKey(R.string.pref_key_is_first_splash_screen_shown),
+        default = false,
     )
 
     var nimbusLastFetchTime: Long by longPreference(
@@ -1363,6 +1364,11 @@ class Settings(private val appContext: Context) : PreferencesHolder {
         0,
     )
 
+    var openPrivateTabsCount by intPreference(
+        appContext.getPreferenceKey(R.string.pref_key_open_private_tabs_count),
+        0,
+    )
+
     var mobileBookmarksSize by intPreference(
         appContext.getPreferenceKey(R.string.pref_key_mobile_bookmarks_size),
         0,
@@ -1647,7 +1653,7 @@ class Settings(private val appContext: Context) : PreferencesHolder {
     var showUnifiedSearchFeature by lazyFeatureFlagPreference(
         key = appContext.getPreferenceKey(R.string.pref_key_show_unified_search_2),
         default = { FxNimbus.features.unifiedSearch.value().enabled },
-        featureFlag = FeatureFlags.unifiedSearchFeature,
+        featureFlag = true,
     )
 
     /**
@@ -1664,7 +1670,7 @@ class Settings(private val appContext: Context) : PreferencesHolder {
     var notificationPrePermissionPromptEnabled by lazyFeatureFlagPreference(
         key = appContext.getPreferenceKey(R.string.pref_key_notification_pre_permission_prompt_enabled),
         default = { FxNimbus.features.prePermissionNotificationPrompt.value().enabled },
-        featureFlag = FeatureFlags.notificationPrePermissionPromptEnabled,
+        featureFlag = true,
     )
 
     /**

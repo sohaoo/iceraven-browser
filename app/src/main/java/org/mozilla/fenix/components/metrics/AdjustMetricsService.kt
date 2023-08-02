@@ -39,8 +39,13 @@ class AdjustMetricsService(private val application: Application) : MetricsServic
 
         val installationPing = FirstSessionPing(application)
 
+        FirstSession.adjustAttributionTimespan.start()
         val timerId = FirstSession.adjustAttributionTime.start()
         config.setOnAttributionChangedListener {
+            if (!installationPing.wasAlreadyTriggered()) {
+                FirstSession.adjustAttributionTimespan.stop()
+            }
+
             FirstSession.adjustAttributionTime.stopAndAccumulate(timerId)
             if (!it.network.isNullOrEmpty()) {
                 application.applicationContext.settings().adjustNetwork =
@@ -69,6 +74,7 @@ class AdjustMetricsService(private val application: Application) : MetricsServic
     }
 
     override fun stop() {
+        FirstSession.adjustAttributionTimespan.cancel()
         Adjust.setEnabled(false)
         Adjust.gdprForgetMe(application.applicationContext)
     }

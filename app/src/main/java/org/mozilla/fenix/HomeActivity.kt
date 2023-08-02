@@ -33,6 +33,7 @@ import androidx.annotation.VisibleForTesting.Companion.PROTECTED
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDirections
@@ -43,6 +44,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mozilla.appservices.places.BookmarkRoot
@@ -55,14 +57,13 @@ import mozilla.components.browser.state.state.SessionState
 import mozilla.components.browser.state.state.WebExtensionState
 import mozilla.components.concept.engine.EngineSession
 import mozilla.components.concept.engine.EngineView
-import mozilla.components.concept.storage.BookmarkNode
-import mozilla.components.concept.storage.BookmarkNodeType
 import mozilla.components.concept.storage.HistoryMetadataKey
 import mozilla.components.feature.contextmenu.DefaultSelectionActionDelegate
 import mozilla.components.feature.media.ext.findActiveMediaTab
 import mozilla.components.feature.privatemode.notification.PrivateNotificationFeature
 import mozilla.components.feature.search.BrowserStoreSearchAdapter
 import mozilla.components.service.fxa.sync.SyncReason
+import mozilla.components.support.base.ext.areNotificationsEnabledSafe
 import mozilla.components.support.base.feature.ActivityResultHandler
 import mozilla.components.support.base.feature.UserInteractionHandler
 import mozilla.components.support.base.log.logger.Logger
@@ -74,6 +75,7 @@ import mozilla.components.support.ktx.kotlin.isUrl
 import mozilla.components.support.ktx.kotlin.toNormalizedUrl
 import mozilla.components.support.locale.LocaleAwareAppCompatActivity
 import mozilla.components.support.utils.BootUtils
+import mozilla.components.support.utils.BrowsersCache
 import mozilla.components.support.utils.ManufacturerCodes
 import mozilla.components.support.utils.SafeIntent
 import mozilla.components.support.utils.toSafeIntent
@@ -82,6 +84,8 @@ import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.experiments.nimbus.initializeTooling
 import org.mozilla.fenix.GleanMetrics.Events
 import org.mozilla.fenix.GleanMetrics.Metrics
+import org.mozilla.fenix.GleanMetrics.PlayStoreAttribution
+import org.mozilla.fenix.GleanMetrics.SplashScreen
 import org.mozilla.fenix.GleanMetrics.StartOnHome
 import org.mozilla.fenix.addons.AddonDetailsFragmentDirections
 import org.mozilla.fenix.addons.AddonPermissionsDetailsFragmentDirections
@@ -95,7 +99,6 @@ import org.mozilla.fenix.databinding.ActivityHomeBinding
 import org.mozilla.fenix.exceptions.trackingprotection.TrackingProtectionExceptionsFragmentDirections
 import org.mozilla.fenix.experiments.ResearchSurfaceDialogFragment
 import org.mozilla.fenix.ext.alreadyOnDestination
-import org.mozilla.fenix.ext.areNotificationsEnabledSafe
 import org.mozilla.fenix.ext.breadcrumb
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.hasTopDestination
@@ -153,7 +156,6 @@ import org.mozilla.fenix.tabstray.TabsTrayFragmentDirections
 import org.mozilla.fenix.theme.DefaultThemeManager
 import org.mozilla.fenix.theme.ThemeManager
 import org.mozilla.fenix.trackingprotection.TrackingProtectionPanelDialogFragmentDirections
-import org.mozilla.fenix.utils.BrowsersCache
 import org.mozilla.fenix.utils.Settings
 import java.lang.ref.WeakReference
 import java.util.Locale
@@ -230,6 +232,9 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         components.analytics.experiments.initializeTooling(applicationContext, intent)
         components.strictMode.attachListenerToDisablePenaltyDeath(supportFragmentManager)
         MarkersFragmentLifecycleCallbacks.register(supportFragmentManager, components.core.engine)
+
+        PlayStoreAttribution.deferredDeeplinkTime.start()
+        maybeShowSplashScreen()
 
         // There is disk read violations on some devices such as samsung and pixel for android 9/10
         components.strictMode.resetAfter(StrictMode.allowThreadDiskReads()) {
@@ -413,6 +418,39 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         }
     }
 
+    private fun maybeShowSplashScreen() {
+        if (components.settings.isFirstSplashScreenShown) {
+            return
+        } else {
+            components.settings.isFirstSplashScreenShown = true
+            // Splash screen compat fails to draw icons on earlier versions.
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
+                return
+            }
+        }
+
+        if (FxNimbus.features.splashScreen.value().enabled) {
+            val splashScreen = installSplashScreen()
+            var maxDurationReached = false
+            val delay = FxNimbus.features.splashScreen.value().maximumDurationMs.toLong()
+            splashScreen.setKeepOnScreenCondition {
+                val dataFetched = components.settings.utmParamsKnown &&
+                    components.settings.nimbusExperimentsFetched
+                val keepOnScreen = !maxDurationReached && !dataFetched
+                if (!keepOnScreen) {
+                    SplashScreen.firstLaunchExtended.record(
+                        SplashScreen.FirstLaunchExtendedExtra(dataFetched = dataFetched),
+                    )
+                }
+                keepOnScreen
+            }
+            MainScope().launch {
+                delay(timeMillis = delay)
+                maxDurationReached = true
+            }
+        }
+    }
+
     private fun checkAndExitPiP() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInPictureInPictureMode && intent != null) {
             // Exit PiP mode
@@ -502,6 +540,8 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
                 "finishing" to isFinishing.toString(),
             ),
         )
+
+        PlayStoreAttribution.deferredDeeplinkTime.cancel()
     }
 
     final override fun onPause() {
@@ -515,11 +555,11 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
                     applicationContext,
                     showMobileRoot = false,
                 ).withOptionalDesktopFolders(it)
-                settings().desktopBookmarksSize = getBookmarkCount(desktopRootNode)
+                settings().desktopBookmarksSize = desktopRootNode.count()
             }
 
             components.core.bookmarksStorage.getTree(BookmarkRoot.Mobile.id, true)?.let {
-                settings().mobileBookmarksSize = getBookmarkCount(it)
+                settings().mobileBookmarksSize = it.count()
             }
         }
 
@@ -547,25 +587,6 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         super.onProvideAssistContent(outContent)
         val currentTabUrl = components.core.store.state.selectedTab?.content?.url
         outContent?.webUri = currentTabUrl?.let { Uri.parse(it) }
-    }
-
-    private fun getBookmarkCount(node: BookmarkNode): Int {
-        val children = node.children
-        return if (children == null) {
-            0
-        } else {
-            var count = 0
-
-            for (child in children) {
-                if (child.type == BookmarkNodeType.FOLDER) {
-                    count += getBookmarkCount(child)
-                } else if (child.type == BookmarkNodeType.ITEM) {
-                    count++
-                }
-            }
-
-            count
-        }
     }
 
     override fun onDestroy() {

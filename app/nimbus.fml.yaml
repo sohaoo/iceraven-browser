@@ -320,6 +320,41 @@ features:
         type: Map<String, Boolean>
         default: {}
 
+  splash-screen:
+    description: "A feature that extends splash screen duration, allowing additional data fetching time for the app's initial run."
+    variables:
+      enabled:
+        description: "If true, the feature is active."
+        type: Boolean
+        default: false
+      maximum_duration_ms:
+        description: The maximum amount of time in milliseconds the splashscreen will be visible while waiting for initialization calls to complete.
+        type: Int
+        default: 0
+
+  shopping-experience:
+    description: A feature that shows product review quality information.
+    variables:
+      enabled:
+        description: if true, the shopping experience feature is shown to the user.
+        type: Boolean
+        default: false
+    defaults:
+      - channel: developer
+        value:
+          enabled: true
+
+  search_extra_params:
+    description: A feature that provides a search engine name and a channel ID.
+    variables:
+      enabled:
+        description: If true, the feature is active.
+        type: Boolean
+        default: false
+      search_name_channel_id:
+        description: The search engine name and the channel ID.
+        type: Map<String, String>
+        default: {}
 types:
   objects: {}
 

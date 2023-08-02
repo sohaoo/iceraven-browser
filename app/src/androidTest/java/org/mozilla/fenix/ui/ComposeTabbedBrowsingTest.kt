@@ -11,14 +11,12 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.helpers.AndroidAssetDispatcher
 import org.mozilla.fenix.helpers.HomeActivityTestRule
 import org.mozilla.fenix.helpers.RetryTestRule
 import org.mozilla.fenix.helpers.TestAssetHelper
-import org.mozilla.fenix.helpers.TestHelper
 import org.mozilla.fenix.helpers.TestHelper.clickSnackbarButton
 import org.mozilla.fenix.helpers.TestHelper.verifySnackBarText
 import org.mozilla.fenix.ui.robots.browserScreen
@@ -91,7 +89,7 @@ class ComposeTabbedBrowsingTest {
             verifyNoOpenTabsInNormalBrowsing()
         }.openNewTab {
         }.submitQuery(defaultWebPage.url.toString()) {
-            mDevice.waitForIdle()
+            verifyPageContent(defaultWebPage.content)
             verifyTabCounter("1")
         }.openComposeTabDrawer(composeTestRule) {
             verifyNormalBrowsingButtonIsSelected()
@@ -150,36 +148,35 @@ class ComposeTabbedBrowsingTest {
         }
     }
 
-    @Ignore("Being converted in: https://bugzilla.mozilla.org/show_bug.cgi?id=1832617")
     @Test
     fun closeTabTest() {
-//        val genericURL = TestAssetHelper.getGenericAsset(mockWebServer, 1)
-//
-//        navigationToolbar {
-//        }.enterURLAndEnterToBrowser(genericURL.url) {
-//        }.openTabDrawer {
-//            verifyExistingOpenTabs("Test_Page_1")
-//            closeTab()
-//        }
-//        homeScreen {
-//            verifyTabCounter("0")
-//        }.openNavigationToolbar {
-//        }.enterURLAndEnterToBrowser(genericURL.url) {
-//        }.openTabDrawer {
-//            verifyExistingOpenTabs("Test_Page_1")
-//            swipeTabRight("Test_Page_1")
-//        }
-//        homeScreen {
-//            verifyTabCounter("0")
-//        }.openNavigationToolbar {
-//        }.enterURLAndEnterToBrowser(genericURL.url) {
-//        }.openTabDrawer {
-//            verifyExistingOpenTabs("Test_Page_1")
-//            swipeTabLeft("Test_Page_1")
-//        }
-//        homeScreen {
-//            verifyTabCounter("0")
-//        }
+        val genericURL = TestAssetHelper.getGenericAsset(mockWebServer, 1)
+
+        navigationToolbar {
+        }.enterURLAndEnterToBrowser(genericURL.url) {
+        }.openComposeTabDrawer(composeTestRule) {
+            verifyExistingOpenTabs("Test_Page_1")
+            closeTab()
+        }
+        homeScreen {
+            verifyTabCounter("0")
+        }.openNavigationToolbar {
+        }.enterURLAndEnterToBrowser(genericURL.url) {
+        }.openComposeTabDrawer(composeTestRule) {
+            verifyExistingOpenTabs("Test_Page_1")
+            swipeTabRight("Test_Page_1")
+        }
+        homeScreen {
+            verifyTabCounter("0")
+        }.openNavigationToolbar {
+        }.enterURLAndEnterToBrowser(genericURL.url) {
+        }.openComposeTabDrawer(composeTestRule) {
+            verifyExistingOpenTabs("Test_Page_1")
+            swipeTabLeft("Test_Page_1")
+        }
+        homeScreen {
+            verifyTabCounter("0")
+        }
     }
 
     @Test
@@ -209,39 +206,36 @@ class ComposeTabbedBrowsingTest {
         }
     }
 
-    @Ignore("Failing, see: https://bugzilla.mozilla.org/show_bug.cgi?id=1829838")
-    // Try converting in: https://bugzilla.mozilla.org/show_bug.cgi?id=1832609
     @Test
     fun closePrivateTabTest() {
-//        val genericURL = TestAssetHelper.getGenericAsset(mockWebServer, 1)
-//
-//        homeScreen { }.togglePrivateBrowsingMode()
-//        navigationToolbar {
-//        }.enterURLAndEnterToBrowser(genericURL.url) {
-//        }.openTabDrawer {
-//            verifyExistingOpenTabs("Test_Page_1")
-//            verifyCloseTabsButton("Test_Page_1")
-//            closeTab()
-//        }
-//        homeScreen {
-//            verifyTabCounter("0")
-//        }.openNavigationToolbar {
-//        }.enterURLAndEnterToBrowser(genericURL.url) {
-//        }.openTabDrawer {
-//            verifyExistingOpenTabs("Test_Page_1")
-//            swipeTabRight("Test_Page_1")
-//        }
-//        homeScreen {
-//            verifyTabCounter("0")
-//        }.openNavigationToolbar {
-//        }.enterURLAndEnterToBrowser(genericURL.url) {
-//        }.openTabDrawer {
-//            verifyExistingOpenTabs("Test_Page_1")
-//            swipeTabLeft("Test_Page_1")
-//        }
-//        homeScreen {
-//            verifyTabCounter("0")
-//        }
+        val genericURL = TestAssetHelper.getGenericAsset(mockWebServer, 1)
+
+        homeScreen { }.togglePrivateBrowsingMode()
+        navigationToolbar {
+        }.enterURLAndEnterToBrowser(genericURL.url) {
+        }.openComposeTabDrawer(composeTestRule) {
+            verifyExistingOpenTabs("Test_Page_1")
+            closeTab()
+        }
+        homeScreen {
+            verifyTabCounter("0")
+        }.openNavigationToolbar {
+        }.enterURLAndEnterToBrowser(genericURL.url) {
+        }.openComposeTabDrawer(composeTestRule) {
+            verifyExistingOpenTabs("Test_Page_1")
+            swipeTabRight("Test_Page_1")
+        }
+        homeScreen {
+            verifyTabCounter("0")
+        }.openNavigationToolbar {
+        }.enterURLAndEnterToBrowser(genericURL.url) {
+        }.openComposeTabDrawer(composeTestRule) {
+            verifyExistingOpenTabs("Test_Page_1")
+            swipeTabLeft("Test_Page_1")
+        }
+        homeScreen {
+            verifyTabCounter("0")
+        }
     }
 
     @Test
@@ -251,14 +245,16 @@ class ComposeTabbedBrowsingTest {
         homeScreen { }.togglePrivateBrowsingMode()
         navigationToolbar {
         }.enterURLAndEnterToBrowser(genericURL.url) {
+            verifyPageContent(genericURL.content)
         }.openComposeTabDrawer(composeTestRule) {
             verifyExistingOpenTabs("Test_Page_1")
             closeTab()
-            TestHelper.verifySnackBarText("Private tab closed")
-            TestHelper.clickSnackbarButton("UNDO")
+            verifySnackBarText("Private tab closed")
+            clickSnackbarButton("UNDO")
         }
 
         browserScreen {
+            verifyPageContent(genericURL.content)
             verifyTabCounter("1")
         }.openComposeTabDrawer(composeTestRule) {
             verifyExistingOpenTabs("Test_Page_1")

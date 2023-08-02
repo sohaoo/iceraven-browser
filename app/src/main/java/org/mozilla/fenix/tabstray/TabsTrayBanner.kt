@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -45,7 +44,6 @@ import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import mozilla.components.browser.state.state.ContentState
 import mozilla.components.browser.state.state.TabSessionState
 import mozilla.components.lib.state.ext.observeAsComposableState
@@ -57,6 +55,7 @@ import org.mozilla.fenix.compose.annotation.LightDarkPreview
 import org.mozilla.fenix.theme.FirefoxTheme
 
 private val ICON_SIZE = 24.dp
+private const val MAX_WIDTH_TAB_ROW_PERCENT = 0.5f
 
 /**
  * Top-level UI for displaying the banner in [TabsTray].
@@ -168,7 +167,7 @@ private fun SingleSelectBanner(
             CompositionLocalProvider(LocalRippleTheme provides DisabledRippleTheme) {
                 TabRow(
                     selectedTabIndex = selectedPage.ordinal,
-                    modifier = Modifier.width(180.dp),
+                    modifier = Modifier.fillMaxWidth(MAX_WIDTH_TAB_ROW_PERCENT),
                     backgroundColor = Color.Transparent,
                     contentColor = selectedColor,
                     divider = {},
@@ -428,10 +427,8 @@ private fun MultiSelectBanner(
 
         Text(
             text = stringResource(R.string.tab_tray_multi_select_title, selectedTabCount),
-            style = FirefoxTheme.typography.body1,
+            style = FirefoxTheme.typography.headline6,
             color = FirefoxTheme.colors.textOnColorPrimary,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.W500,
         )
 
         Spacer(modifier = Modifier.weight(1.0f))
