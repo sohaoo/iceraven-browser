@@ -7,7 +7,9 @@
             android:height="432dp"
             android:viewportWidth="108"
             android:viewportHeight="108">
-            <group android:scaleX="0.07043478"
+            <group
+                android:name="a1_t"
+                android:scaleX="0.07043478"
                 android:scaleY="0.07043478"
                 android:translateX="15.965218"
                 android:translateY="-17.28">
