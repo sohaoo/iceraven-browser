@@ -30,8 +30,6 @@ class AdjustMetricsService(private val application: Application) : MetricsServic
             return
         }
 
-        System.setProperty(ADJUST_PREINSTALL_SYSTEM_PROPERTY_PATH, "/preload/etc/adjust.preinstall")
-
         val config = AdjustConfig(
             application,
             BuildConfig.ADJUST_TOKEN,
