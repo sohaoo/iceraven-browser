@@ -31,6 +31,9 @@ jobs:
       - name: Create version name
         run: echo "VERSION_NAME=$(git describe --tags HEAD)" >> $GITHUB_ENV
 
+      - name: Patch on the fly
+        run: sed -i 's#\.\./version.txt#\./version.txt#g' android-components/plugins/config/src/main/java/ConfigPlugin.kt
+
       - name: Relpace strings
         run: |
           sed -i 's/Firefox/Iceraven/g' app/src/*/res/values*/*strings.xml
