@@ -242,7 +242,7 @@ class PagedAddonInstallationDialogFragment : AppCompatDialogFragment() {
                     val att = context.theme.resolveAttribute(android.R.attr.textColorPrimary)
                     iconView.setColorFilter(ContextCompat.getColor(context, att))
                     iconView.setImageDrawable(
-                        AppCompatResources.getDrawable(context, iconsR.drawable.mozac_ic_extensions),
+                        AppCompatResources.getDrawable(context, iconsR.drawable.mozac_ic_extension_24),
                     )
                 }
                 logger.error("Attempt to fetch the ${addon.id} icon failed", e)
