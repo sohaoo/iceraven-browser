@@ -374,4 +374,7 @@
     <!-- System Customization Settings -->
     <string name="pref_system_behavior_settings_category" translatable="false">pref_system_behavior_settings_category</string>
     <string name="pref_key_relinquish_memory_under_pressure" translatable="false">pref_key_relinquish_memory_under_pressure</string>
+    <!--Shopping -->
+    <string name="pref_key_is_review_quality_check_enabled">pref_key_is_review_quality_check_enabled</string>
+    <string name="pref_key_is_review_quality_check_product_recommendations_enabled">pref_key_is_review_quality_check_product_recommendations_enabled</string>
 </resources>

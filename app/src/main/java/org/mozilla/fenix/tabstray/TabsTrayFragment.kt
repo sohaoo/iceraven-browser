@@ -290,6 +290,7 @@ class TabsTrayFragment : AppCompatDialogFragment() {
                         onDeleteSelectedTabsClick = tabsTrayInteractor::onDeleteSelectedTabsClicked,
                         onBookmarkSelectedTabsClick = tabsTrayInteractor::onBookmarkSelectedTabsClicked,
                         onForceSelectedTabsAsInactiveClick = tabsTrayInteractor::onForceSelectedTabsAsInactiveClicked,
+                        onTabsTrayDismiss = ::onTabsTrayDismissed,
                     )
                 }
             }
@@ -387,8 +388,7 @@ class TabsTrayFragment : AppCompatDialogFragment() {
         )
 
         setupBackgroundDismissalListener {
-            TabsTray.closed.record(NoExtras())
-            dismissAllowingStateLoss()
+            onTabsTrayDismissed()
         }
 
         if (!requireContext().settings().enableTabsTrayToCompose) {
@@ -768,6 +768,14 @@ class TabsTrayFragment : AppCompatDialogFragment() {
         ).setText(text)
         snackbar.view.elevation = ELEVATION
         snackbar.show()
+    }
+
+    private fun onTabsTrayDismissed() {
+        context?.components?.analytics?.crashReporter?.recordCrashBreadcrumb(
+            Breadcrumb("TabsTrayFragment onTabsTrayDismissed"),
+        )
+        TabsTray.closed.record(NoExtras())
+        dismissAllowingStateLoss()
     }
 
     companion object {

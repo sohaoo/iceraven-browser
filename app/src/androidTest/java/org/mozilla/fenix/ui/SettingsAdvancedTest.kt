@@ -84,22 +84,6 @@ class SettingsAdvancedTest {
         }
     }
 
-    @SmokeTest
-    @Test
-    fun verifyOpenLinkInAppViewInPrivateBrowsingTest() {
-        homeScreen {
-        }.togglePrivateBrowsingMode()
-
-        homeScreen {
-        }.openThreeDotMenu {
-        }.openSettings {
-            verifyOpenLinksInAppsButton()
-            verifySettingsOptionSummary("Open links in apps", "Never")
-        }.openOpenLinksInAppsMenu {
-            verifyPrivateOpenLinksInAppsView("Never")
-        }
-    }
-
     // Assumes Youtube is installed and enabled
     @Test
     fun neverOpenLinkInAppTest() {
@@ -154,7 +138,7 @@ class SettingsAdvancedTest {
     // Assumes Youtube is installed and enabled
     @SmokeTest
     @Test
-    fun askBeforeOpeningLinkInAppTest() {
+    fun askBeforeOpeningLinkInAppCancelTest() {
         val defaultWebPage = TestAssetHelper.getExternalLinksAsset(mockWebServer)
 
         homeScreen {
@@ -180,6 +164,28 @@ class SettingsAdvancedTest {
             waitForPageToLoad()
             verifyUrl("youtube.com")
         }
+    }
+
+    // Assumes Youtube is installed and enabled
+    @SmokeTest
+    @Test
+    fun askBeforeOpeningLinkInAppOpenTest() {
+        val defaultWebPage = TestAssetHelper.getExternalLinksAsset(mockWebServer)
+
+        homeScreen {
+        }.openThreeDotMenu {
+        }.openSettings {
+            verifyOpenLinksInAppsButton()
+            verifySettingsOptionSummary("Open links in apps", "Never")
+        }.openOpenLinksInAppsMenu {
+            verifyOpenLinksInAppsView("Never")
+            clickOpenLinkInAppOption("Ask before opening")
+            verifySelectedOpenLinksInAppOption("Ask before opening")
+        }.goBack {
+            verifySettingsOptionSummary("Open links in apps", "Ask before opening")
+        }
+
+        exitMenu()
 
         navigationToolbar {
         }.enterURLAndEnterToBrowser(defaultWebPage.url) {
@@ -194,7 +200,7 @@ class SettingsAdvancedTest {
     // Assumes Youtube is installed and enabled
     @SmokeTest
     @Test
-    fun privateBrowsingAskBeforeOpeningLinkInAppTest() {
+    fun privateBrowsingAskBeforeOpeningLinkInAppCancelTest() {
         val defaultWebPage = TestAssetHelper.getExternalLinksAsset(mockWebServer)
 
         homeScreen {
@@ -223,6 +229,31 @@ class SettingsAdvancedTest {
             waitForPageToLoad()
             verifyUrl("youtube.com")
         }
+    }
+
+    // Assumes Youtube is installed and enabled
+    @SmokeTest
+    @Test
+    fun privateBrowsingAskBeforeOpeningLinkInAppOpenTest() {
+        val defaultWebPage = TestAssetHelper.getExternalLinksAsset(mockWebServer)
+
+        homeScreen {
+        }.togglePrivateBrowsingMode()
+
+        homeScreen {
+        }.openThreeDotMenu {
+        }.openSettings {
+            verifyOpenLinksInAppsButton()
+            verifySettingsOptionSummary("Open links in apps", "Never")
+        }.openOpenLinksInAppsMenu {
+            verifyPrivateOpenLinksInAppsView("Never")
+            clickOpenLinkInAppOption("Ask before opening")
+            verifySelectedOpenLinksInAppOption("Ask before opening")
+        }.goBack {
+            verifySettingsOptionSummary("Open links in apps", "Ask before opening")
+        }
+
+        exitMenu()
 
         navigationToolbar {
         }.enterURLAndEnterToBrowser(defaultWebPage.url) {
