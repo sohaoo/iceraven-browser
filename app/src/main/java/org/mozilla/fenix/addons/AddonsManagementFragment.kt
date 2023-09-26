@@ -14,6 +14,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.view.accessibility.AccessibilityEvent
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.MenuHost
@@ -32,6 +33,7 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
 import mozilla.components.concept.engine.webextension.WebExtensionInstallException
 import mozilla.components.feature.addons.Addon
+import mozilla.components.feature.addons.AddonManager
 import mozilla.components.feature.addons.AddonManagerException
 import mozilla.components.feature.addons.ui.translateName
 import mozilla.components.support.base.feature.ViewBoundFeatureWrapper
@@ -46,6 +48,7 @@ import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.getRootView
 import org.mozilla.fenix.ext.requireComponents
 import org.mozilla.fenix.ext.runIfFragmentIsAttached
+import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.ext.showToolbar
 import org.mozilla.fenix.extension.WebExtensionPromptFeature
 import org.mozilla.fenix.theme.ThemeManager
@@ -97,7 +100,7 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
                 provideAddons = { addons!! },
                 context = requireContext(),
                 fragmentManager = parentFragmentManager,
-                view = view,
+                snackBarParentView = view,
                 onAddonChanged = {
                     runIfFragmentIsAttached {
                         adapter?.updateAddon(it)
@@ -256,7 +259,10 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
                 lifecycleScope.launch(Dispatchers.Main) {
                     runIfFragmentIsAttached {
                         binding?.let {
-                            showSnackBar(it.root, getString(R.string.mozac_feature_addons_failed_to_query_add_ons))
+                            showSnackBar(
+                                it.root,
+                                getString(R.string.mozac_feature_addons_failed_to_query_add_ons),
+                            )
                         }
                         isInstallationInProgress = false
                         binding?.addOnsProgressBar?.isVisible = false
@@ -283,9 +289,9 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
     }
 
     @VisibleForTesting
-    internal fun showErrorSnackBar(text: String) {
+    internal fun showErrorSnackBar(text: String, anchorView: View? = this.view) {
         runIfFragmentIsAttached {
-            view?.let {
+            anchorView?.let {
                 showSnackBar(it, text, FenixSnackbar.LENGTH_LONG)
             }
         }
@@ -307,13 +313,27 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
         )
     }
 
+    @VisibleForTesting
+    internal fun provideAddonManger(): AddonManager {
+        return requireContext().components.addonManager
+    }
+
+    internal fun provideAccessibilityServicesEnabled(): Boolean {
+        return requireContext().settings().accessibilityServicesEnabled
+    }
+
     internal fun installAddon(addon: Addon) {
-        requireContext().components.addonManager.installAddon(
+        binding?.addonProgressOverlay?.overlayCardView?.visibility = View.VISIBLE
+        if (provideAccessibilityServicesEnabled()) {
+            binding?.let { announceForAccessibility(it.addonProgressOverlay.addOnsOverlayText.text) }
+        }
+        val installOperation = provideAddonManger().installAddon(
             addon,
             onSuccess = {
                 runIfFragmentIsAttached {
                     isInstallationInProgress = false
                     adapter?.updateAddon(it)
+                    binding?.addonProgressOverlay?.overlayCardView?.visibility = View.GONE
                 }
             },
             onError = { _, e ->
@@ -321,20 +341,50 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
                     // No need to display an error message if installation was cancelled by the user.
                     if (e !is CancellationException && e !is WebExtensionInstallException.UserCancelled) {
                         val rootView = activity?.getRootView() ?: view
+                        var messageId = R.string.mozac_feature_addons_failed_to_install
+                        if (e is WebExtensionInstallException.Blocklisted) {
+                            messageId = R.string.mozac_feature_addons_blocklisted
+                        }
                         context?.let {
-                            showSnackBar(
-                                rootView,
-                                getString(
-                                    R.string.mozac_feature_addons_failed_to_install,
-                                    addon.translateName(it),
-                                ),
+                            showErrorSnackBar(
+                                text = getString(messageId, addon.translateName(it)),
+                                anchorView = rootView,
                             )
                         }
                     }
+                    binding?.addonProgressOverlay?.overlayCardView?.visibility = View.GONE
                     isInstallationInProgress = false
                 }
             },
         )
+        binding?.addonProgressOverlay?.cancelButton?.setOnClickListener {
+            lifecycleScope.launch(Dispatchers.Main) {
+                val safeBinding = binding
+                // Hide the installation progress overlay once cancellation is successful.
+                if (installOperation.cancel().await()) {
+                    safeBinding?.addonProgressOverlay?.overlayCardView?.visibility = View.GONE
+                }
+            }
+        }
+    }
+
+    private fun announceForAccessibility(announcementText: CharSequence) {
+        val event = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            AccessibilityEvent(AccessibilityEvent.TYPE_ANNOUNCEMENT)
+        } else {
+            @Suppress("DEPRECATION")
+            AccessibilityEvent.obtain(AccessibilityEvent.TYPE_ANNOUNCEMENT)
+        }
+
+        binding?.addonProgressOverlay?.overlayCardView?.onInitializeAccessibilityEvent(event)
+        event.text.add(announcementText)
+        event.contentDescription = null
+        binding?.addonProgressOverlay?.overlayCardView?.let {
+            it.parent?.requestSendAccessibilityEvent(
+                it,
+                event,
+            )
+        }
     }
 
     companion object {

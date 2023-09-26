@@ -136,7 +136,7 @@ class Components(private val context: Context) {
     }
 
     val addonManager by lazyMonitored {
-        AddonManager(core.store, core.engine, addonCollectionProvider, addonUpdater)
+        AddonManager(core.store, core.engine, addonsProvider, addonUpdater)
     }
 
     val analytics by lazyMonitored { Analytics(context) }

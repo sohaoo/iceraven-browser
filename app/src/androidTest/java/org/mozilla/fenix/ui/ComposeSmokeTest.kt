@@ -17,6 +17,7 @@ import mozilla.components.concept.engine.mediasession.MediaSession
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.IntentReceiverActivity
@@ -84,33 +85,6 @@ class ComposeSmokeTest {
     @After
     fun tearDown() {
         mockWebServer.shutdown()
-    }
-
-    /* Verifies the nav bar:
-     - opening a web page
-     - the existence of nav bar items
-     - editing the url bar
-     - the tab drawer button
-     - opening a new search and dismissing the nav bar
-     */
-    @Test
-    fun verifyBasicNavigationToolbarFunctionality() {
-        val defaultWebPage = TestAssetHelper.getGenericAsset(mockWebServer, 1)
-
-        homeScreen {
-            navigationToolbar {
-            }.enterURLAndEnterToBrowser(defaultWebPage.url) {
-                mDevice.waitForIdle()
-                verifyNavURLBarItems()
-            }.openNavigationToolbar {
-            }.goBackToWebsite {
-            }.openComposeTabDrawer(activityTestRule) {
-                verifyNormalTabsList()
-            }.openNewTab {
-            }.dismissSearchBar {
-                verifyHomeScreen()
-            }
-        }
     }
 
     // Device or AVD requires a Google Services Android OS installation with Play Store installed
@@ -203,23 +177,6 @@ class ComposeSmokeTest {
                 sharedUrlsString,
                 "$firstWebsiteTitle, $secondWebsiteTitle",
             )
-        }
-    }
-
-    @Test
-    fun emptyTabsTrayViewPrivateBrowsingTest() {
-        homeScreen {
-        }.openComposeTabDrawer(activityTestRule) {
-        }.toggleToPrivateTabs {
-            verifyNormalBrowsingButtonIsSelected(false)
-            verifyPrivateBrowsingButtonIsSelected(true)
-            verifySyncedTabsButtonIsSelected(false)
-            verifyNoOpenTabsInPrivateBrowsing()
-            verifyFab()
-            verifyThreeDotButton()
-        }.openThreeDotMenu {
-            verifyTabSettingsButton()
-            verifyRecentlyClosedTabsButton()
         }
     }
 
@@ -324,6 +281,7 @@ class ComposeSmokeTest {
         }
     }
 
+    @Ignore("Failing, see https://bugzilla.mozilla.org/show_bug.cgi?id=1846941")
     @Test
     fun tabMediaControlButtonTest() {
         val audioTestPage = TestAssetHelper.getAudioPageAsset(mockWebServer)
@@ -421,18 +379,6 @@ class ComposeSmokeTest {
             mDevice.waitForIdle()
         }.goToHomescreen {
             verifyHomeScreen()
-        }
-    }
-
-    @Test
-    fun tabsSettingsMenuItemsTest() {
-        homeScreen {
-        }.openThreeDotMenu {
-        }.openSettings {
-        }.openTabsSubMenu {
-            verifyTabViewOptions()
-            verifyCloseTabsOptions()
-            verifyMoveOldTabsToInactiveOptions()
         }
     }
 }

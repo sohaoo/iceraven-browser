@@ -85,6 +85,7 @@
     <!-- Text displayed that links to website containing documentation about the "Total cookie protection" feature. -->
     <string name="tcp_cfr_learn_more">ᱢᱩᱴ ᱯᱟᱧᱡᱟ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱵᱟᱵᱚᱛ ᱰᱷᱮᱨ ᱵᱟᱲᱟᱭ ᱢᱮ</string>
 
+
     <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
     <string name="camera_permissions_needed_message">ᱠᱚᱢᱨᱟ ᱵᱮᱵᱷᱟᱨ ᱫᱚᱨᱠᱟᱨ ᱾ ᱮᱸᱰᱨᱚᱭᱮᱰ ᱥᱟᱡᱟᱣ ᱛᱮ ᱪᱟᱹᱞᱟᱜ ᱢᱮ, ᱪᱷᱟᱹᱲ ᱨᱮ ᱚᱛᱟᱭ ᱢᱮ , ᱟᱨ ᱮᱞᱞᱟᱣ ᱨᱮ ᱚᱛᱟᱭ ᱢᱮ ᱾</string>
     <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -375,6 +376,8 @@
     <string name="preferences_default_search_engine">ᱢᱩᱞ ᱥᱮᱸᱫᱽᱨᱟ ᱤᱧᱡᱤᱱ</string>
     <!-- Preference for settings related to Search -->
     <string name="preferences_search">ᱥᱮᱸᱫᱽᱨᱟ</string>
+    <!-- Preference for settings related to Search engines -->
+    <string name="preferences_search_engines">ᱥᱮᱸᱫᱽᱨᱟ ᱤᱧᱡᱤᱱ</string>
     <!-- Preference for settings related to Search address bar -->
     <string name="preferences_search_address_bar">ᱴᱷᱤᱠᱟᱹᱱᱟ ᱦᱩᱨᱠᱟᱹᱬ</string>
     <!-- Preference link to rating Fenix on the Play Store -->
@@ -1365,12 +1368,16 @@
     <!-- Subtitle for the tabs item in Delete browsing data, parameter will be replaced with the number of open tabs -->
     <string name="preferences_delete_browsing_data_tabs_subtitle">%d ᱴᱮᱵᱽ ᱠᱚ</string>
     <!-- Title for the data and history items in Delete browsing data -->
-    <string name="preferences_delete_browsing_data_browsing_data_title">ᱵᱽᱨᱟᱣᱩᱡᱤᱝ ᱱᱟᱜᱟᱢ ᱟᱨ ᱥᱟᱭᱤᱴ ᱰᱟᱴᱟ</string>
+    <string name="preferences_delete_browsing_data_browsing_data_title" moz:removedIn="118" tools:ignore="UnusedResources">ᱵᱽᱨᱟᱣᱩᱡᱤᱝ ᱱᱟᱜᱟᱢ ᱟᱨ ᱥᱟᱭᱤᱴ ᱰᱟᱴᱟ</string>
+    <!-- Title for the history item in Delete browsing data -->
+    <string name="preferences_delete_browsing_data_browsing_history_title">ᱱᱟᱜᱟᱢ ᱯᱟᱱᱛᱮ</string>
     <!-- Subtitle for the data and history items in delete browsing data, parameter will be replaced with the
         number of history items the user has -->
     <string name="preferences_delete_browsing_data_browsing_data_subtitle">%d ᱴᱷᱤᱠᱬᱟᱹ ᱠᱚ</string>
     <!-- Title for the cookies item in Delete browsing data -->
-    <string name="preferences_delete_browsing_data_cookies">ᱠᱩᱠᱤᱡ ᱠᱚ</string>
+    <string name="preferences_delete_browsing_data_cookies" moz:removedIn="118" tools:ignore="UnusedResources">ᱠᱩᱠᱤᱡ ᱠᱚ</string>
+    <!-- Title for the cookies and site data items in Delete browsing data -->
+    <string name="preferences_delete_browsing_data_cookies_and_site_data">ᱠᱩᱠᱤᱡᱽ ᱟᱨ ᱥᱟᱭᱤᱴ ᱰᱟᱴᱟ</string>
     <!-- Subtitle for the cookies item in Delete browsing data -->
     <string name="preferences_delete_browsing_data_cookies_subtitle">ᱟᱢ ᱫᱚ ᱰᱷᱮᱨ ᱜᱟᱱ ᱥᱟᱭᱤᱴ ᱠᱷᱚᱱ ᱵᱟᱦᱨᱮ ᱩᱲᱩᱠ ᱢᱤᱭᱟ ᱠᱚ</string>
     <!-- Title for the cached images and files item in Delete browsing data -->
@@ -1925,7 +1932,9 @@
     <!-- Placeholder text shown in the Search Suggestion String TextField before a user enters text -->
     <string name="search_add_custom_engine_suggest_string_hint">ᱥᱚᱞᱟᱦ ᱥᱮᱸᱫᱽᱨᱟ API URL</string>
     <!-- Description text for the Search Suggestion String TextField. The %s is part of the string -->
-    <string name="search_add_custom_engine_suggest_string_example" formatted="false">ᱯᱟᱱᱛᱮ ᱫᱚ “%s” ᱥᱟᱞᱟᱜ ᱛᱮ ᱵᱚᱫᱚᱞ ᱢᱮ ᱾ ᱫᱟᱹᱭᱠᱟᱹ ᱺ \nhttp://suggestqueries.google.com/complete/search?client=firefox&amp;q=%s</string>
+    <string name="search_add_custom_engine_suggest_string_example" formatted="false" moz:RemovedIn="118" tools:ignore="UnusedResources">ᱯᱟᱱᱛᱮ ᱫᱚ “%s” ᱥᱟᱞᱟᱜ ᱛᱮ ᱵᱚᱫᱚᱞ ᱢᱮ ᱾ ᱫᱟᱹᱭᱠᱟᱹ ᱺ \nhttp://suggestqueries.google.com/complete/search?client=firefox&amp;q=%s</string>
+    <!-- Description text for the Search Suggestion String TextField. The %s is part of the string -->
+    <string name="search_add_custom_engine_suggest_string_example_2" formatted="false">ᱯᱟᱱᱛᱮ ᱫᱚ “%s” ᱥᱟᱞᱟᱜ ᱛᱮ ᱵᱚᱫᱚᱞ ᱢᱮ ᱾ ᱫᱟᱹᱭᱠᱟᱹ ᱺ \nhttps://suggestqueries.google.com/complete/search?client=firefox&amp;q=%s</string>
     <!-- The text for the "Save" button for saving a custom search engine -->
     <string name="search_custom_engine_save_button">ᱥᱟᱺᱪᱟᱣ ᱢᱮ</string>
 
@@ -2138,6 +2147,19 @@
     <string name="experiments_snackbar">ᱰᱟᱴᱟ ᱵᱷᱮᱡᱟ ᱞᱟᱹᱜᱤᱫ ᱴᱮᱞᱤᱢᱮᱴᱨᱭ ᱮᱢ ᱪᱷᱚᱭ ᱢᱮ ᱾</string>
     <!-- Snackbar button text to navigate to telemetry settings.-->
     <string name="experiments_snackbar_button">ᱥᱟᱡᱟᱣ ᱴᱷᱮᱱ ᱪᱟᱞᱟᱜ ᱢᱮ</string>
+
+    <!-- Text for minimize button from highlights card. When clicked the highlights card should reduce its size. -->
+    <string name="review_quality_check_highlights_show_less">ᱠᱚᱢ ᱫᱮᱠᱷᱟᱣ ᱢᱮ</string>
+    <!-- Text for maximize button from highlights card. When clicked the highlights card should expand to its full size. -->
+    <string name="review_quality_check_highlights_show_more">ᱵᱚᱲᱛᱤ ᱫᱮᱠᱷᱟᱣ ᱢᱮ</string>
+    <!-- Text for highlights card quality category header. Reviews shown under this header should refer the product's quality. -->
+    <string name="review_quality_check_highlights_type_quality">ᱜᱩᱱ</string>
+    <!-- Text for highlights card price category header. Reviews shown under this header should refer the product's price. -->
+    <string name="review_quality_check_highlights_type_price">ᱜᱚᱱᱚᱝ</string>
+    <!-- Text for highlights card shipping category header. Reviews shown under this header should refer the product's shipping. -->
+    <string name="review_quality_check_highlights_type_shipping">ᱵᱷᱮᱡᱟ</string>
+    <!-- Text for highlights card packaging and appearance category header. Reviews shown under this header should refer the product's packaging and appearance. -->
+    <string name="review_quality_check_highlights_type_packaging_appearance">ᱯᱚᱠᱮᱡᱽ ᱟᱨ ᱧᱮᱞᱠᱚ</string>
 
     <!-- Accessibility services actions labels. These will be appended to accessibility actions like "Double tap to.." but not by or applications but by services like Talkback. -->
     <!-- Action label for elements that can be collapsed if interacting with them. Talkback will append this to say "Double tap to collapse". -->

@@ -91,6 +91,7 @@ import org.mozilla.fenix.GleanMetrics.SplashScreen
 import org.mozilla.fenix.GleanMetrics.StartOnHome
 import org.mozilla.fenix.addons.AddonDetailsFragmentDirections
 import org.mozilla.fenix.addons.AddonPermissionsDetailsFragmentDirections
+import org.mozilla.fenix.addons.ExtensionProcessDisabledController
 import org.mozilla.fenix.browser.browsingmode.BrowsingMode
 import org.mozilla.fenix.browser.browsingmode.BrowsingModeManager
 import org.mozilla.fenix.browser.browsingmode.DefaultBrowsingModeManager
@@ -190,6 +191,10 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
 
     private val webExtensionPopupFeature by lazy {
         WebExtensionPopupFeature(components.core.store, ::openPopup)
+    }
+
+    private val extensionProcessDisabledPopupFeature by lazy {
+        ExtensionProcessDisabledController(this@HomeActivity, components.core.store)
     }
 
     private val serviceWorkerSupport by lazy {
@@ -340,7 +345,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         }
         supportActionBar?.hide()
 
-        lifecycle.addObservers(webExtensionPopupFeature, serviceWorkerSupport)
+        lifecycle.addObservers(webExtensionPopupFeature, extensionProcessDisabledPopupFeature, serviceWorkerSupport)
 
         if (shouldAddToRecentsScreen(intent)) {
             intent.removeExtra(START_IN_RECENTS_SCREEN)
@@ -359,6 +364,11 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
 
         if (settings().showContileFeature) {
             components.core.contileTopSitesUpdater.startPeriodicWork()
+        }
+
+        if (settings().enableUnifiedSearchSettingsUI && !settings().hiddenEnginesRestored) {
+            settings().hiddenEnginesRestored = true
+            components.useCases.searchUseCases.restoreHiddenSearchEngines.invoke()
         }
 
         // To assess whether the Pocket stories are to be downloaded or not multiple SharedPreferences
@@ -939,6 +949,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
      * value of [searchTermOrURL]).
      *
      * @param flags Flags that will be used when loading the URL (not applied to searches).
+     * @param additionalHeaders The extra headers to use when loading the URL.
      */
     @Suppress("LongParameterList")
     fun openToBrowserAndLoad(
@@ -951,9 +962,19 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         flags: EngineSession.LoadUrlFlags = EngineSession.LoadUrlFlags.none(),
         requestDesktopMode: Boolean = false,
         historyMetadata: HistoryMetadataKey? = null,
+        additionalHeaders: Map<String, String>? = null,
     ) {
         openToBrowser(from, customTabSessionId)
-        load(searchTermOrURL, newTab, engine, forceSearch, flags, requestDesktopMode, historyMetadata)
+        load(
+            searchTermOrURL = searchTermOrURL,
+            newTab = newTab,
+            engine = engine,
+            forceSearch = forceSearch,
+            flags = flags,
+            requestDesktopMode = requestDesktopMode,
+            historyMetadata = historyMetadata,
+            additionalHeaders = additionalHeaders,
+        )
     }
 
     fun openToBrowser(from: BrowserDirection, customTabSessionId: String? = null) {
@@ -1032,6 +1053,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
      * @param flags Flags that will be used when loading the URL (not applied to searches).
      * @param historyMetadata The [HistoryMetadataKey] of the new tab in case this tab
      * was opened from history.
+     * @param additionalHeaders The extra headers to use when loading the URL.
      */
     private fun load(
         searchTermOrURL: String,
@@ -1041,6 +1063,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         flags: EngineSession.LoadUrlFlags = EngineSession.LoadUrlFlags.none(),
         requestDesktopMode: Boolean = false,
         historyMetadata: HistoryMetadataKey? = null,
+        additionalHeaders: Map<String, String>? = null,
     ) {
         val startTime = components.core.engine.profiler?.getProfilerTime()
         val mode = browsingModeManager.mode
@@ -1080,13 +1103,20 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
                     components.useCases.searchUseCases.newTabSearch
                 }
                 searchUseCase.invoke(
-                    searchTermOrURL,
-                    SessionState.Source.Internal.UserEntered,
-                    true,
+                    searchTerms = searchTermOrURL,
+                    source = SessionState.Source.Internal.UserEntered,
+                    selected = true,
                     searchEngine = engine,
+                    flags = flags,
+                    additionalHeaders = additionalHeaders,
                 )
             } else {
-                components.useCases.searchUseCases.defaultSearch.invoke(searchTermOrURL, engine)
+                components.useCases.searchUseCases.defaultSearch.invoke(
+                    searchTerms = searchTermOrURL,
+                    searchEngine = engine,
+                    flags = flags,
+                    additionalHeaders = additionalHeaders,
+                )
             }
         }
 
@@ -1119,11 +1149,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
     }
 
     open fun navigateToHome() {
-        if (components.fenixOnboarding.userHasBeenOnboarded()) {
-            navHost.navController.navigate(NavGraphDirections.actionStartupHome())
-        } else {
-            navHost.navController.navigate(NavGraphDirections.actionStartupOnboarding())
-        }
+        navHost.navController.navigate(NavGraphDirections.actionStartupHome())
     }
 
     override fun attachBaseContext(base: Context) {

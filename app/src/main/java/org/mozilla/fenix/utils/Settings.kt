@@ -1701,6 +1701,12 @@ class Settings(private val appContext: Context) : PreferencesHolder {
         }
     }
 
+    val feltPrivateBrowsingEnabled: Boolean
+        get() {
+            FxNimbus.features.privateBrowsing.recordExposure()
+            return FxNimbus.features.privateBrowsing.value().feltPrivacyEnabled
+        }
+
     /**
      * Indicates if the review quality check feature is enabled by the user.
      */
@@ -1809,6 +1815,14 @@ class Settings(private val appContext: Context) : PreferencesHolder {
     )
 
     /**
+     * Indicates if the shopping experience feature is enabled.
+     */
+    val enableShoppingExperience by booleanPreference(
+        key = appContext.getPreferenceKey(R.string.pref_key_enable_shopping_experience),
+        default = FxNimbus.features.shoppingExperience.value().enabled,
+    )
+
+    /**
      * Adjust Activated User sent
      */
     var growthUserActivatedSent by booleanPreference(
@@ -1841,4 +1855,14 @@ class Settings(private val appContext: Context) : PreferencesHolder {
      * Indicates if the new Search settings UI is enabled.
      */
     var enableUnifiedSearchSettingsUI: Boolean = showUnifiedSearchFeature && FeatureFlags.unifiedSearchSettings
+
+    /**
+     * Indicates if hidden engines were restored due to migration to unified search settings UI.
+     * Should be removed once we expect the majority of the users to migrate.
+     * Tracking: https://bugzilla.mozilla.org/show_bug.cgi?id=1850767
+     */
+    var hiddenEnginesRestored: Boolean by booleanPreference(
+        appContext.getPreferenceKey(R.string.pref_key_hidden_engines_restored),
+        default = false,
+    )
 }
