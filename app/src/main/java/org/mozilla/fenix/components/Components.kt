@@ -9,7 +9,7 @@ import android.app.Application
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-import io.github.forkmaintainers.iceraven.components.PagedAddonCollectionProvider
+import io.github.forkmaintainers.iceraven.components.PagedAMOAddonProvider
 import androidx.core.app.NotificationManagerCompat
 import mozilla.components.feature.addons.AddonManager
 import mozilla.components.feature.addons.migration.DefaultSupportedAddonsChecker
@@ -109,8 +109,8 @@ class Components(private val context: Context) {
         )
     }
 
-    val addonCollectionProvider by lazyMonitored {
-        PagedAddonCollectionProvider(
+    val addonsProvider by lazyMonitored {
+        PagedAMOAddonProvider(
             context,
             core.client,
             serverURL = BuildConfig.AMO_SERVER_URL,
@@ -119,7 +119,7 @@ class Components(private val context: Context) {
     }
 
     fun clearAddonCache() {
-        addonCollectionProvider.deleteCacheFile()
+        addonsProvider.deleteCacheFile()
     }
 
     @Suppress("MagicNumber")

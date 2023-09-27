@@ -77,7 +77,7 @@ class PagedAddonInstallationDialogFragment : AppCompatDialogFragment() {
     /**
      * Reference to the application's [PagedAddonInstallationDialogFragment] to fetch add-on icons.
      */
-    var addonCollectionProvider: PagedAddonCollectionProvider? = null
+    var addonsProvider: PagedAMOAddonProvider? = null
 
     private val safeArguments get() = requireNotNull(arguments)
 
@@ -229,7 +229,7 @@ class PagedAddonInstallationDialogFragment : AppCompatDialogFragment() {
     internal fun fetchIcon(addon: Addon, iconView: ImageView, scope: CoroutineScope = this.scope): Job {
         return scope.launch {
             try {
-                val iconBitmap = addonCollectionProvider?.getAddonIconBitmap(addon)
+                val iconBitmap = addonsProvider?.getAddonIconBitmap(addon)
                 iconBitmap?.let {
                     scope.launch(Dispatchers.Main) {
                         safeArguments.putParcelable(KEY_ICON, it)
@@ -273,7 +273,7 @@ class PagedAddonInstallationDialogFragment : AppCompatDialogFragment() {
          */
         fun newInstance(
             addon: Addon,
-            addonCollectionProvider: PagedAddonCollectionProvider,
+            addonsProvider: PagedAMOAddonProvider,
             promptsStyling: PromptsStyling? = PromptsStyling(
                 gravity = Gravity.BOTTOM,
                 shouldWidthMatchParent = true,
@@ -304,7 +304,7 @@ class PagedAddonInstallationDialogFragment : AppCompatDialogFragment() {
             fragment.onConfirmButtonClicked = onConfirmButtonClicked
             fragment.onDismissed = onDismissed
             fragment.arguments = arguments
-            fragment.addonCollectionProvider = addonCollectionProvider
+            fragment.addonsProvider = addonsProvider
             return fragment
         }
     }

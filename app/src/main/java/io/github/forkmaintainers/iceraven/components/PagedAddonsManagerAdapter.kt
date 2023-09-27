@@ -55,15 +55,14 @@ private const val VIEW_HOLDER_TYPE_ADDON = 2
  * an add-on such as recommended, unsupported or installed. In addition, it will perform actions
  * such as installing an add-on.
  *
- * @property addonCollectionProvider Provider of AMO collection API.
+ * @property addonsProvider Provider of AMO collection API.
  * @property addonsManagerDelegate Delegate that will provides method for handling the add-on items.
  * @param addons The list of add-on based on the AMO store.
  * @property style Indicates how items should look like.
- * @property excludedAddonIDs The list of add-on IDs to be excluded from the recommended section.
  */
 @Suppress("LargeClass")
 class PagedAddonsManagerAdapter(
-    private val addonCollectionProvider: PagedAddonCollectionProvider,
+    private val addonsProvider: PagedAMOAddonProvider,
     private val addonsManagerDelegate: AddonsManagerAdapterDelegate,
     addons: List<Addon>,
     private val style: Style? = null,
@@ -257,7 +256,7 @@ class PagedAddonsManagerAdapter(
                 // if takes less than a second, we assume it comes
                 // from a cache and we don't show any transition animation.
                 val startTime = System.currentTimeMillis()
-                val iconBitmap = addonCollectionProvider.getAddonIconBitmap(addon)
+                val iconBitmap = addonsProvider.getAddonIconBitmap(addon)
                 val timeToFetch: Double = (System.currentTimeMillis() - startTime) / 1000.0
                 val isFromCache = timeToFetch < 1
                 if (iconBitmap != null) {

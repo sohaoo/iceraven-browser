@@ -58,7 +58,7 @@ internal const val DEFAULT_READ_TIMEOUT_IN_SECONDS = 20L
  * cache is being used by default
  */
 @Suppress("LongParameterList")
-class PagedAddonCollectionProvider(
+class PagedAMOAddonProvider(
     private val context: Context,
     private val client: Client,
     private val serverURL: String = DEFAULT_SERVER_URL,
@@ -117,8 +117,9 @@ class PagedAddonCollectionProvider(
      * @throws IOException if the request failed, or could not be executed due to cancellation,
      * a connectivity problem or a timeout.
      */
+
     @Throws(IOException::class)
-    override suspend fun getAvailableAddons(
+    override suspend fun getFeaturedAddons(
         allowCache: Boolean,
         readTimeoutInSeconds: Long?,
         language: String?,
@@ -164,8 +165,46 @@ class PagedAddonCollectionProvider(
                     writeToDiskCache(it.toString(), language)
                 }
                 deleteUnusedCacheFiles(language)
-            }.getAddons(language)
+            }.getAddonsFromCollection(language)
         }
+    }
+
+    override suspend fun getAddonsByGUIDs(
+        guids: List<String>,
+        readTimeoutInSeconds: Long?,
+        language: String?,
+    ): List<Addon> {
+        if (guids.isEmpty()) {
+            logger.warn("Attempted to retrieve add-ons with an empty list of GUIDs")
+            return emptyList()
+        }
+
+        val langParam = if (!language.isNullOrEmpty()) {
+            "&lang=$language"
+        } else {
+            ""
+        }
+
+        client.fetch(
+            Request(
+                url = "$serverURL/${API_VERSION}/addons/search/?guid=${guids.joinToString(",")}" + langParam,
+                readTimeout = Pair(readTimeoutInSeconds ?: DEFAULT_READ_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS),
+            ),
+        )
+            .use { response ->
+                if (response.isSuccess) {
+                    val responseBody = response.body.string(Charsets.UTF_8)
+                    return try {
+                        JSONObject(responseBody).getAddonsFromSearchResults(language)
+                    } catch (e: JSONException) {
+                        throw IOException(e)
+                    }
+                } else {
+                    val errorMessage = "Failed to get add-ons by GUIDs. Status code: ${response.status}"
+                    logger.error(errorMessage)
+                    throw IOException(errorMessage)
+                }
+            }
     }
 
     /**
@@ -225,7 +264,7 @@ class PagedAddonCollectionProvider(
      * a connectivity problem or a timeout.
      */
     @Throws(IOException::class)
-    suspend fun getAddonIconBitmap(addon: Addon): Bitmap? {
+    override suspend fun getAddonIconBitmap(addon: Addon): Bitmap? {
         var bitmap: Bitmap? = null
         if (addon.iconUrl != "") {
             client.fetch(
@@ -259,7 +298,7 @@ class PagedAddonCollectionProvider(
         logger.info("Loading cache file")
         synchronized(diskCacheLock) {
             return getCacheFile(context, language, useFallbackFile).readAndDeserialize {
-                JSONObject(it).getAddons(language)
+                JSONObject(it).getAddonsFromCollection(language)
             }
         }
     }
@@ -363,15 +402,23 @@ class PagedAddonCollectionProvider(
     }
 }
 
-internal fun JSONObject.getAddons(language: String? = null): List<Addon> {
+internal fun JSONObject.getAddonsFromSearchResults(language: String? = null): List<Addon> {
     val addonsJson = getJSONArray("results")
     return (0 until addonsJson.length()).map { index ->
-        addonsJson.getJSONObject(index).toAddons(language)
+        addonsJson.getJSONObject(index).toAddon(language)
     }
 }
 
-internal fun JSONObject.toAddons(language: String? = null): Addon {
-    return with(getJSONObject("addon")) {
+internal fun JSONObject.getAddonsFromCollection(language: String? = null): List<Addon> {
+    val addonsJson = getJSONArray("results")
+    // Each result in a collection response has an `addon` key and some (optional) notes.
+    return (0 until addonsJson.length()).map { index ->
+        addonsJson.getJSONObject(index).getJSONObject("addon").toAddon(language)
+    }
+}
+
+internal fun JSONObject.toAddon(language: String? = null): Addon {
+    return with(this) {
         val download = getDownload()
         val safeLanguage = language?.lowercase(Locale.getDefault())
         val summary = getSafeTranslations("summary", safeLanguage)
