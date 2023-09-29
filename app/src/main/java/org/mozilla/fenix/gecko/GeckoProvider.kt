@@ -113,9 +113,9 @@ object GeckoProvider {
             .contentBlocking(policy.toContentBlockingSetting())
             .consoleOutput(context.components.settings.enableGeckoLogs)
             .debugLogging(Config.channel.isDebug || context.components.settings.enableGeckoLogs)
-            .aboutConfigEnabled(Config.channel.isBeta || Config.channel.isNightlyOrDebug)
+            .aboutConfigEnabled(true)
             .extensionsProcessEnabled(FxNimbus.features.extensionsProcess.value().enabled)
-            .extensionsWebAPIEnabled(Config.channel.isNightlyOrDebug || Config.channel.isFork)
+            .extensionsWebAPIEnabled(true)
             .build()
     }
 }
