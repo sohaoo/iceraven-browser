@@ -2407,4 +2407,14 @@
     <string name="preferences_relinquish_memory_title">掛起標籤頁以避免因記憶體不足而程序被殺死</string>
     <!-- Description for relinquish memory preference in customization settings -->
     <string name="preferences_relinquish_memory_description">開啟後，當系統記憶體不足時，標籤頁會被掛起，同時頁面狀態會丟失</string>
+    <string name="preferences_dns_over_https">DNS over HTTPS</string>
+    <string name="preferences_dns_over_https_on">開啟</string>
+    <string name="preferences_dns_over_https_off">關閉</string>
+    <string name="preferences_dns_over_https_title">DNS over HTTPS</string>
+    <string name="preferences_dns_over_https_summary">DNS over HTTPS 會將您的網域名稱查詢請求加密後傳送，使其他人更難得知您要開啟的網站，讓 DNS 查詢變得安全。</string>
+    <string name="preferences_dns_over_https_custom_server">自定義</string>
+    <string name="addons_delete_cache">刪除附加元件元數據緩存檔案</string>
+    <string name="confirm_addons_delete_cache">您確定要刪除附加元件元數據緩存檔案嗎？</string>
+    <string name="confirm_addons_delete_cache_yes">確定</string>
+    <string name="confirm_addons_delete_cache_no">取消</string>
 </resources>

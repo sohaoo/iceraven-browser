@@ -2433,4 +2433,14 @@
     <string name="preferences_relinquish_memory_title">挂起标签页以避免因内存不足而进程被杀死</string>
     <!-- Description for relinquish memory preference in customization settings -->
     <string name="preferences_relinquish_memory_description">开启后，当系统内存不足时，标签页会被挂起，同时页面状态会丢失</string>
+    <string name="preferences_dns_over_https">基于 HTTPS 的 DNS</string>
+    <string name="preferences_dns_over_https_on">启用</string>
+    <string name="preferences_dns_over_https_off">关闭</string>
+    <string name="preferences_dns_over_https_title">基于 HTTPS 的 DNS</string>
+    <string name="preferences_dns_over_https_summary">基于 DNS 的 HTTPS 会加密发送您对域名的请求，从而建立安全 DNS，使他人更难得知您要访问的网站</string>
+    <string name="preferences_dns_over_https_custom_server">自定义</string>
+    <string name="addons_delete_cache">删除附加组件元数据缓存文件</string>
+    <string name="confirm_addons_delete_cache">您确定要删除附加组件元数据缓存文件吗？</string>
+    <string name="confirm_addons_delete_cache_yes">确定</string>
+    <string name="confirm_addons_delete_cache_no">取消</string>
 </resources>

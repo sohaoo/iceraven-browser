@@ -16,6 +16,7 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.accessibility.AccessibilityEvent
 import androidx.annotation.VisibleForTesting
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
@@ -142,11 +143,35 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
 
                 override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                     // Handle the menu selection
-                    return true
+                    return when (menuItem.itemId) {
+                        R.id.addons_delete_cache -> {
+                            showAlertDialog()
+                            true
+                        }
+                        R.id.search -> {
+                            true
+                        }
+                        else -> {true}
+                    }
                 }
             },
             viewLifecycleOwner, Lifecycle.State.RESUMED,
         )
+    }
+
+    private fun showAlertDialog() {
+        val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
+        builder
+            .setMessage(R.string.confirm_addons_delete_cache)
+            .setPositiveButton(R.string.confirm_addons_delete_cache_yes) { _, _ ->
+                requireComponents.clearAddonCache()
+            }
+            .setNegativeButton(R.string.confirm_addons_delete_cache_no) { _, _ ->
+                // User cancelled the dialog.
+            }
+
+        val dialog: AlertDialog = builder.create()
+        dialog.show()
     }
 
     private fun searchAddons(addonSearchText: String): Boolean {
