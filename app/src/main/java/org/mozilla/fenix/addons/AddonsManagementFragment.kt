@@ -165,6 +165,7 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
             .setMessage(R.string.confirm_addons_delete_cache)
             .setPositiveButton(R.string.confirm_addons_delete_cache_yes) { _, _ ->
                 requireComponents.clearAddonCache()
+                requireActivity().onBackPressedDispatcher.onBackPressed()
             }
             .setNegativeButton(R.string.confirm_addons_delete_cache_no) { _, _ ->
                 // User cancelled the dialog.
