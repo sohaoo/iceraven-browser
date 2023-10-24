@@ -67,4 +67,15 @@ object FeatureFlags {
      * Enables the lib-state HistoryFragment refactor
      */
     val historyFragmentLibStateRefactor = Config.channel.isNightlyOrDebug
+
+    /**
+     * Allows users to enable translations.
+     * Preference to fully enable translations is pref_key_enable_translations.
+     */
+    val translations = Config.channel.isDebug
+
+    /**
+     * Allows users to enable Firefox Suggest.
+     */
+    val fxSuggest = Config.channel.isDebug
 }

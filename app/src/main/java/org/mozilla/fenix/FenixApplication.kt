@@ -43,6 +43,7 @@ import mozilla.components.concept.storage.FrecencyThresholdOption
 import mozilla.components.feature.addons.migration.DefaultSupportedAddonsChecker
 import mozilla.components.feature.addons.update.GlobalAddonDependencyProvider
 import mozilla.components.feature.autofill.AutofillUseCases
+import mozilla.components.feature.fxsuggest.GlobalFxSuggestDependencyProvider
 import mozilla.components.feature.search.ext.buildSearchUrl
 import mozilla.components.feature.search.ext.waitForSelectedOrDefaultSearchEngine
 import mozilla.components.feature.top.sites.TopSitesFrecencyConfig
@@ -282,6 +283,8 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
         startMetricsIfEnabled()
         setupPush()
 
+        GlobalFxSuggestDependencyProvider.initialize(components.fxSuggest.storage)
+
         visibilityLifecycleCallback = VisibilityLifecycleCallback(getSystemService())
         registerActivityLifecycleCallbacks(visibilityLifecycleCallback)
         registerActivityLifecycleCallbacks(MarkersActivityLifecycleCallbacks(components.core.engine))
@@ -365,6 +368,14 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
                         components.core.historyMetadataService.cleanup(
                             System.currentTimeMillis() - Core.HISTORY_METADATA_MAX_AGE_IN_MS,
                         )
+
+                        // If Firefox Suggest is enabled, register a worker to periodically ingest
+                        // new search suggestions. The worker requires us to have called
+                        // `GlobalFxSuggestDependencyProvider.initialize`, which we did before
+                        // scheduling these tasks.
+                        if (settings().enableFxSuggest) {
+                            components.fxSuggest.ingestionScheduler.startPeriodicIngestion()
+                        }
                     }
                 }
                 // Account manager initialization needs to happen on the main thread.
@@ -749,6 +760,7 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
             adjustCreative.set(settings.adjustCreative)
             adjustNetwork.set(settings.adjustNetwork)
 
+            settings.migrateSearchWidgetInstalledPrefIfNeeded()
             searchWidgetInstalled.set(settings.searchWidgetInstalled)
 
             val openTabsCount = settings.openTabsCount
@@ -815,6 +827,7 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
             )
 
             ramMoreThanThreshold.set(isDeviceRamAboveThreshold)
+            deviceTotalRam.set(getDeviceTotalRAM())
         }
 
         with(AndroidAutofill) {
@@ -863,12 +876,27 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
         }
     }
 
-    private fun deviceRamApproxMegabytes(): Long {
+    @VisibleForTesting
+    internal fun getDeviceTotalRAM(): Long {
+        val memoryInfo = getMemoryInfo()
+        return if (SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            memoryInfo.advertisedMem
+        } else {
+            memoryInfo.totalMem
+        }
+    }
+
+    @VisibleForTesting
+    internal fun getMemoryInfo(): ActivityManager.MemoryInfo {
         val memoryInfo = ActivityManager.MemoryInfo()
         val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         activityManager.getMemoryInfo(memoryInfo)
 
-        val deviceRamBytes = memoryInfo.totalMem
+        return memoryInfo
+    }
+
+    private fun deviceRamApproxMegabytes(): Long {
+        val deviceRamBytes = getMemoryInfo().totalMem
         return deviceRamBytes.toRoundedMegabytes()
     }
 

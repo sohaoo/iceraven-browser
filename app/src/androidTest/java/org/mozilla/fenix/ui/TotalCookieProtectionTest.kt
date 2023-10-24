@@ -4,19 +4,16 @@
 
 package org.mozilla.fenix.ui
 
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mozilla.fenix.R
+import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.helpers.AndroidAssetDispatcher
 import org.mozilla.fenix.helpers.HomeActivityTestRule
-import org.mozilla.fenix.helpers.MatcherHelper.itemContainingText
-import org.mozilla.fenix.helpers.MatcherHelper.itemWithDescription
 import org.mozilla.fenix.helpers.TestAssetHelper.getGenericAsset
-import org.mozilla.fenix.helpers.TestHelper.getStringResource
-import org.mozilla.fenix.ui.robots.clickPageObject
 import org.mozilla.fenix.ui.robots.navigationToolbar
 
 /**
@@ -24,17 +21,16 @@ import org.mozilla.fenix.ui.robots.navigationToolbar
  *  Note: This involves setting the feature flags On for CFRs which are disabled elsewhere.
  *
  */
-class ContextualHintsTest {
+class TotalCookieProtectionTest {
     private lateinit var mockWebServer: MockWebServer
 
     @get:Rule
-    val activityTestRule = HomeActivityTestRule(
-        isJumpBackInCFREnabled = true,
-        isTCPCFREnabled = true,
-        isPocketEnabled = false,
-        isRecentlyVisitedFeatureEnabled = false,
-        isCookieBannerReductionDialogEnabled = false,
-    )
+    val composeTestRule = AndroidComposeTestRule(
+        HomeActivityTestRule(
+            isTCPCFREnabled = true,
+            isCookieBannerReductionDialogEnabled = false,
+        ),
+    ) { it.activity }
 
     @Before
     fun setUp() {
@@ -49,27 +45,33 @@ class ContextualHintsTest {
         mockWebServer.shutdown()
     }
 
+    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/2260552
     @Test
     fun openTotalCookieProtectionLearnMoreLinkTest() {
         val genericPage = getGenericAsset(mockWebServer, 1)
 
         navigationToolbar {
-        }.enterURLAndEnterToBrowser(genericPage.url) {
-            verifyCookiesProtectionHintIsDisplayed(true)
-            clickPageObject(itemContainingText(getStringResource(R.string.tcp_cfr_learn_more)))
+        }.enterURLAndEnterToBrowserForTCPCFR(genericPage.url) {
+            waitForPageToLoad()
+            verifyCookiesProtectionHintIsDisplayed(composeTestRule, true)
+            clickTCPCFRLearnMore(composeTestRule)
             verifyUrl("support.mozilla.org/en-US/kb/enhanced-tracking-protection-firefox-android")
+            verifyShouldShowCFRTCP(false, composeTestRule.activity.settings())
         }
     }
 
+    // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/1913589
     @Test
     fun dismissTotalCookieProtectionHintTest() {
         val genericPage = getGenericAsset(mockWebServer, 1)
 
         navigationToolbar {
-        }.enterURLAndEnterToBrowser(genericPage.url) {
-            verifyCookiesProtectionHintIsDisplayed(true)
-            clickPageObject(itemWithDescription(getStringResource(R.string.mozac_cfr_dismiss_button_content_description)))
-            verifyCookiesProtectionHintIsDisplayed(false)
+        }.enterURLAndEnterToBrowserForTCPCFR(genericPage.url) {
+            waitForPageToLoad()
+            verifyCookiesProtectionHintIsDisplayed(composeTestRule, true)
+            dismissTCPCFRPopup(composeTestRule)
+            verifyCookiesProtectionHintIsDisplayed(composeTestRule, false)
+            verifyShouldShowCFRTCP(false, composeTestRule.activity.settings())
         }
     }
 }
