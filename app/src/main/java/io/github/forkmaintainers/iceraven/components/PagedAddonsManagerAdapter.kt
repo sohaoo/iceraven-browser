@@ -35,6 +35,7 @@ import mozilla.components.feature.addons.R
 import mozilla.components.feature.addons.ui.AddonsManagerAdapterDelegate
 import mozilla.components.feature.addons.ui.CustomViewHolder
 import mozilla.components.feature.addons.ui.CustomViewHolder.AddonViewHolder
+import mozilla.components.feature.addons.ui.CustomViewHolder.FooterViewHolder
 import mozilla.components.feature.addons.ui.CustomViewHolder.SectionViewHolder
 import mozilla.components.feature.addons.ui.CustomViewHolder.UnsupportedSectionViewHolder
 import mozilla.components.feature.addons.ui.translateName
@@ -49,15 +50,16 @@ import mozilla.components.ui.icons.R as iconsR
 private const val VIEW_HOLDER_TYPE_SECTION = 0
 private const val VIEW_HOLDER_TYPE_NOT_YET_SUPPORTED_SECTION = 1
 private const val VIEW_HOLDER_TYPE_ADDON = 2
+private const val VIEW_HOLDER_TYPE_FOOTER = 3
 
 /**
  * An adapter for displaying add-on items. This will display information related to the state of
  * an add-on such as recommended, unsupported or installed. In addition, it will perform actions
  * such as installing an add-on.
  *
- * @property addonsProvider Provider of AMO collection API.
+ * @property addonsProvider An add-ons provider.
  * @property addonsManagerDelegate Delegate that will provides method for handling the add-on items.
- * @param addons The list of add-on based on the AMO store.
+ * @param addons The list of add-ons to display.
  * @property style Indicates how items should look like.
  */
 @Suppress("LargeClass")
@@ -87,6 +89,7 @@ class PagedAddonsManagerAdapter(
             VIEW_HOLDER_TYPE_ADDON -> createAddonViewHolder(parent)
             VIEW_HOLDER_TYPE_SECTION -> createSectionViewHolder(parent)
             VIEW_HOLDER_TYPE_NOT_YET_SUPPORTED_SECTION -> createUnsupportedSectionViewHolder(parent)
+            VIEW_HOLDER_TYPE_FOOTER -> createFooterSectionViewHolder(parent)
             else -> throw IllegalArgumentException("Unrecognized viewType")
         }
     }
@@ -98,6 +101,17 @@ class PagedAddonsManagerAdapter(
         val titleView = view.findViewById<TextView>(R.id.title)
         val divider = view.findViewById<View>(R.id.divider)
         return SectionViewHolder(view, titleView, divider)
+    }
+
+    private fun createFooterSectionViewHolder(parent: ViewGroup): CustomViewHolder {
+        val context = parent.context
+        val inflater = LayoutInflater.from(context)
+        val view = inflater.inflate(
+            R.layout.mozac_feature_addons_footer_section_item,
+            parent,
+            false,
+        )
+        return FooterViewHolder(view)
     }
 
     private fun createUnsupportedSectionViewHolder(parent: ViewGroup): CustomViewHolder {
@@ -144,6 +158,7 @@ class PagedAddonsManagerAdapter(
             is Addon -> VIEW_HOLDER_TYPE_ADDON
             is Section -> VIEW_HOLDER_TYPE_SECTION
             is NotYetSupportedSection -> VIEW_HOLDER_TYPE_NOT_YET_SUPPORTED_SECTION
+            is FooterSection -> VIEW_HOLDER_TYPE_FOOTER
             else -> throw IllegalArgumentException("items[position] has unrecognized type")
         }
     }
@@ -158,6 +173,7 @@ class PagedAddonsManagerAdapter(
                 holder,
                 item as NotYetSupportedSection,
             )
+            is FooterViewHolder -> bindFooterButton(holder)
         }
     }
 
@@ -193,6 +209,15 @@ class PagedAddonsManagerAdapter(
 
         holder.itemView.setOnClickListener {
             addonsManagerDelegate.onNotYetSupportedSectionClicked(unsupportedAddons)
+        }
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal fun bindFooterButton(
+        holder: FooterViewHolder,
+    ) {
+        holder.itemView.setOnClickListener {
+            addonsManagerDelegate.onFindMoreAddonsButtonClicked()
         }
     }
 
@@ -330,6 +355,10 @@ class PagedAddonsManagerAdapter(
             itemsWithSections.add(NotYetSupportedSection(R.string.mozac_feature_addons_unavailable_section))
         }
 
+        if (addonsManagerDelegate.shouldShowFindMoreAddonsButton()) {
+            itemsWithSections.add(FooterSection)
+        }
+
         return itemsWithSections
     }
 
@@ -338,6 +367,9 @@ class PagedAddonsManagerAdapter(
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal data class NotYetSupportedSection(@StringRes val title: Int)
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal object FooterSection
 
     /**
      * Allows to customize how items should look like.

@@ -28,10 +28,11 @@ import java.io.File
 import java.io.IOException
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
 internal const val API_VERSION = "api/v4"
-internal const val DEFAULT_SERVER_URL = "https://addons.mozilla.org"
+internal const val DEFAULT_SERVER_URL = "https://services.addons.mozilla.org"
 internal const val COLLECTION_FILE_NAME_PREFIX = "%s_components_addon_collection"
 internal const val COLLECTION_FILE_NAME = "%s_components_addon_collection_%s.json"
 internal const val COLLECTION_FILE_NAME_WITH_LANGUAGE = "%s_components_addon_collection_%s_%s.json"
@@ -40,22 +41,15 @@ internal const val MINUTE_IN_MS = 60 * 1000
 internal const val DEFAULT_READ_TIMEOUT_IN_SECONDS = 20L
 
 /**
- * Provide access to the AMO collections API.
- * https://addons-server.readthedocs.io/en/latest/topics/api/collections.html
- *
- * Unlike the android-components version, supports multiple-page responses and
- * custom collection accounts.
- *
- * Needs to extend AddonsProvider because AddonsManagerAdapter won't
- * take just any AddonsProvider.
+ * Implement an add-ons provider that uses the AMO API.
  *
  * @property context A reference to the application context.
  * @property client A [Client] for interacting with the AMO HTTP api.
  * @property serverURL The url of the endpoint to interact with e.g production, staging
  * or testing. Defaults to [DEFAULT_SERVER_URL].
- * @property maxCacheAgeInMinutes maximum time (in minutes) the collection cache
- * should remain valid before a refresh is attempted. Defaults to -1, meaning no
- * cache is being used by default
+ * @property maxCacheAgeInMinutes maximum time (in minutes) the cached featured add-ons
+ * should remain valid before a refresh is attempted. Defaults to -1, meaning no cache
+ * is being used by default
  */
 @Suppress("LongParameterList")
 class PagedAMOAddonProvider(
@@ -64,6 +58,10 @@ class PagedAMOAddonProvider(
     private val serverURL: String = DEFAULT_SERVER_URL,
     private val maxCacheAgeInMinutes: Long = -1,
 ) : AddonsProvider {
+
+    // This map acts as an in-memory cache for the installed add-ons.
+    @VisibleForTesting
+    internal val installedAddons = ConcurrentHashMap<String, Addon>()
 
     private val logger = Logger("PagedAddonCollectionProvider")
 
@@ -102,8 +100,10 @@ class PagedAMOAddonProvider(
     /**
      * Interacts with the collections endpoint to provide a list of available
      * add-ons. May return a cached response, if [allowCache] is true, and the
-     * cache is not expired (see [maxCacheAgeInMinutes]) or fetching from
-     * AMO failed.
+     * cache is not expired (see [maxCacheAgeInMinutes]) or fetching from AMO
+     * failed.
+     *
+     * See: https://addons-server.readthedocs.io/en/latest/topics/api/collections.html
      *
      * @param allowCache whether or not the result may be provided
      * from a previously cached response, defaults to true. Note that
@@ -117,7 +117,6 @@ class PagedAMOAddonProvider(
      * @throws IOException if the request failed, or could not be executed due to cancellation,
      * a connectivity problem or a timeout.
      */
-
     @Throws(IOException::class)
     override suspend fun getFeaturedAddons(
         allowCache: Boolean,
@@ -127,19 +126,18 @@ class PagedAMOAddonProvider(
         // We want to make sure we always use useFallbackFile = false here, as it warranties
         // that we are trying to fetch the latest localized add-ons when the user changes
         // language from the previous one.
-        val cachedAvailableAddons =
-            if (allowCache && !cacheExpired(context, language, useFallbackFile = false)) {
-                readFromDiskCache(language, useFallbackFile = false)
-            } else {
-                null
-            }
+        val cachedFeaturedAddons = if (allowCache && !cacheExpired(context, language, useFallbackFile = false)) {
+            readFromDiskCache(language, useFallbackFile = false)
+        } else {
+            null
+        }
 
         val collectionAccount = getCollectionAccount()
         val collectionName = getCollectionName()
 
-        if (cachedAvailableAddons != null) {
+        if (cachedFeaturedAddons != null) {
             logger.info("Providing cached list of addons for $collectionAccount collection $collectionName")
-            return cachedAvailableAddons
+            return cachedFeaturedAddons
         } else {
             logger.info("Fetching fresh list of addons for $collectionAccount collection $collectionName")
             val langParam = if (!language.isNullOrEmpty()) {
@@ -169,14 +167,43 @@ class PagedAMOAddonProvider(
         }
     }
 
+    /**
+     * Interacts with the search endpoint to provide a list of add-ons for a given list of GUIDs.
+     *
+     * See: https://addons-server.readthedocs.io/en/latest/topics/api/addons.html#search
+     *
+     * @param guids list of add-on GUIDs to retrieve.
+     * @param allowCache whether or not the result may be provided from a previously cached response,
+     * defaults to true.
+     * @param readTimeoutInSeconds optional timeout in seconds to use when fetching available
+     * add-ons from a remote endpoint. If not specified [DEFAULT_READ_TIMEOUT_IN_SECONDS] will
+     * be used.
+     * @param language indicates in which language the translatable fields should be in, if no
+     * matching language is found then a fallback translation is returned using the default
+     * language. When it is null all translations available will be returned.
+     * @throws IOException if the request failed, or could not be executed due to cancellation,
+     * a connectivity problem or a timeout.
+     */
+    @Throws(IOException::class)
+    @Suppress("NestedBlockDepth")
     override suspend fun getAddonsByGUIDs(
         guids: List<String>,
+        allowCache: Boolean,
         readTimeoutInSeconds: Long?,
         language: String?,
     ): List<Addon> {
         if (guids.isEmpty()) {
             logger.warn("Attempted to retrieve add-ons with an empty list of GUIDs")
             return emptyList()
+        }
+
+        if (allowCache && installedAddons.isNotEmpty()) {
+            val cachedAddons = installedAddons.findAddonsBy(guids, language ?: Locale.getDefault().language)
+            // We should only return the cached add-ons when all the requested
+            // GUIDs have been found in the cache.
+            if (cachedAddons.size == guids.size) {
+                return cachedAddons
+            }
         }
 
         val langParam = if (!language.isNullOrEmpty()) {
@@ -187,7 +214,7 @@ class PagedAMOAddonProvider(
 
         client.fetch(
             Request(
-                url = "$serverURL/${API_VERSION}/addons/search/?guid=${guids.joinToString(",")}" + langParam,
+                url = "$serverURL/$API_VERSION/addons/search/?guid=${guids.joinToString(",")}" + langParam,
                 readTimeout = Pair(readTimeoutInSeconds ?: DEFAULT_READ_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS),
             ),
         )
@@ -195,7 +222,11 @@ class PagedAMOAddonProvider(
                 if (response.isSuccess) {
                     val responseBody = response.body.string(Charsets.UTF_8)
                     return try {
-                        JSONObject(responseBody).getAddonsFromSearchResults(language)
+                        val addons = JSONObject(responseBody).getAddonsFromSearchResults(language)
+                        addons.forEach {
+                            installedAddons[it.id] = it
+                        }
+                        addons
                     } catch (e: JSONException) {
                         throw IOException(e)
                     }
@@ -239,11 +270,7 @@ class PagedAMOAddonProvider(
                         throw IOException(errorMessage)
                     }
 
-                    val currentResponse = try {
-                        JSONObject(response.body.string(Charsets.UTF_8))
-                    } catch (e: JSONException) {
-                        throw IOException(e)
-                    }
+                    val currentResponse = JSONObject(response.body.string(Charsets.UTF_8))
                     if (compiledResponse == null) {
                         compiledResponse = currentResponse
                     } else {
@@ -399,6 +426,19 @@ class PagedAMOAddonProvider(
                 it.delete()
             }
         }
+    }
+}
+
+internal fun Map<String, Addon>.findAddonsBy(
+    guids: List<String>,
+    language: String,
+): List<Addon> {
+    return if (isNotEmpty()) {
+        filter {
+            guids.contains(it.key) && it.value.translatableName.containsKey(language)
+        }.map { it.value }
+    } else {
+        emptyList()
     }
 }
 
