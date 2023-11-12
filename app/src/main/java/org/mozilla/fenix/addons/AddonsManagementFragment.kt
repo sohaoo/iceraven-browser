@@ -70,6 +70,10 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
 
     private val webExtensionPromptFeature = ViewBoundFeatureWrapper<WebExtensionPromptFeature>()
 
+    // We must save the add-on list in the class, or we won't have it
+    // downloaded for the non-suspending search function
+    private var addons: List<Addon> = emptyList()
+
     private var installExternalAddonComplete: Boolean
         set(value) {
             arguments?.putBoolean(BUNDLE_KEY_INSTALL_EXTERNAL_ADDON_COMPLETE, value)
@@ -79,10 +83,6 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
         }
 
     private var adapter: PagedAddonsManagerAdapter? = null
-
-    // We must save the add-on list in the class, or we won't have it
-    // downloaded for the non-suspending search function
-    private var addons: List<Addon>? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         logger.info("View created for AddonsManagementFragment")
@@ -174,7 +174,7 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
         }
 
         val searchedAddons = arrayListOf<Addon>()
-        addons?.forEach { addon ->
+        addons.forEach { addon ->
             val names = addon.translatableName
             val language = Locale.getDefault().language
             names[language]?.let { name ->
@@ -255,7 +255,7 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
                             adapter = PagedAddonsManagerAdapter(
                                 requireContext().components.addonsProvider,
                                 managementView,
-                                addons!!,
+                                addons,
                                 style = createAddonStyle(requireContext()),
                             )
                         }
@@ -264,12 +264,12 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
 
                         recyclerView?.adapter = adapter
                         if (shouldRefresh) {
-                            adapter?.updateAddons(addons!!)
+                            adapter?.updateAddons(addons)
                         }
 
                         args.installAddonId?.let { addonIn ->
                             if (!installExternalAddonComplete) {
-                                installExternalAddon(addons!!, addonIn)
+                                installExternalAddon(addons, addonIn)
                             }
                         }
                     }
