@@ -26,8 +26,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import io.github.forkmaintainers.iceraven.components.PagedAddonInstallationDialogFragment
-import io.github.forkmaintainers.iceraven.components.PagedAddonsManagerAdapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.launch
@@ -40,7 +38,6 @@ import mozilla.components.feature.addons.ui.AddonsManagerAdapter
 import mozilla.components.feature.addons.ui.AddonsManagerAdapterDelegate
 import org.mozilla.fenix.BrowserDirection
 import org.mozilla.fenix.BuildConfig
-import org.mozilla.fenix.Config
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.FenixSnackbar
@@ -73,6 +70,7 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentAddOnsManagementBinding.bind(view)
         bindRecyclerView()
+        setupMenu()
         (activity as HomeActivity).webExtensionPromptFeature.onAddonChanged = {
             runIfFragmentIsAttached {
                 adapter?.updateAddon(it)
@@ -220,7 +218,6 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
 
         // If the fragment was launched to install an "external" add-on from AMO, we deactivate
         // the cache to get the most up-to-date list of add-ons to match against.
-        val allowCache = args.installAddonId == null || installExternalAddonComplete
         lifecycleScope.launch(IO) {
             try {
                 logger.info("AddonsManagementFragment asking for addons")
@@ -229,10 +226,11 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
                 lifecycleScope.launch(Dispatchers.Main) {
                     runIfFragmentIsAttached {
                         if (!shouldRefresh) {
-                            adapter = PagedAddonsManagerAdapter(
+                            adapter = AddonsManagerAdapter(
                                 addonsManagerDelegate = managementView,
                                 addons = addons,
                                 style = createAddonStyle(requireContext()),
+                                excludedAddonIDs = emptyList(),
                                 store = requireComponents.core.store
                             )
                         }
@@ -271,14 +269,14 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
         }
     }
 
-    private fun createAddonStyle(context: Context): PagedAddonsManagerAdapter.Style {
+    private fun createAddonStyle(context: Context): AddonsManagerAdapter.Style {
         val sectionsTypeFace = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             Typeface.create(Typeface.DEFAULT, FONT_WEIGHT_MEDIUM, false)
         } else {
             Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         }
 
-        return PagedAddonsManagerAdapter.Style(
+        return AddonsManagerAdapter.Style(
             sectionsTextColor = ThemeManager.resolveAttribute(R.attr.textPrimary, context),
             addonNameTextColor = ThemeManager.resolveAttribute(R.attr.textPrimary, context),
             addonSummaryTextColor = ThemeManager.resolveAttribute(R.attr.textSecondary, context),

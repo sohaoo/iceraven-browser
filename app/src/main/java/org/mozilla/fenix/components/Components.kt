@@ -9,7 +9,7 @@ import android.app.Application
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-import io.github.forkmaintainers.iceraven.components.PagedAMOAddonProvider
+import io.github.forkmaintainers.iceraven.components.PagedAMOAddonsProvider
 import androidx.core.app.NotificationManagerCompat
 import mozilla.components.feature.addons.AddonManager
 import mozilla.components.feature.addons.migration.DefaultSupportedAddonsChecker
@@ -110,7 +110,7 @@ class Components(private val context: Context) {
     }
 
     val addonsProvider by lazyMonitored {
-        PagedAMOAddonProvider(
+        PagedAMOAddonsProvider(
             context,
             core.client,
             serverURL = BuildConfig.AMO_SERVER_URL,

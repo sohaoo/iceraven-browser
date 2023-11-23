@@ -206,10 +206,6 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         ExtensionsProcessDisabledController(this@HomeActivity)
     }
 
-    private val extensionProcessDisabledPopupFeature by lazy {
-        ExtensionProcessDisabledController(this@HomeActivity, components.core.store)
-    }
-
     private val serviceWorkerSupport by lazy {
         ServiceWorkerSupportFeature(this)
     }

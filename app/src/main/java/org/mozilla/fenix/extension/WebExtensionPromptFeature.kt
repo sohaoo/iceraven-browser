@@ -18,9 +18,9 @@ import mozilla.components.browser.state.state.extension.WebExtensionPromptReques
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.concept.engine.webextension.WebExtensionInstallException
 import mozilla.components.feature.addons.Addon
-import io.github.forkmaintainers.iceraven.components.PagedAddonInstallationDialogFragment as AddonInstallationDialogFragment
 import mozilla.components.feature.addons.AddonManager
 import mozilla.components.feature.addons.ui.AddonDialogFragment
+import mozilla.components.feature.addons.ui.AddonInstallationDialogFragment
 import mozilla.components.feature.addons.ui.PermissionsDialogFragment
 import mozilla.components.lib.state.ext.flowScoped
 import mozilla.components.support.base.feature.LifecycleAwareFeature

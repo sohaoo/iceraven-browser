@@ -9,6 +9,11 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.AtomicFile
 import androidx.annotation.VisibleForTesting
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import mozilla.components.concept.fetch.Client
 import mozilla.components.concept.fetch.Request
 import mozilla.components.concept.fetch.isSuccess
@@ -20,7 +25,6 @@ import mozilla.components.support.ktx.kotlin.sanitizeURL
 import mozilla.components.support.ktx.util.readAndDeserialize
 import mozilla.components.support.ktx.util.writeString
 import org.json.JSONArray
-import org.json.JSONException
 import org.json.JSONObject
 import org.mozilla.fenix.Config
 import org.mozilla.fenix.ext.settings
@@ -52,20 +56,22 @@ internal const val DEFAULT_READ_TIMEOUT_IN_SECONDS = 20L
  * is being used by default
  */
 @Suppress("LongParameterList")
-class PagedAMOAddonProvider(
+class PagedAMOAddonsProvider(
     private val context: Context,
     private val client: Client,
     private val serverURL: String = DEFAULT_SERVER_URL,
     private val maxCacheAgeInMinutes: Long = -1,
 ) : AddonsProvider {
 
-    // This map acts as an in-memory cache for the installed add-ons.
-    @VisibleForTesting
-    internal val installedAddons = ConcurrentHashMap<String, Addon>()
-
     private val logger = Logger("PagedAddonCollectionProvider")
 
     private val diskCacheLock = Any()
+
+    private val scope = CoroutineScope(Dispatchers.IO)
+
+    // Acts as an in-memory cache for the fetched addon's icons.
+    @VisibleForTesting
+    internal val iconsCache = ConcurrentHashMap<String, Bitmap>()
 
     /**
      * Get the account we should be fetching addons from.
@@ -118,6 +124,7 @@ class PagedAMOAddonProvider(
      * a connectivity problem or a timeout.
      */
     @Throws(IOException::class)
+    @Suppress("NestedBlockDepth")
     override suspend fun getFeaturedAddons(
         allowCache: Boolean,
         readTimeoutInSeconds: Long?,
@@ -127,7 +134,7 @@ class PagedAMOAddonProvider(
         // that we are trying to fetch the latest localized add-ons when the user changes
         // language from the previous one.
         val cachedFeaturedAddons = if (allowCache && !cacheExpired(context, language, useFallbackFile = false)) {
-            readFromDiskCache(language, useFallbackFile = false)
+            readFromDiskCache(language, useFallbackFile = false)?.loadIcons()
         } else {
             null
         }
@@ -138,104 +145,32 @@ class PagedAMOAddonProvider(
         if (cachedFeaturedAddons != null) {
             logger.info("Providing cached list of addons for $collectionAccount collection $collectionName")
             return cachedFeaturedAddons
-        } else {
-            logger.info("Fetching fresh list of addons for $collectionAccount collection $collectionName")
-            val langParam = if (!language.isNullOrEmpty()) {
-                "?lang=$language"
-            } else {
-                ""
-            }
-            return getAllPages(
-                listOf(
-                    serverURL,
-                    API_VERSION,
-                    "accounts/account",
-                    collectionAccount,
-                    "collections",
-                    collectionName,
-                    "addons",
-                    langParam
-                ).joinToString("/"),
-                readTimeoutInSeconds ?: DEFAULT_READ_TIMEOUT_IN_SECONDS,
-            ).also {
-                // Cache the JSON object before we parse out the addons
-                if (maxCacheAgeInMinutes > 0) {
-                    writeToDiskCache(it.toString(), language)
-                }
-                deleteUnusedCacheFiles(language)
-            }.getAddonsFromCollection(language)
         }
-    }
-
-    /**
-     * Interacts with the search endpoint to provide a list of add-ons for a given list of GUIDs.
-     *
-     * See: https://addons-server.readthedocs.io/en/latest/topics/api/addons.html#search
-     *
-     * @param guids list of add-on GUIDs to retrieve.
-     * @param allowCache whether or not the result may be provided from a previously cached response,
-     * defaults to true.
-     * @param readTimeoutInSeconds optional timeout in seconds to use when fetching available
-     * add-ons from a remote endpoint. If not specified [DEFAULT_READ_TIMEOUT_IN_SECONDS] will
-     * be used.
-     * @param language indicates in which language the translatable fields should be in, if no
-     * matching language is found then a fallback translation is returned using the default
-     * language. When it is null all translations available will be returned.
-     * @throws IOException if the request failed, or could not be executed due to cancellation,
-     * a connectivity problem or a timeout.
-     */
-    @Throws(IOException::class)
-    @Suppress("NestedBlockDepth")
-    override suspend fun getAddonsByGUIDs(
-        guids: List<String>,
-        allowCache: Boolean,
-        readTimeoutInSeconds: Long?,
-        language: String?,
-    ): List<Addon> {
-        if (guids.isEmpty()) {
-            logger.warn("Attempted to retrieve add-ons with an empty list of GUIDs")
-            return emptyList()
-        }
-
-        if (allowCache && installedAddons.isNotEmpty()) {
-            val cachedAddons = installedAddons.findAddonsBy(guids, language ?: Locale.getDefault().language)
-            // We should only return the cached add-ons when all the requested
-            // GUIDs have been found in the cache.
-            if (cachedAddons.size == guids.size) {
-                return cachedAddons
-            }
-        }
-
+        logger.info("Fetching fresh list of addons for $collectionAccount collection $collectionName")
         val langParam = if (!language.isNullOrEmpty()) {
-            "&lang=$language"
+            "?lang=$language"
         } else {
             ""
         }
-
-        client.fetch(
-            Request(
-                url = "$serverURL/$API_VERSION/addons/search/?guid=${guids.joinToString(",")}" + langParam,
-                readTimeout = Pair(readTimeoutInSeconds ?: DEFAULT_READ_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS),
-            ),
-        )
-            .use { response ->
-                if (response.isSuccess) {
-                    val responseBody = response.body.string(Charsets.UTF_8)
-                    return try {
-                        val addons = JSONObject(responseBody).getAddonsFromSearchResults(language)
-                        addons.forEach {
-                            installedAddons[it.id] = it
-                        }
-                        addons
-                    } catch (e: JSONException) {
-                        throw IOException(e)
-                    }
-                } else {
-                    val errorMessage = "Failed to get add-ons by GUIDs. Status code: ${response.status}"
-                    logger.error(errorMessage)
-                    throw IOException(errorMessage)
-                }
+        return getAllPages(
+            listOf(
+                serverURL,
+                API_VERSION,
+                "accounts/account",
+                collectionAccount,
+                "collections",
+                collectionName,
+                "addons",
+                langParam,
+            ).joinToString("/"),
+            readTimeoutInSeconds ?: DEFAULT_READ_TIMEOUT_IN_SECONDS,
+        ).also {
+            // Cache the JSON object before we parse out the addons
+            if (maxCacheAgeInMinutes > 0) {
+                writeToDiskCache(it.toString(), language)
             }
+            deleteUnusedCacheFiles(language)
+        }.getAddonsFromCollection(language)
     }
 
     /**
@@ -251,7 +186,7 @@ class PagedAMOAddonProvider(
     @Throws(IOException::class)
     fun getAllPages(url: String, readTimeoutInSeconds: Long): JSONObject {
         // Fetch and compile all the pages into one object we can return
-        var compiledResponse: JSONObject? = null
+        var compiledResponse = JSONObject()
         // Each page tells us where to get the next page, if there is one
         var nextURL: String? = url
         logger.debug("Fetching URI: $nextURL")
@@ -263,60 +198,81 @@ class PagedAMOAddonProvider(
                 ),
             )
                 .use { response ->
-                    if (!response.isSuccess) {
-                        val errorMessage =
-                            "Failed to fetch addon collection. Status code: ${response.status}"
+                    if (response.isSuccess) {
+                        val currentResponse = JSONObject(response.body.string(Charsets.UTF_8))
+                        if (compiledResponse.length() == 0) {
+                            compiledResponse = currentResponse
+                        } else {
+                            // Write the addons into the first response
+                            compiledResponse.getJSONArray("results")
+                                .concat(currentResponse.getJSONArray("results"))
+                        }
+                        nextURL = if (currentResponse.isNull("next")) null else currentResponse.getString("next")
+                    } else {
+                        val errorMessage = "Failed to fetch featured add-ons from collection. " + "Status code: ${response.status}"
                         logger.error(errorMessage)
                         throw IOException(errorMessage)
                     }
-
-                    val currentResponse = JSONObject(response.body.string(Charsets.UTF_8))
-                    if (compiledResponse == null) {
-                        compiledResponse = currentResponse
-                    } else {
-                        // Write the addons into the first response
-                        compiledResponse!!.getJSONArray("results")
-                            .concat(currentResponse.getJSONArray("results"))
-                    }
-                    nextURL =
-                        if (currentResponse.isNull("next")) null else currentResponse.getString("next")
                 }
         }
-        return compiledResponse!!
+        return compiledResponse
     }
 
     /**
-     * Fetches given Addon icon from the url and returns a decoded Bitmap
-     * @throws IOException if the request could not be executed due to cancellation,
-     * a connectivity problem or a timeout.
+     * Asynchronously loads add-on icon for the given [iconUrl] and stores in the cache.
      */
-    @Throws(IOException::class)
-    override suspend fun getAddonIconBitmap(addon: Addon): Bitmap? {
-        var bitmap: Bitmap? = null
-        if (addon.iconUrl != "") {
-            client.fetch(
-                Request(url = addon.iconUrl.sanitizeURL()),
-            ).use { response ->
-                if (response.isSuccess) {
-                    response.body.useStream {
-                        bitmap = BitmapFactory.decodeStream(it)
+    @VisibleForTesting
+    internal fun loadIconAsync(addonId: String, iconUrl: String): Deferred<Bitmap?> = scope.async {
+        val cachedIcon = iconsCache[addonId]
+        if (cachedIcon != null) {
+            logger.info("Icon for $addonId was found in the cache")
+            cachedIcon
+        } else if (iconUrl.isBlank()) {
+            logger.info("Unable to find the icon for $addonId blank iconUrl")
+            null
+        } else {
+            try {
+                logger.info("Trying to fetch the icon for $addonId from the network")
+                client.fetch(Request(url = iconUrl.sanitizeURL(), useCaches = true))
+                    .use { response ->
+                        if (response.isSuccess) {
+                            response.body.useStream {
+                                val icon = BitmapFactory.decodeStream(it)
+                                logger.info("Icon for $addonId fetched from the network")
+                                iconsCache[addonId] = icon
+                                icon
+                            }
+                        } else {
+                            // There was an network error and we couldn't fetch the icon.
+                            logger.info("Unable to fetch the icon for $addonId HTTP code ${response.status}")
+                            null
+                        }
                     }
-                }
+            } catch (e: IOException) {
+                logger.error("Attempt to fetch the $addonId icon failed", e)
+                null
             }
         }
+    }
 
-        return bitmap
+    @VisibleForTesting
+    internal suspend fun List<Addon>.loadIcons(): List<Addon> {
+        this.map {
+            // Instead of loading icons one by one, let's load them async
+            // so we can do multiple request at the time.
+            loadIconAsync(it.id, it.iconUrl)
+        }.awaitAll() // wait until all parallel icon requests finish.
+
+        return this.map { addon ->
+            addon.copy(icon = iconsCache[addon.id])
+        }
     }
 
     @VisibleForTesting
     internal fun writeToDiskCache(collectionResponse: String, language: String?) {
         logger.info("Storing cache file")
         synchronized(diskCacheLock) {
-            getCacheFile(
-                context,
-                language,
-                useFallbackFile = false
-            ).writeString { collectionResponse }
+            getCacheFile(context, language, useFallbackFile = false, ).writeString { collectionResponse }
         }
     }
 
@@ -348,11 +304,7 @@ class PagedAMOAddonProvider(
     }
 
     @VisibleForTesting
-    internal fun cacheExpired(
-        context: Context,
-        language: String?,
-        useFallbackFile: Boolean
-    ): Boolean {
+    internal fun cacheExpired(context: Context, language: String?, useFallbackFile: Boolean): Boolean {
         return getCacheLastUpdated(
             context,
             language,
@@ -361,29 +313,17 @@ class PagedAMOAddonProvider(
     }
 
     @VisibleForTesting
-    internal fun getCacheLastUpdated(
-        context: Context,
-        language: String?,
-        useFallbackFile: Boolean
-    ): Long {
+    internal fun getCacheLastUpdated(context: Context, language: String?, useFallbackFile: Boolean): Long {
         val file = getBaseCacheFile(context, language, useFallbackFile)
         return if (file.exists()) file.lastModified() else -1
     }
 
-    private fun getCacheFile(
-        context: Context,
-        language: String?,
-        useFallbackFile: Boolean
-    ): AtomicFile {
+    private fun getCacheFile(context: Context, language: String?, useFallbackFile: Boolean): AtomicFile {
         return AtomicFile(getBaseCacheFile(context, language, useFallbackFile))
     }
 
     @VisibleForTesting
-    internal fun getBaseCacheFile(
-        context: Context,
-        language: String?,
-        useFallbackFile: Boolean
-    ): File {
+    internal fun getBaseCacheFile(context: Context, language: String?, useFallbackFile: Boolean): File {
         val collectionAccount = getCollectionAccount()
         val collectionName = getCollectionName()
         var file = File(context.filesDir, getCacheFileName(language))
@@ -429,24 +369,17 @@ class PagedAMOAddonProvider(
     }
 }
 
-internal fun Map<String, Addon>.findAddonsBy(
-    guids: List<String>,
-    language: String,
-): List<Addon> {
-    return if (isNotEmpty()) {
-        filter {
-            guids.contains(it.key) && it.value.translatableName.containsKey(language)
-        }.map { it.value }
-    } else {
-        emptyList()
-    }
-}
-
-internal fun JSONObject.getAddonsFromSearchResults(language: String? = null): List<Addon> {
-    val addonsJson = getJSONArray("results")
-    return (0 until addonsJson.length()).map { index ->
-        addonsJson.getJSONObject(index).toAddon(language)
-    }
+/**
+ * Represents possible sort options for the recommended add-ons from
+ * the configured add-on collection.
+ */
+enum class SortOption(val value: String) {
+    POPULARITY("popularity"),
+    POPULARITY_DESC("-popularity"),
+    NAME("name"),
+    NAME_DESC("-name"),
+    DATE_ADDED("added"),
+    DATE_ADDED_DESC("-added"),
 }
 
 internal fun JSONObject.getAddonsFromCollection(language: String? = null): List<Addon> {
@@ -459,33 +392,35 @@ internal fun JSONObject.getAddonsFromCollection(language: String? = null): List<
 
 internal fun JSONObject.toAddon(language: String? = null): Addon {
     return with(this) {
-        val download = getDownload()
         val safeLanguage = language?.lowercase(Locale.getDefault())
         val summary = getSafeTranslations("summary", safeLanguage)
         val isLanguageInTranslations = summary.containsKey(safeLanguage)
         Addon(
             id = getSafeString("guid"),
-            authors = getAuthors(),
-            categories = getCategories(),
+            author = getAuthor(),
             createdAt = getSafeString("created"),
-            updatedAt = getSafeString("last_updated"),
-            downloadId = download?.getDownloadId() ?: "",
-            downloadUrl = download?.getDownloadUrl() ?: "",
+            updatedAt = getCurrentVersionCreated(),
+            downloadUrl = getDownloadUrl(),
             version = getCurrentVersion(),
             permissions = getPermissions(),
             translatableName = getSafeTranslations("name", safeLanguage),
             translatableDescription = getSafeTranslations("description", safeLanguage),
             translatableSummary = summary,
             iconUrl = getSafeString("icon_url"),
-            siteUrl = getSafeString("url"),
+            // This isn't the add-on homepage but the URL to the AMO detail page. On AMO, the homepage is
+            // a translatable field but https://github.com/mozilla/addons-server/issues/21310 prevents us
+            // from retrieving the homepage URL of any add-on reliably.
+            homepageUrl = getSafeString("url"),
             rating = getRating(),
+            ratingUrl = getSafeString("ratings_url"),
+            detailUrl = getSafeString("url"),
             defaultLocale = (
-                if (!safeLanguage.isNullOrEmpty() && isLanguageInTranslations) {
-                    safeLanguage
-                } else {
-                    getSafeString("default_locale").ifEmpty { Addon.DEFAULT_LOCALE }
-                }
-                ).lowercase(Locale.ROOT),
+                    if (!safeLanguage.isNullOrEmpty() && isLanguageInTranslations) {
+                        safeLanguage
+                    } else {
+                        getSafeString("default_locale").ifEmpty { Addon.DEFAULT_LOCALE }
+                    }
+                    ).lowercase(Locale.ROOT),
         )
     }
 }
@@ -502,60 +437,44 @@ internal fun JSONObject.getRating(): Addon.Rating? {
     }
 }
 
-internal fun JSONObject.getCategories(): List<String> {
-    val jsonCategories = optJSONObject("categories")
-    return if (jsonCategories == null) {
-        emptyList()
-    } else {
-        val jsonAndroidCategories = jsonCategories.getSafeJSONArray("android")
-        (0 until jsonAndroidCategories.length()).map { index ->
-            jsonAndroidCategories.getString(index)
-        }
-    }
-}
-
 internal fun JSONObject.getPermissions(): List<String> {
-    val fileJson = getJSONObject("current_version")
-        .getSafeJSONArray("files")
-        .getJSONObject(0)
-
-    val permissionsJson = fileJson.getSafeJSONArray("permissions")
+    val permissionsJson = getFile()?.getSafeJSONArray("permissions") ?: JSONArray()
     return (0 until permissionsJson.length()).map { index ->
         permissionsJson.getString(index)
     }
 }
 
 internal fun JSONObject.getCurrentVersion(): String {
-    return optJSONObject("current_version")?.getSafeString("version") ?: ""
+    return getJSONObject("current_version").getSafeString("version")
 }
 
-internal fun JSONObject.getDownload(): JSONObject? {
-    return (
-        getJSONObject("current_version")
-            .optJSONArray("files")
-            ?.getJSONObject(0)
-        )
+internal fun JSONObject.getFile(): JSONObject? {
+    return getJSONObject("current_version")
+        .getSafeJSONArray("files")
+        .optJSONObject(0)
 }
 
-internal fun JSONObject.getDownloadId(): String {
-    return getSafeString("id")
+internal fun JSONObject.getCurrentVersionCreated(): String {
+    // We want to return: `current_version.files[0].created`.
+    return getFile()?.getSafeString("created").orEmpty()
 }
 
 internal fun JSONObject.getDownloadUrl(): String {
-    return getSafeString("url")
+    return getFile()?.getSafeString("url").orEmpty()
 }
 
-internal fun JSONObject.getAuthors(): List<Addon.Author> {
+internal fun JSONObject.getAuthor(): Addon.Author? {
     val authorsJson = getSafeJSONArray("authors")
-    return (0 until authorsJson.length()).map { index ->
-        val authorJson = authorsJson.getJSONObject(index)
+    // We only consider the first author in the AMO API response, mainly because Gecko does the same.
+    val authorJson = authorsJson.optJSONObject(0)
 
+    return if (authorJson != null) {
         Addon.Author(
-            id = authorJson.getSafeString("id"),
             name = authorJson.getSafeString("name"),
-            username = authorJson.getSafeString("username"),
             url = authorJson.getSafeString("url"),
         )
+    } else {
+        null
     }
 }
 
