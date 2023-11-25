@@ -2352,6 +2352,8 @@
     <string name="preferences_relinquish_memory_title">Suspend tabs to avoid being killed for memory</string>
     <!-- Description for relinquish memory preference in customization settings -->
     <string name="preferences_relinquish_memory_description">If enabled, tabs will be suspended and page state lost when the system is low on memory</string>
+    <!-- Preference for Top Sites show most recent sites or not -->
+    <string name="preferences_show_top_recent_sites">Show most visited websites</string>
     <string name="preferences_dns_over_https">DNS over HTTPS</string>
     <string name="preferences_dns_over_https_on">On</string>
     <string name="preferences_dns_over_https_off">Off</string>

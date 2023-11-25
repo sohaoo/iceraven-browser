@@ -478,6 +478,7 @@ class HomeFragment : Fragment() {
                         else -> true
                     }
                 },
+                showTopRecentSites = settings.showTopRecentSites,
             ),
         )
     }

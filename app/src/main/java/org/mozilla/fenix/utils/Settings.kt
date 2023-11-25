@@ -1968,4 +1968,12 @@ class Settings(private val appContext: Context) : PreferencesHolder {
         default = { enableFxSuggest },
         featureFlag = FeatureFlags.fxSuggest,
     )
+
+    /**
+    * Indicates if the user has chosen to show most visted sites with pinned sites
+    */
+    var showTopRecentSites by booleanPreference(
+        appContext.getPreferenceKey(R.string.pref_key_show_top_recent_sites),
+        default = false,
+    )
 }

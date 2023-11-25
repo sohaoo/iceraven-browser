@@ -52,6 +52,22 @@ class HomeSettingsFragment : PreferenceFragmentCompat() {
             }
         }
 
+        requirePreference<SwitchPreference>(R.string.pref_key_show_top_recent_sites).apply {
+            isChecked = context.settings().showTopRecentSites
+            onPreferenceChangeListener = object : SharedPreferenceUpdater() {
+                override fun onPreferenceChange(preference: Preference, newValue: Any?): Boolean {
+                    CustomizeHome.preferenceToggled.record(
+                        CustomizeHome.PreferenceToggledExtra(
+                            newValue as Boolean,
+                            "top_recent_sites",
+                        ),
+                    )
+
+                    return super.onPreferenceChange(preference, newValue)
+                }
+            }
+        }
+
         requirePreference<CheckBoxPreference>(R.string.pref_key_enable_contile).apply {
             isChecked = context.settings().showContileFeature
             onPreferenceChangeListener = object : SharedPreferenceUpdater() {
