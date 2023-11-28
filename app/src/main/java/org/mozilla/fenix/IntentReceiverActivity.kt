@@ -99,12 +99,14 @@ class IntentReceiverActivity : Activity() {
     private fun getIntentProcessors(private: Boolean): List<IntentProcessor> {
         val modeDependentProcessors = if (private) {
             listOf(
+                components.intentProcessors.addonInstallIntentProcessor,
                 components.intentProcessors.privateCustomTabIntentProcessor,
                 components.intentProcessors.privateIntentProcessor,
             )
         } else {
             Events.openedLink.record(Events.OpenedLinkExtra("NORMAL"))
             listOf(
+                components.intentProcessors.addonInstallIntentProcessor,
                 components.intentProcessors.customTabIntentProcessor,
                 components.intentProcessors.intentProcessor,
             )
@@ -116,7 +118,7 @@ class IntentReceiverActivity : Activity() {
             components.intentProcessors.webNotificationsIntentProcessor +
             components.intentProcessors.passwordManagerIntentProcessor +
             modeDependentProcessors +
-            NewTabShortcutIntentProcessor()
+            NewTabShortcutIntentProcessor() + components.intentProcessors.addonInstallIntentProcessor
     }
 
     private fun addReferrerInformation(intent: Intent) {

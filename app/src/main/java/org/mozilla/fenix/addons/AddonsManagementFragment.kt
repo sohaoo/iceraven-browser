@@ -4,7 +4,9 @@
 
 package org.mozilla.fenix.addons
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.graphics.Typeface
 import android.graphics.fonts.FontStyle.FONT_WEIGHT_MEDIUM
 import android.os.Build
@@ -13,8 +15,11 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
-import android.view.inputmethod.EditorInfo
 import android.view.accessibility.AccessibilityEvent
+import android.view.inputmethod.EditorInfo
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
@@ -32,10 +37,10 @@ import kotlinx.coroutines.launch
 import mozilla.components.feature.addons.Addon
 import mozilla.components.feature.addons.AddonManager
 import mozilla.components.feature.addons.AddonManagerException
-import mozilla.components.support.base.log.logger.Logger
-import mozilla.components.support.ktx.android.view.hideKeyboard
 import mozilla.components.feature.addons.ui.AddonsManagerAdapter
 import mozilla.components.feature.addons.ui.AddonsManagerAdapterDelegate
+import mozilla.components.support.base.log.logger.Logger
+import mozilla.components.support.ktx.android.view.hideKeyboard
 import org.mozilla.fenix.BrowserDirection
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.HomeActivity
@@ -64,7 +69,7 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
     private var addons: List<Addon> = emptyList()
 
     private var adapter: AddonsManagerAdapter? = null
-
+    private var addonImportFilePicker: ActivityResultLauncher<Intent>? = null
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         logger.info("View created for AddonsManagementFragment")
         super.onViewCreated(view, savedInstanceState)
@@ -74,6 +79,19 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
         (activity as HomeActivity).webExtensionPromptFeature.onAddonChanged = {
             runIfFragmentIsAttached {
                 adapter?.updateAddon(it)
+            }
+        }
+        addonImportFilePicker = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                result: ActivityResult ->
+            if(result.resultCode == Activity.RESULT_OK) {
+                result.data?.data?.let{uri ->
+                    requireComponents.intentProcessors.addonInstallIntentProcessor.fromUri(uri)?.let{tmp ->
+                        val ext = requireComponents.intentProcessors.addonInstallIntentProcessor.parseExtension(tmp)
+                        requireComponents.intentProcessors.addonInstallIntentProcessor.installExtension(
+                            ext[0], ext[1]
+                        )
+                    }
+                }
             }
         }
     }
@@ -113,6 +131,10 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
                             showAlertDialog()
                             true
                         }
+                        R.id.addons_sideload -> {
+                            installFromFile()
+                            true
+                        }
                         R.id.search -> {
                             true
                         }
@@ -123,7 +145,13 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
             viewLifecycleOwner, Lifecycle.State.RESUMED,
         )
     }
+    private fun installFromFile() {
+        val intent = Intent()
+            .setType("*/*")
+            .setAction(Intent.ACTION_GET_CONTENT)
 
+        addonImportFilePicker!!.launch(intent)
+    }
     private fun showAlertDialog() {
         val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
         builder

@@ -2361,6 +2361,7 @@
     <string name="preferences_dns_over_https_summary">Domain Name System (DNS) over HTTPS sends your request for a domain name through an encrypted connection, creating a secure DNS and making it harder for others to see which website you’re about to access.</string>
     <string name="preferences_dns_over_https_custom_server">Custom</string>
     <string name="addons_delete_cache">Delete addons metadata cache file</string>
+    <string name="addons_sideload">Install addon from file</string>
     <string name="confirm_addons_delete_cache">Are you sure to delete addons metadata cache file?</string>
     <string name="confirm_addons_delete_cache_yes">OK</string>
     <string name="confirm_addons_delete_cache_no">Cancel</string>

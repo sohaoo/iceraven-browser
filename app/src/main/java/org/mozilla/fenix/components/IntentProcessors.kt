@@ -9,6 +9,7 @@
 
 package org.mozilla.fenix.components
 
+import AddonInstallIntentProcessor
 import android.content.Context
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.concept.engine.Engine
@@ -84,5 +85,8 @@ class IntentProcessors(
 
     val passwordManagerIntentProcessor by lazyMonitored {
         PasswordManagerIntentProcessor()
+    }
+    val addonInstallIntentProcessor by lazyMonitored {
+        AddonInstallIntentProcessor(context, engine)
     }
 }

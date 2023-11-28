@@ -35,9 +35,11 @@ enum class IntentProcessorType {
  * Classifies the [IntentProcessorType] based on the [IntentProcessor] that handled the [Intent].
  */
 fun IntentProcessors.getType(processor: IntentProcessor?) = when {
+
     externalAppIntentProcessors.contains(processor) ||
         customTabIntentProcessor == processor ||
         privateCustomTabIntentProcessor == processor -> IntentProcessorType.EXTERNAL_APP
+    addonInstallIntentProcessor == processor -> IntentProcessorType.OTHER
     intentProcessor == processor ||
         privateIntentProcessor == processor ||
         fennecPageShortcutIntentProcessor == processor ||

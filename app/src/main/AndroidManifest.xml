@@ -51,7 +51,6 @@
         android:theme="@style/NormalTheme"
         android:usesCleartextTraffic="true"
         tools:ignore="UnusedAttribute">
-
         <profileable
             android:shell="true"
             tools:targetApi="29" />
@@ -216,6 +215,18 @@
                 <data android:mimeType="application/xhtml+xml" />
             </intent-filter>
 
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="android.intent.action.GET_CONTENT"/>
+                <action android:name="android.intent.action.PICK" />
+                <data android:scheme="file" />
+                <data android:scheme="content"/>
+                <data android:host="*" />
+                <data android:mimeType="*/*"/>
+            </intent-filter>
+              
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
