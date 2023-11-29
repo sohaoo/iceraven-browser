@@ -22,11 +22,15 @@ class AddonInstallIntentProcessor(private val context: Context, private val engi
             return false
         }
         val ext = iuri.let { parseExtension(it) }
-        installExtension(ext.get(0), ext.get(1))
+        installExtension(ext.get(0), ext.get(1), null)
         return true
     }
-    fun installExtension(id: String, b64: String, onSuccess: (WebExtension) -> Unit) {
-        engine.installWebExtension(id, b64, onSuccess)
+    fun installExtension(id: String, b64: String, onSuccess: ((WebExtension) -> Unit)?) {
+        engine.installWebExtension(id, b64, if(onSuccess != null) {
+            onSuccess
+        } else {
+            { }
+        })
     }
     fun parseExtension(inp: File): List<String> {
         val file = ZipFile(inp)
