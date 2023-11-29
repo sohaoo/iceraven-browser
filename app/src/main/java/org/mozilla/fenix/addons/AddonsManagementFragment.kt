@@ -147,7 +147,7 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
     }
     private fun installFromFile() {
         val intent = Intent()
-            .setType("*/*")
+            .setType("application/x-xpinstall")
             .setAction(Intent.ACTION_GET_CONTENT)
 
         addonImportFilePicker!!.launch(intent)

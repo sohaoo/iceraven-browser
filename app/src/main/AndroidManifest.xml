@@ -224,7 +224,7 @@
                 <data android:scheme="file" />
                 <data android:scheme="content"/>
                 <data android:host="*" />
-                <data android:mimeType="*/*"/>
+                <data android:mimeType="application/x-xpinstall"/>
             </intent-filter>
               
             <intent-filter>
