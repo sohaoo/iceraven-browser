@@ -88,7 +88,14 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
                     requireComponents.intentProcessors.addonInstallIntentProcessor.fromUri(uri)?.let{tmp ->
                         val ext = requireComponents.intentProcessors.addonInstallIntentProcessor.parseExtension(tmp)
                         requireComponents.intentProcessors.addonInstallIntentProcessor.installExtension(
-                            ext[0], ext[1]
+                            ext[0], ext[1],
+                            onSuccess = {
+                                val ao = Addon.newFromWebExtension(it)
+                                runIfFragmentIsAttached {
+                                    adapter?.updateAddon(ao)
+                                    binding?.addonProgressOverlay?.overlayCardView?.visibility = View.GONE
+                                }
+                            }
                         )
                     }
                 }
