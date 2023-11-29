@@ -17,11 +17,18 @@ import java.util.zip.ZipFile
 
 class AddonInstallIntentProcessor(private val context: Context, private val engine: Engine) : IntentProcessor {
     override fun process(intent: Intent): Boolean {
-        val iuri = fromUri(intent.data as Uri)
-        if(iuri == null) {
+        if(intent.data == null) {
             return false
         }
-        val ext = iuri.let { parseExtension(it) }
+        val iuri = intent.data as Uri
+        if(!iuri.scheme.equals("content")) {
+            return false
+        }
+        val file = fromUri(iuri)
+        if(file == null) {
+            return false
+        }
+        val ext = file.let { parseExtension(it) }
         installExtension(ext.get(0), ext.get(1), null)
         return true
     }
