@@ -3,6 +3,7 @@ import android.content.Intent
 import android.net.Uri
 import io.github.forkmaintainers.iceraven.components.getSafeString
 import mozilla.components.concept.engine.Engine
+import mozilla.components.concept.engine.webextension.WebExtension
 import mozilla.components.feature.intent.processing.IntentProcessor
 import mozilla.components.support.ktx.android.net.getFileName
 import org.json.JSONException
@@ -15,18 +16,17 @@ import java.util.zip.ZipFile
 
 
 class AddonInstallIntentProcessor(private val context: Context, private val engine: Engine) : IntentProcessor {
-	override fun process(intent: Intent): Boolean {
-		val iuri = fromUri(intent.data as Uri)
+    override fun process(intent: Intent): Boolean {
+        val iuri = fromUri(intent.data as Uri)
         if(iuri == null) {
             return false
         }
         val ext = iuri.let { parseExtension(it) }
         installExtension(ext.get(0), ext.get(1))
-		return true
-	}
-    fun installExtension(id: String, b64: String) {
-        engine.installWebExtension(id, b64)
-
+        return true
+    }
+    fun installExtension(id: String, b64: String, onSuccess: (WebExtension) -> Unit) {
+        engine.installWebExtension(id, b64, onSuccess)
     }
     fun parseExtension(inp: File): List<String> {
         val file = ZipFile(inp)
