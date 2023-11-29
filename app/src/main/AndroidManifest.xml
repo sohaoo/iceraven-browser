@@ -225,6 +225,8 @@
                 <data android:scheme="file" />
                 <data android:scheme="content"/>
                 <data android:host="*" />
+                <data android:pathPattern=".*\\.xpi"/>
+                <data android:pathPattern=".*\\.zip"/>
                 <data android:mimeType="application/x-xpinstall"/>
             </intent-filter>
 
