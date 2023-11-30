@@ -170,7 +170,7 @@ class PagedAMOAddonsProvider(
                 writeToDiskCache(it.toString(), language)
             }
             deleteUnusedCacheFiles(language)
-        }.getAddonsFromCollection(language)
+        }.getAddonsFromCollection(language).loadIcons()
     }
 
     /**
