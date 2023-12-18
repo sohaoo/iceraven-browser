@@ -50,7 +50,7 @@ object FeatureFlags {
     /**
      * Enables compose on the tabs tray items.
      */
-    val composeTabsTray = Config.channel.isNightlyOrDebug
+    val composeTabsTray = Config.channel.isNightlyOrDebug || Config.channel.isBeta
 
     /**
      * Enables compose on the top sites.
@@ -73,4 +73,9 @@ object FeatureFlags {
      * Allows users to enable Firefox Suggest.
      */
     const val fxSuggest = true
+
+    /**
+     * Enable Meta attribution.
+     */
+    const val metaAttributionEnabled = true
 }

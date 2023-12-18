@@ -185,9 +185,9 @@ fun createInitialSearchFragmentState(
         showSessionSuggestionsForCurrentEngine = false,
         showAllSessionSuggestions = true,
         showSponsoredSuggestions = activity.browsingModeManager.mode == BrowsingMode.Normal &&
-            settings.showSponsoredSuggestions,
+            settings.enableFxSuggest && settings.showSponsoredSuggestions,
         showNonSponsoredSuggestions = activity.browsingModeManager.mode == BrowsingMode.Normal &&
-            settings.showNonSponsoredSuggestions,
+            settings.enableFxSuggest && settings.showNonSponsoredSuggestions,
         tabId = tabId,
         pastedText = pastedText,
         searchAccessPoint = searchAccessPoint,
@@ -237,11 +237,6 @@ sealed class SearchFragmentAction : Action {
     data class SearchTabsEngineSelected(val engine: SearchEngine) : SearchFragmentAction()
 
     /**
-     * Action when search engine picker is selected.
-     */
-    data class ShowSearchShortcutEnginePicker(val show: Boolean) : SearchFragmentAction()
-
-    /**
      * Action when allow search suggestion in private mode hint is tapped.
      */
     data class AllowSearchSuggestionsInPrivateModePrompt(val show: Boolean) : SearchFragmentAction()
@@ -286,9 +281,9 @@ private fun searchStateReducer(state: SearchFragmentState, action: SearchFragmen
                 showAllSyncedTabsSuggestions = action.settings.shouldShowSyncedTabsSuggestions,
                 showSessionSuggestionsForCurrentEngine = false, // we'll show all local tabs
                 showSponsoredSuggestions = action.browsingMode == BrowsingMode.Normal &&
-                    action.settings.showSponsoredSuggestions,
+                    action.settings.enableFxSuggest && action.settings.showSponsoredSuggestions,
                 showNonSponsoredSuggestions = action.browsingMode == BrowsingMode.Normal &&
-                    action.settings.showNonSponsoredSuggestions,
+                    action.settings.enableFxSuggest && action.settings.showNonSponsoredSuggestions,
                 showAllSessionSuggestions = true,
             )
         is SearchFragmentAction.SearchShortcutEngineSelected ->
@@ -383,8 +378,6 @@ private fun searchStateReducer(state: SearchFragmentState, action: SearchFragmen
                 showSponsoredSuggestions = false,
                 showNonSponsoredSuggestions = false,
             )
-        is SearchFragmentAction.ShowSearchShortcutEnginePicker ->
-            state.copy(showSearchShortcuts = action.show && state.areShortcutsAvailable)
         is SearchFragmentAction.UpdateQuery ->
             state.copy(query = action.query)
         is SearchFragmentAction.AllowSearchSuggestionsInPrivateModePrompt ->

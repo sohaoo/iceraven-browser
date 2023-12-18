@@ -9,7 +9,9 @@ import kotlinx.coroutines.withContext
 import mozilla.components.browser.state.selector.selectedTab
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.concept.engine.shopping.ProductAnalysis
+import mozilla.components.concept.engine.shopping.ProductRecommendation
 import mozilla.components.support.base.log.logger.Logger
+import org.mozilla.fenix.GleanMetrics.Shopping
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -40,15 +42,27 @@ interface ReviewQualityCheckService {
     suspend fun analysisStatus(): AnalysisStatusDto?
 
     /**
-     * Returns the selected tab url.
+     * Fetches product recommendations related to the product user is browsing in the current tab.
+     *
+     * @return [ProductRecommendation] if request succeeds, null otherwise.
      */
-    fun selectedTabUrl(): String?
+    suspend fun productRecommendation(shouldRecordAvailableTelemetry: Boolean): ProductRecommendation?
+
+    /**
+     * Sends a click attribution event for a given product aid.
+     */
+    suspend fun recordRecommendedProductClick(productAid: String)
+
+    /**
+     * Sends an impression attribution event for a given product aid.
+     */
+    suspend fun recordRecommendedProductImpression(productAid: String)
 }
 
 /**
  * Service that handles the network requests for the review quality check feature.
  *
- * @property browserStore Reference to the application's [BrowserStore] to access state.
+ * @param browserStore Reference to the application's [BrowserStore] to access state.
  */
 class DefaultReviewQualityCheckService(
     private val browserStore: BrowserStore,
@@ -107,11 +121,65 @@ class DefaultReviewQualityCheckService(
         }
     }
 
-    override fun selectedTabUrl(): String? =
-        browserStore.state.selectedTab?.content?.url
+    override suspend fun productRecommendation(shouldRecordAvailableTelemetry: Boolean): ProductRecommendation? =
+        withContext(Dispatchers.Main) {
+            suspendCoroutine { continuation ->
+                browserStore.state.selectedTab?.let { tab ->
+                    tab.engineState.engineSession?.requestProductRecommendations(
+                        url = tab.content.url,
+                        onResult = {
+                            if (it.isEmpty()) {
+                                if (shouldRecordAvailableTelemetry) {
+                                    Shopping.surfaceNoAdsAvailable.record()
+                                }
+                            } else {
+                                Shopping.adsExposure.record()
+                            }
+                            // Return the first available recommendation since ui requires only
+                            // one recommendation.
+                            continuation.resume(it.firstOrNull())
+                        },
+                        onException = {
+                            logger.error("Error fetching product recommendation", it)
+                            continuation.resume(null)
+                        },
+                    )
+                }
+            }
+        }
 
-    private inline fun <reified T : Enum<T>> String.asEnumOrDefault(defaultValue: T? = null): T? =
-        enumValues<T>().firstOrNull { it.name.equals(this, ignoreCase = true) } ?: defaultValue
+    override suspend fun recordRecommendedProductClick(productAid: String) =
+        withContext(Dispatchers.Main) {
+            suspendCoroutine { continuation ->
+                browserStore.state.selectedTab?.engineState?.engineSession?.sendClickAttributionEvent(
+                    aid = productAid,
+                    onResult = {
+                        continuation.resume(Unit)
+                    },
+                    onException = {
+                        logger.error("Error sending click attribution event", it)
+                        continuation.resume(Unit)
+                    },
+                )
+            }
+        }
+
+    override suspend fun recordRecommendedProductImpression(productAid: String) {
+        withContext(Dispatchers.Main) {
+            suspendCoroutine { continuation ->
+                browserStore.state.selectedTab?.engineState?.engineSession?.sendImpressionAttributionEvent(
+                    aid = productAid,
+                    onResult = {
+                        continuation.resume(Unit)
+                    },
+                    onException = {
+                        logger.error("Error sending impression attribution event", it)
+                        continuation.resume(Unit)
+                    },
+                )
+            }
+        }
+    }
 }
 
 /**

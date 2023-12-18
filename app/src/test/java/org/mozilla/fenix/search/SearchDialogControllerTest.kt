@@ -42,7 +42,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.fenix.BrowserDirection
 import org.mozilla.fenix.GleanMetrics.Events
-import org.mozilla.fenix.GleanMetrics.SearchShortcuts
 import org.mozilla.fenix.GleanMetrics.UnifiedSearch
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.R
@@ -413,110 +412,6 @@ class SearchDialogControllerTest {
         browserStore.waitUntilIdle()
 
         verify { store.dispatch(SearchFragmentAction.UpdateQuery(text)) }
-
-        middleware.assertNotDispatched(AwesomeBarAction.EngagementFinished::class)
-    }
-
-    @Test
-    fun `show search shortcuts when setting enabled AND query empty`() {
-        val text = ""
-        every { settings.shouldShowSearchShortcuts } returns true
-
-        createController().handleTextChanged(text)
-
-        browserStore.waitUntilIdle()
-
-        verify { store.dispatch(SearchFragmentAction.ShowSearchShortcutEnginePicker(true)) }
-
-        middleware.assertNotDispatched(AwesomeBarAction.EngagementFinished::class)
-    }
-
-    @Test
-    fun `show search shortcuts when setting enabled AND query equals url`() {
-        val text = "mozilla.org"
-        every { store.state.url } returns "mozilla.org"
-        every { settings.shouldShowSearchShortcuts } returns true
-
-        createController().handleTextChanged(text)
-
-        browserStore.waitUntilIdle()
-
-        verify { store.dispatch(SearchFragmentAction.ShowSearchShortcutEnginePicker(true)) }
-
-        middleware.assertNotDispatched(AwesomeBarAction.EngagementFinished::class)
-    }
-
-    @Test
-    fun `GIVEN show search shortcuts setting is enabled AND unified search is enabled WHEN query is empty THEN do not show search shortcuts`() {
-        val text = ""
-        every { settings.shouldShowSearchShortcuts } returns true
-        every { settings.showUnifiedSearchFeature } returns true
-
-        createController().handleTextChanged(text)
-
-        browserStore.waitUntilIdle()
-
-        verify { store.dispatch(SearchFragmentAction.ShowSearchShortcutEnginePicker(false)) }
-
-        middleware.assertNotDispatched(AwesomeBarAction.EngagementFinished::class)
-    }
-
-    @Test
-    fun `GIVEN show search shortcuts setting is enabled AND unified search is enabled WHEN query is url THEN do not show search shortcuts`() {
-        val text = "mozilla.org"
-        every { store.state.url } returns "mozilla.org"
-        every { settings.shouldShowSearchShortcuts } returns true
-        every { settings.showUnifiedSearchFeature } returns true
-
-        createController().handleTextChanged(text)
-
-        browserStore.waitUntilIdle()
-
-        verify { store.dispatch(SearchFragmentAction.ShowSearchShortcutEnginePicker(false)) }
-
-        middleware.assertNotDispatched(AwesomeBarAction.EngagementFinished::class)
-    }
-
-    @Test
-    fun `do not show search shortcuts when setting enabled AND query non-empty`() {
-        val text = "mozilla"
-
-        createController().handleTextChanged(text)
-
-        browserStore.waitUntilIdle()
-
-        verify { store.dispatch(SearchFragmentAction.ShowSearchShortcutEnginePicker(false)) }
-
-        middleware.assertNotDispatched(AwesomeBarAction.EngagementFinished::class)
-    }
-
-    @Test
-    fun `do not show search shortcuts when setting disabled AND query empty AND url not matching query`() {
-        every { settings.shouldShowSearchShortcuts } returns false
-
-        val text = ""
-
-        createController().handleTextChanged(text)
-
-        browserStore.waitUntilIdle()
-
-        verify { store.dispatch(SearchFragmentAction.ShowSearchShortcutEnginePicker(false)) }
-
-        middleware.assertNotDispatched(AwesomeBarAction.EngagementFinished::class)
-    }
-
-    @Test
-    fun `do not show search shortcuts when setting disabled AND query non-empty`() {
-        every { settings.shouldShowSearchShortcuts } returns false
-
-        val text = "mozilla"
-
-        createController().handleTextChanged(text)
-
-        browserStore.waitUntilIdle()
-
-        verify { store.dispatch(SearchFragmentAction.ShowSearchShortcutEnginePicker(false)) }
-
         middleware.assertNotDispatched(AwesomeBarAction.EngagementFinished::class)
     }
 
@@ -630,8 +525,8 @@ class SearchDialogControllerTest {
 
         middleware.assertNotDispatched(AwesomeBarAction.EngagementFinished::class)
 
-        assertNotNull(SearchShortcuts.selected.testGetValue())
-        val recordedEvents = SearchShortcuts.selected.testGetValue()!!
+        assertNotNull(UnifiedSearch.engineSelected.testGetValue())
+        val recordedEvents = UnifiedSearch.engineSelected.testGetValue()!!
         assertEquals(1, recordedEvents.size)
         val eventExtra = recordedEvents.single().extra
         assertNotNull(eventExtra)
@@ -644,7 +539,6 @@ class SearchDialogControllerTest {
         val searchEngine: SearchEngine = mockk(relaxed = true)
         every { searchEngine.type } returns SearchEngine.Type.APPLICATION
         every { searchEngine.id } returns Core.HISTORY_SEARCH_ENGINE_ID
-        every { settings.showUnifiedSearchFeature } returns true
 
         assertNull(UnifiedSearch.engineSelected.testGetValue())
 
@@ -676,7 +570,6 @@ class SearchDialogControllerTest {
         val searchEngine: SearchEngine = mockk(relaxed = true)
         every { searchEngine.type } returns SearchEngine.Type.APPLICATION
         every { searchEngine.id } returns Core.BOOKMARKS_SEARCH_ENGINE_ID
-        every { settings.showUnifiedSearchFeature } returns true
 
         assertNull(UnifiedSearch.engineSelected.testGetValue())
 
@@ -708,7 +601,6 @@ class SearchDialogControllerTest {
         val searchEngine: SearchEngine = mockk(relaxed = true)
         every { searchEngine.type } returns SearchEngine.Type.APPLICATION
         every { searchEngine.id } returns Core.TABS_SEARCH_ENGINE_ID
-        every { settings.showUnifiedSearchFeature } returns true
 
         assertNull(UnifiedSearch.engineSelected.testGetValue())
 
@@ -748,32 +640,6 @@ class SearchDialogControllerTest {
         middleware.assertLastAction(AwesomeBarAction.EngagementFinished::class) { action ->
             assertTrue(action.abandoned)
         }
-    }
-
-    @Test
-    fun handleSearchShortcutsButtonClicked_alreadyOpen() {
-        every { store.state.showSearchShortcuts } returns true
-
-        createController().handleSearchShortcutsButtonClicked()
-
-        browserStore.waitUntilIdle()
-
-        verify { store.dispatch(SearchFragmentAction.ShowSearchShortcutEnginePicker(false)) }
-
-        middleware.assertNotDispatched(AwesomeBarAction.EngagementFinished::class)
-    }
-
-    @Test
-    fun handleSearchShortcutsButtonClicked_notYetOpen() {
-        every { store.state.showSearchShortcuts } returns false
-
-        createController().handleSearchShortcutsButtonClicked()
-
-        browserStore.waitUntilIdle()
-
-        verify { store.dispatch(SearchFragmentAction.ShowSearchShortcutEnginePicker(true)) }
-
-        middleware.assertNotDispatched(AwesomeBarAction.EngagementFinished::class)
     }
 
     @Test

@@ -5,6 +5,7 @@
 package org.mozilla.fenix.shopping.fake
 
 import mozilla.components.concept.engine.shopping.ProductAnalysis
+import mozilla.components.concept.engine.shopping.ProductRecommendation
 import org.mozilla.fenix.shopping.middleware.AnalysisStatusDto
 import org.mozilla.fenix.shopping.middleware.ReviewQualityCheckService
 
@@ -12,7 +13,9 @@ class FakeReviewQualityCheckService(
     private val productAnalysis: (Int) -> ProductAnalysis? = { null },
     private val reanalysis: AnalysisStatusDto? = null,
     private val status: AnalysisStatusDto? = null,
-    private val selectedTabUrl: String? = null,
+    private val productRecommendation: () -> ProductRecommendation? = { null },
+    private val recordClick: (String) -> Unit = {},
+    private val recordImpression: (String) -> Unit = {},
 ) : ReviewQualityCheckService {
 
     private var analysisCount = 0
@@ -27,5 +30,15 @@ class FakeReviewQualityCheckService(
 
     override suspend fun analysisStatus(): AnalysisStatusDto? = status
 
-    override fun selectedTabUrl(): String? = selectedTabUrl
+    override suspend fun productRecommendation(shouldRecordAvailableTelemetry: Boolean): ProductRecommendation? {
+        return productRecommendation.invoke()
+    }
+
+    override suspend fun recordRecommendedProductClick(productAid: String) {
+        recordClick(productAid)
+    }
+
+    override suspend fun recordRecommendedProductImpression(productAid: String) {
+        recordImpression(productAid)
+    }
 }
