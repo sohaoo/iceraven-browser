@@ -154,10 +154,6 @@ class ReviewQualityCheckTelemetryMiddleware : ReviewQualityCheckMiddleware {
                 }
             }
         }
-
-        is ReviewQualityCheckAction.OpenPoweredByLink -> {
-            Shopping.surfacePoweredByFakespotLinkClicked.record()
-        }
     }
 
     private fun ReviewQualityCheckState.isStaleAnalysis(): Boolean =

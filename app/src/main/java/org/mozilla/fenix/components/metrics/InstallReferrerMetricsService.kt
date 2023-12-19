@@ -6,8 +6,6 @@ package org.mozilla.fenix.components.metrics
 
 import android.content.Context
 import android.os.RemoteException
-import com.android.installreferrer.api.InstallReferrerClient
-import com.android.installreferrer.api.InstallReferrerStateListener
 import mozilla.components.support.base.log.logger.Logger
 import org.json.JSONException
 import org.json.JSONObject
@@ -33,62 +31,6 @@ class InstallReferrerMetricsService(private val context: Context) : MetricsServi
         if (context.settings().utmParamsKnown) {
             return
         }
-
-        val timerId = PlayStoreAttribution.attributionTime.start()
-        val client = InstallReferrerClient.newBuilder(context).build()
-        referrerClient = client
-
-        client.startConnection(
-            object : InstallReferrerStateListener {
-                override fun onInstallReferrerSetupFinished(responseCode: Int) {
-                    PlayStoreAttribution.attributionTime.stopAndAccumulate(timerId)
-                    when (responseCode) {
-                        InstallReferrerClient.InstallReferrerResponse.OK -> {
-                            // Connection established.
-                            val installReferrerResponse = try {
-                                client.installReferrer.installReferrer
-                            } catch (e: RemoteException) {
-                                // We can't do anything about this.
-                                logger.error("Failed to retrieve install referrer response", e)
-                                null
-                            }
-
-                            if (installReferrerResponse.isNullOrBlank()) {
-                                return
-                            }
-
-                            PlayStoreAttribution.installReferrerResponse.set(installReferrerResponse)
-
-                            val utmParams = UTMParams.parseUTMParameters(installReferrerResponse)
-                            if (FeatureFlags.metaAttributionEnabled) {
-                                MetaParams.extractMetaAttribution(utmParams.content)
-                                    ?.recordMetaAttribution()
-                            }
-
-                            utmParams.recordInstallReferrer(context.settings())
-                            context.settings().utmParamsKnown = true
-                        }
-
-                        InstallReferrerClient.InstallReferrerResponse.FEATURE_NOT_SUPPORTED -> {
-                            // API not available on the current Play Store app.
-                            context.settings().utmParamsKnown = true
-                        }
-
-                        InstallReferrerClient.InstallReferrerResponse.SERVICE_UNAVAILABLE -> {
-                            // Connection couldn't be established.
-                        }
-                    }
-                    // End the connection, and null out the client.
-                    stop()
-                }
-
-                override fun onInstallReferrerServiceDisconnected() {
-                    // Try to restart the connection on the next request to
-                    // Google Play by calling the startConnection() method.
-                    referrerClient = null
-                }
-            },
-        )
     }
 
     override fun stop() {
