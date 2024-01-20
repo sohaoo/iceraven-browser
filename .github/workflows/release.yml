@@ -52,6 +52,12 @@ jobs:
           gradle-executable: /usr/bin/time
           arguments: -v ./gradlew app:assemblefenixForkRelease -x lintVitalFenixForkRelease -PversionName=${{ env.VERSION_NAME }} --stacktrace
 
+      - name: Setup build tool version variable
+        shell: bash
+        run: |
+          BUILD_TOOL_VERSION=$(ls /usr/local/lib/android/sdk/build-tools/ | tail -n 1)
+          echo "BUILD_TOOL_VERSION=$BUILD_TOOL_VERSION" >> $GITHUB_ENV
+
       - name: Create signed APKs
         if: "contains(toJSON(github.event.ref_type), 'tag') && contains(toJSON(github.event.ref), 'iceraven')"
         uses: abhijitvalluri/sign-apks@v0.8
@@ -61,6 +67,8 @@ jobs:
           alias: ${{ secrets.DEBUG_ALIAS }}
           keyStorePassword: ${{ secrets.DEBUG_KEY_STORE_PASSWORD }}
           keyPassword: ${{ secrets.DEBUG_KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
 
       - name: Create changelog
         if: "contains(toJSON(github.event.ref_type), 'tag') && contains(toJSON(github.event.ref), 'iceraven')"
