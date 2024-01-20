@@ -73,6 +73,15 @@
     </androidx.preference.PreferenceCategory>
 
     <androidx.preference.PreferenceCategory
+        android:layout="@layout/preference_cat_style"
+        android:title="@string/library_downloads"
+        app:iconSpaceReserved="false">
+        <androidx.preference.SwitchPreference
+            android:key="@string/pref_key_success_download_dialog"
+            android:title="@string/preferences_show_success_download_dialog"/>
+    </androidx.preference.PreferenceCategory>
+
+    <androidx.preference.PreferenceCategory
         android:key="@string/pref_addons_settings_category"
         android:layout="@layout/preference_cat_style"
         android:title="@string/preferences_addons_customization"

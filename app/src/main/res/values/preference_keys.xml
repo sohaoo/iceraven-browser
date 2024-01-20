@@ -379,6 +379,10 @@
     <string name="pref_key_relinquish_memory_under_pressure" translatable="false">pref_key_relinquish_memory_under_pressure</string>
     <!-- shortcut settings -->
     <string name="pref_key_show_top_recent_sites" translatable="false">pref_key_show_top_recent_sites</string>
+    <!-- search opened tabs settings -->
+    <string name="pref_key_search_opened_tabs" translatable="false">pref_key_search_opened_tabs</string>
+    <!-- success download notification settings -->
+    <string name="pref_key_success_download_dialog" translatable="false">pref_key_success_download_dialog</string>
     <!--Shopping -->
     <string name="pref_key_is_review_quality_check_enabled">pref_key_is_review_quality_check_enabled</string>
     <string name="pref_key_is_review_quality_check_product_recommendations_enabled">pref_key_is_review_quality_check_product_recommendations_enabled</string>

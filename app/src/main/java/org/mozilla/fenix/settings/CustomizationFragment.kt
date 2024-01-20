@@ -54,6 +54,7 @@ class CustomizationFragment : PreferenceFragmentCompat() {
         setupRadioGroups()
         setupToolbarCategory()
         setupGesturesCategory()
+        setupDownloadCustomizationCategory()
         setupAddonsCustomizationCategory()
         setupSystemBehaviorCategory()
         requirePreference<SwitchPreference>(R.string.pref_key_strip_url).apply {
@@ -185,6 +186,13 @@ class CustomizationFragment : PreferenceFragmentCompat() {
     private fun setupSystemBehaviorCategory() {
         requirePreference<SwitchPreference>(R.string.pref_key_relinquish_memory_under_pressure).apply {
             isChecked = requireContext().settings().shouldRelinquishMemoryUnderPressure
+            onPreferenceChangeListener = SharedPreferenceUpdater()
+        }
+    }
+
+    private fun setupDownloadCustomizationCategory() {
+        requirePreference<SwitchPreference>(R.string.pref_key_success_download_dialog).apply {
+            isChecked = requireContext().settings().shouldShowSuccessDownloadDialog
             onPreferenceChangeListener = SharedPreferenceUpdater()
         }
     }

@@ -1964,4 +1964,20 @@ class Settings(private val appContext: Context) : PreferencesHolder {
         appContext.getPreferenceKey(R.string.pref_key_show_top_recent_sites),
         default = false,
     )
+
+    /**
+     * Indicates if the user has chosen to show Switch to tab suggestion
+     */
+    var shouldShowSessionSuggestions by booleanPreference(
+        appContext.getPreferenceKey(R.string.pref_key_search_opened_tabs),
+        default = true,
+    )
+
+    /**
+     * Indicates if the user has chosen to show success download dialog
+     */
+    var shouldShowSuccessDownloadDialog by booleanPreference(
+        appContext.getPreferenceKey(R.string.pref_key_success_download_dialog),
+        default = true,
+    )
 }

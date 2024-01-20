@@ -61,6 +61,11 @@
             android:title='@string/preferences_search_synced_tabs' />
         <SwitchPreference
             app:iconSpaceReserved="false"
+            android:defaultValue="true"
+            android:key="@string/pref_key_search_opened_tabs"
+            android:title="@string/preferences_search_opened_tabs" />
+        <SwitchPreference
+            app:iconSpaceReserved="false"
             android:key="@string/pref_key_show_nonsponsored_suggestions"
             android:title="@string/preferences_show_nonsponsored_suggestions"
             android:summary="@string/preferences_show_nonsponsored_suggestions_summary" />

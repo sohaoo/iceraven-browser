@@ -122,6 +122,10 @@ class DynamicDownloadDialog(
         (binding.root.layoutParams as CoordinatorLayout.LayoutParams).apply {
             (behavior as DynamicDownloadDialogBehavior).forceExpand(binding.root)
         }
+
+        if(!settings.shouldShowSuccessDownloadDialog && !didFail) {
+            dismiss()
+        }
     }
 
     private fun dismiss() {

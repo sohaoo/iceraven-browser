@@ -2443,4 +2443,6 @@
     <string name="confirm_addons_delete_cache_no">取消</string>
     <!-- Content description for headings announced by accessibility service. The first parameter is the text of the heading. Talkback will announce the first parameter and then speak the word "Heading" indicating to the user that this text is a heading for a section. -->
     <string name="a11y_heading">標題 %s</string>
+    <string name="preferences_search_opened_tabs">搜尋已開啟的標籤頁</string>
+    <string name="preferences_show_success_download_dialog">完成時的對話方塊</string>
 </resources>

@@ -88,6 +88,11 @@ class SearchEngineFragment : PreferenceFragmentCompat() {
                 isChecked = context.settings().shouldShowSyncedTabsSuggestions
             }
 
+        val showSessionSuggestions =
+            requirePreference<SwitchPreference>(R.string.pref_key_search_opened_tabs).apply {
+                isChecked = context.settings().shouldShowSessionSuggestions
+            }
+
         val showClipboardSuggestions =
             requirePreference<SwitchPreference>(R.string.pref_key_show_clipboard_suggestions).apply {
                 isChecked = context.settings().shouldShowClipboardSuggestions
@@ -120,6 +125,7 @@ class SearchEngineFragment : PreferenceFragmentCompat() {
         showHistorySuggestions.onPreferenceChangeListener = SharedPreferenceUpdater()
         showBookmarkSuggestions.onPreferenceChangeListener = SharedPreferenceUpdater()
         showSyncedTabsSuggestions.onPreferenceChangeListener = SharedPreferenceUpdater()
+        showSessionSuggestions.onPreferenceChangeListener = SharedPreferenceUpdater()
         showClipboardSuggestions.onPreferenceChangeListener = SharedPreferenceUpdater()
         searchSuggestionsInPrivatePreference.onPreferenceChangeListener = SharedPreferenceUpdater()
         showVoiceSearchPreference.onPreferenceChangeListener = object : Preference.OnPreferenceChangeListener {

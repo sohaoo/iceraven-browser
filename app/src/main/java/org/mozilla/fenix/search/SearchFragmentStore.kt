@@ -183,7 +183,7 @@ fun createInitialSearchFragmentState(
         showSyncedTabsSuggestionsForCurrentEngine = false,
         showAllSyncedTabsSuggestions = settings.shouldShowSyncedTabsSuggestions,
         showSessionSuggestionsForCurrentEngine = false,
-        showAllSessionSuggestions = true,
+        showAllSessionSuggestions = settings.shouldShowSessionSuggestions,
         showSponsoredSuggestions = activity.browsingModeManager.mode == BrowsingMode.Normal &&
             settings.enableFxSuggest && settings.showSponsoredSuggestions,
         showNonSponsoredSuggestions = activity.browsingModeManager.mode == BrowsingMode.Normal &&
@@ -284,7 +284,7 @@ private fun searchStateReducer(state: SearchFragmentState, action: SearchFragmen
                     action.settings.enableFxSuggest && action.settings.showSponsoredSuggestions,
                 showNonSponsoredSuggestions = action.browsingMode == BrowsingMode.Normal &&
                     action.settings.enableFxSuggest && action.settings.showNonSponsoredSuggestions,
-                showAllSessionSuggestions = true,
+                showAllSessionSuggestions = action.settings.shouldShowSessionSuggestions,
             )
         is SearchFragmentAction.SearchShortcutEngineSelected ->
             state.copy(
@@ -316,10 +316,10 @@ private fun searchStateReducer(state: SearchFragmentState, action: SearchFragmen
                     false -> action.settings.shouldShowSyncedTabsSuggestions
                 },
                 showSessionSuggestionsForCurrentEngine = action.settings.showUnifiedSearchFeature &&
-                    !action.engine.isGeneral,
+                    !action.engine.isGeneral && action.settings.shouldShowSessionSuggestions,
                 showAllSessionSuggestions = when (action.settings.showUnifiedSearchFeature) {
                     true -> false
-                    false -> true
+                    false -> action.settings.shouldShowSessionSuggestions
                 },
                 showSponsoredSuggestions = false,
                 showNonSponsoredSuggestions = false,
