@@ -2395,8 +2395,6 @@
     <string name="confirm_addons_delete_cache_no">Отмена</string>
     <!-- Content description for headings announced by accessibility service. The first parameter is the text of the heading. Talkback will announce the first parameter and then speak the word "Heading" indicating to the user that this text is a heading for a section. -->
     <string name="a11y_heading">%s, Заголовок</string>
-    <!-- Content description for headings announced by accessibility service. The first parameter is the text of the heading. Talkback will announce the first parameter and then speak the word "Heading" indicating to the user that this text is a heading for a section. -->
-    <string name="a11y_heading">%s, Заголовок</string>
 
     <!-- Title for dialog displayed when trying to access links present in a text. -->
     <string name="a11y_links_title">Ссылки</string>
