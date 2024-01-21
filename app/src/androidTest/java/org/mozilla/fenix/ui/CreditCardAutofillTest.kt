@@ -7,7 +7,6 @@ package org.mozilla.fenix.ui
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.customannotations.SmokeTest
@@ -369,7 +368,6 @@ class CreditCardAutofillTest {
     }
 
     // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/1512794
-    @Ignore("Failing, see https://bugzilla.mozilla.org/show_bug.cgi?id=1853625")
     @Test
     fun verifyMultipleCreditCardsCanBeAddedTest() {
         val creditCardFormPage = TestAssetHelper.getCreditCardFormAsset(mockWebServer)
@@ -576,7 +574,6 @@ class CreditCardAutofillTest {
     }
 
     // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/1512791
-    @Ignore("Failing, see: https://bugzilla.mozilla.org/show_bug.cgi?id=1854566")
     @Test
     fun verifyCreditCardRedirectionsToAutofillSectionAfterInterruptionTest() {
         homeScreen {

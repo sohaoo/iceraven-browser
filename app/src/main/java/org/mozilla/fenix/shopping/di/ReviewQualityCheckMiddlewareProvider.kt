@@ -13,6 +13,7 @@ import org.mozilla.fenix.shopping.DefaultShoppingExperienceFeature
 import org.mozilla.fenix.shopping.middleware.DefaultNetworkChecker
 import org.mozilla.fenix.shopping.middleware.DefaultReviewQualityCheckPreferences
 import org.mozilla.fenix.shopping.middleware.DefaultReviewQualityCheckService
+import org.mozilla.fenix.shopping.middleware.DefaultReviewQualityCheckTelemetryService
 import org.mozilla.fenix.shopping.middleware.DefaultReviewQualityCheckVendorsService
 import org.mozilla.fenix.shopping.middleware.GetReviewQualityCheckSumoUrl
 import org.mozilla.fenix.shopping.middleware.ReviewQualityCheckNavigationMiddleware
