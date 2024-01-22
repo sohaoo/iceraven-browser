@@ -70,7 +70,9 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
     private var addons: List<Addon> = emptyList()
 
     private var adapter: AddonsManagerAdapter? = null
+
     private var addonImportFilePicker: ActivityResultLauncher<Intent>? = null
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         logger.info("View created for AddonsManagementFragment")
         super.onViewCreated(view, savedInstanceState)
@@ -86,24 +88,25 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
                 result: ActivityResult ->
             if(result.resultCode == Activity.RESULT_OK) {
                 result.data?.data?.let{uri ->
-                    requireComponents.intentProcessors.addonInstallIntentProcessor.fromUri(uri)?.let{tmp ->
-                        val ext = requireComponents.intentProcessors.addonInstallIntentProcessor.parseExtension(tmp)
-                        requireComponents.intentProcessors.addonInstallIntentProcessor.installExtension(
-                            ext[0], ext[1],
-                            onSuccess = {
-                                val ao = Addon.newFromWebExtension(it)
-                                runIfFragmentIsAttached {
-                                    adapter?.updateAddon(ao)
-                                    binding?.addonProgressOverlay?.overlayCardView?.visibility = View.GONE
+                    requireComponents.intentProcessors.addonInstallIntentProcessor.fromUri(uri)
+                        .let{ tmpFile ->
+                            val extURI = requireComponents.intentProcessors.addonInstallIntentProcessor.parseExtension(tmpFile)
+                            requireComponents.intentProcessors.addonInstallIntentProcessor.installExtension(
+                                extURI,
+                                onSuccess = {
+                                    val installedState = provideAddonManger().toInstalledState(it)
+                                    val ao = Addon.newFromWebExtension(it, installedState)
+                                    runIfFragmentIsAttached {
+                                        adapter?.updateAddon(ao)
+                                        binding?.addonProgressOverlay?.overlayCardView?.visibility = View.GONE
+                                    }
                                 }
-                            }
-                        )
-                    }
+                            )
+                        }
                 }
             }
         }
     }
-
 
     private fun setupMenu() {
         val menuHost = requireActivity() as MenuHost
@@ -153,6 +156,7 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
             viewLifecycleOwner, Lifecycle.State.RESUMED,
         )
     }
+
     private fun installFromFile() {
         val intent = Intent()
             .setType("application/x-xpinstall")
@@ -160,6 +164,7 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
 
         addonImportFilePicker!!.launch(intent)
     }
+
     private fun showAlertDialog() {
         val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
         builder

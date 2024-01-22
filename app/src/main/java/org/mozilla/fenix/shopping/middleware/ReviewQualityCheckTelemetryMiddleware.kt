@@ -13,8 +13,11 @@ import mozilla.components.lib.state.Store
 import org.mozilla.fenix.GleanMetrics.Shopping
 import org.mozilla.fenix.GleanMetrics.ShoppingSettings
 import org.mozilla.fenix.components.AppStore
+import org.mozilla.fenix.components.appstate.AppAction.ShoppingAction
+import org.mozilla.fenix.components.appstate.shopping.ShoppingState
 import org.mozilla.fenix.shopping.store.ReviewQualityCheckAction
 import org.mozilla.fenix.shopping.store.ReviewQualityCheckMiddleware
+import org.mozilla.fenix.shopping.store.ReviewQualityCheckState
 import org.mozilla.fenix.shopping.store.ReviewQualityCheckState.OptedIn.ProductReviewState.AnalysisPresent.AnalysisStatus
 
 private const val ACTION_ENABLED = "enabled"
@@ -195,6 +198,6 @@ class ReviewQualityCheckTelemetryMiddleware(
 
     private fun ReviewQualityCheckState.isStaleAnalysis(): Boolean =
         this is ReviewQualityCheckState.OptedIn &&
-            this.productReviewState is ReviewQualityCheckState.OptedIn.ProductReviewState.AnalysisPresent &&
-            this.productReviewState.analysisStatus == AnalysisStatus.NeedsAnalysis
+                this.productReviewState is ReviewQualityCheckState.OptedIn.ProductReviewState.AnalysisPresent &&
+                this.productReviewState.analysisStatus == AnalysisStatus.NeedsAnalysis
 }
