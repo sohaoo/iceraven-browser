@@ -29,14 +29,12 @@ import androidx.annotation.CallSuper
 import androidx.annotation.IdRes
 import androidx.annotation.RequiresApi
 import androidx.annotation.VisibleForTesting
-import androidx.annotation.VisibleForTesting.Companion.PROTECTED
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavDestination
-import androidx.navigation.NavDirections
+import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
@@ -89,10 +87,8 @@ import org.mozilla.fenix.GleanMetrics.Events
 import org.mozilla.fenix.GleanMetrics.Metrics
 import org.mozilla.fenix.GleanMetrics.SplashScreen
 import org.mozilla.fenix.GleanMetrics.StartOnHome
-import org.mozilla.fenix.addons.AddonDetailsFragmentDirections
-import org.mozilla.fenix.addons.AddonPermissionsDetailsFragmentDirections
-import org.mozilla.fenix.addons.AddonsManagementFragmentDirections
-import org.mozilla.fenix.addons.ExtensionsProcessDisabledController
+import org.mozilla.fenix.addons.ExtensionsProcessDisabledBackgroundController
+import org.mozilla.fenix.addons.ExtensionsProcessDisabledForegroundController
 import org.mozilla.fenix.browser.browsingmode.BrowsingMode
 import org.mozilla.fenix.browser.browsingmode.BrowsingModeManager
 import org.mozilla.fenix.browser.browsingmode.DefaultBrowsingModeManager
@@ -103,18 +99,20 @@ import org.mozilla.fenix.components.metrics.fonts.FontEnumerationWorker
 import org.mozilla.fenix.customtabs.ExternalAppBrowserActivity
 import org.mozilla.fenix.databinding.ActivityHomeBinding
 import org.mozilla.fenix.debugsettings.data.DefaultDebugSettingsRepository
-import org.mozilla.fenix.debugsettings.ui.DebugOverlay
-import org.mozilla.fenix.exceptions.trackingprotection.TrackingProtectionExceptionsFragmentDirections
+import org.mozilla.fenix.debugsettings.ui.FenixOverlay
 import org.mozilla.fenix.experiments.ResearchSurfaceDialogFragment
 import org.mozilla.fenix.ext.alreadyOnDestination
 import org.mozilla.fenix.ext.breadcrumb
 import org.mozilla.fenix.ext.components
+import org.mozilla.fenix.ext.getBreadcrumbMessage
+import org.mozilla.fenix.ext.getIntentSessionId
+import org.mozilla.fenix.ext.getIntentSource
+import org.mozilla.fenix.ext.getNavDirections
 import org.mozilla.fenix.ext.hasTopDestination
 import org.mozilla.fenix.ext.nav
 import org.mozilla.fenix.ext.setNavigationIcon
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.extension.WebExtensionPromptFeature
-import org.mozilla.fenix.home.HomeFragmentDirections
 import org.mozilla.fenix.home.intent.AssistIntentProcessor
 import org.mozilla.fenix.home.intent.CrashReporterIntentProcessor
 import org.mozilla.fenix.home.intent.HomeDeepLinkIntentProcessor
@@ -124,11 +122,7 @@ import org.mozilla.fenix.home.intent.OpenSpecificTabIntentProcessor
 import org.mozilla.fenix.home.intent.ReEngagementIntentProcessor
 import org.mozilla.fenix.home.intent.SpeechProcessingIntentProcessor
 import org.mozilla.fenix.home.intent.StartSearchIntentProcessor
-import org.mozilla.fenix.library.bookmarks.BookmarkFragmentDirections
 import org.mozilla.fenix.library.bookmarks.DesktopFolders
-import org.mozilla.fenix.library.history.HistoryFragmentDirections
-import org.mozilla.fenix.library.historymetadata.HistoryMetadataGroupFragmentDirections
-import org.mozilla.fenix.library.recentlyclosed.RecentlyClosedFragmentDirections
 import org.mozilla.fenix.messaging.FenixMessageSurfaceId
 import org.mozilla.fenix.messaging.FenixNimbusMessagingController
 import org.mozilla.fenix.messaging.MessageNotificationWorker
@@ -143,29 +137,12 @@ import org.mozilla.fenix.perf.ProfilerMarkers
 import org.mozilla.fenix.perf.StartupPathProvider
 import org.mozilla.fenix.perf.StartupTimeline
 import org.mozilla.fenix.perf.StartupTypeTelemetry
-import org.mozilla.fenix.search.SearchDialogFragmentDirections
 import org.mozilla.fenix.session.PrivateNotificationService
-import org.mozilla.fenix.settings.HttpsOnlyFragmentDirections
-import org.mozilla.fenix.settings.SettingsFragmentDirections
-import org.mozilla.fenix.settings.TrackingProtectionFragmentDirections
-import org.mozilla.fenix.settings.about.AboutFragmentDirections
-import org.mozilla.fenix.settings.logins.fragment.LoginDetailFragmentDirections
-import org.mozilla.fenix.settings.logins.fragment.SavedLoginsAuthFragmentDirections
-import org.mozilla.fenix.settings.search.SaveSearchEngineFragmentDirections
-import org.mozilla.fenix.settings.search.SearchEngineFragmentDirections
-import org.mozilla.fenix.settings.studies.StudiesFragmentDirections
-import org.mozilla.fenix.settings.wallpaper.WallpaperSettingsFragmentDirections
-import org.mozilla.fenix.share.AddNewDeviceFragmentDirections
-import org.mozilla.fenix.shopping.ReviewQualityCheckFragmentDirections
 import org.mozilla.fenix.shortcut.NewTabShortcutIntentProcessor.Companion.ACTION_OPEN_PRIVATE_TAB
 import org.mozilla.fenix.tabhistory.TabHistoryDialogFragment
 import org.mozilla.fenix.tabstray.TabsTrayFragment
-import org.mozilla.fenix.tabstray.TabsTrayFragmentDirections
 import org.mozilla.fenix.theme.DefaultThemeManager
-import org.mozilla.fenix.theme.FirefoxTheme
-import org.mozilla.fenix.theme.Theme
 import org.mozilla.fenix.theme.ThemeManager
-import org.mozilla.fenix.trackingprotection.TrackingProtectionPanelDialogFragmentDirections
 import org.mozilla.fenix.utils.Settings
 import java.lang.ref.WeakReference
 import java.util.Locale
@@ -176,7 +153,7 @@ import java.util.Locale
  * - home screen
  * - browser screen
  */
-@SuppressWarnings("TooManyFunctions", "LargeClass", "LongParameterList", "LongMethod")
+@SuppressWarnings("TooManyFunctions", "LargeClass", "LongMethod")
 open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
     // DO NOT MOVE ANYTHING ABOVE THIS, GETTING INIT TIME IS CRITICAL
     // we need to store startup timestamp for warm startup. we cant directly store
@@ -207,8 +184,15 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         )
     }
 
-    private val extensionsProcessDisabledPromptObserver by lazy {
-        ExtensionsProcessDisabledController(this@HomeActivity)
+    private val extensionsProcessDisabledForegroundController by lazy {
+        ExtensionsProcessDisabledForegroundController(this@HomeActivity)
+    }
+
+    private val extensionsProcessDisabledBackgroundController by lazy {
+        ExtensionsProcessDisabledBackgroundController(
+            browserStore = components.core.store,
+            appStore = components.appStore,
+        )
     }
 
     private val serviceWorkerSupport by lazy {
@@ -300,9 +284,10 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
                                 visibility = View.VISIBLE
 
                                 setContent {
-                                    FirefoxTheme(theme = Theme.getTheme(allowPrivateTheme = false)) {
-                                        DebugOverlay()
-                                    }
+                                    FenixOverlay(
+                                        browserStore = components.core.store,
+                                        inactiveTabsEnabled = settings().inactiveTabsAreEnabled,
+                                    )
                                 }
                             } else {
                                 setContent {}
@@ -348,7 +333,7 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
             // Unless the activity is recreated, navigate to home first (without rendering it)
             // to add it to the back stack.
             if (savedInstanceState == null) {
-                navigateToHome()
+                navigateToHome(navHost.navController)
             }
 
             if (!shouldStartOnHome() && shouldNavigateToBrowserOnColdStart(savedInstanceState)) {
@@ -392,7 +377,8 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
 
         lifecycle.addObservers(
             webExtensionPopupObserver,
-            extensionsProcessDisabledPromptObserver,
+            extensionsProcessDisabledForegroundController,
+            extensionsProcessDisabledBackgroundController,
             serviceWorkerSupport,
             webExtensionPromptFeature,
         )
@@ -699,7 +685,12 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         startupPathProvider.onIntentReceived(intent)
     }
 
-    open fun handleNewIntent(intent: Intent) {
+    @VisibleForTesting
+    internal fun handleNewIntent(intent: Intent) {
+        if (this is ExternalAppBrowserActivity) {
+            return
+        }
+
         // Diagnostic breadcrumb for "Display already aquired" crash:
         // https://github.com/mozilla-mobile/android-components/issues/7960
         breadcrumb(
@@ -886,20 +877,6 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         super.onUserLeaveHint()
     }
 
-    protected open fun getBreadcrumbMessage(destination: NavDestination): String {
-        val fragmentName = resources.getResourceEntryName(destination.id)
-        return "Changing to fragment $fragmentName, isCustomTab: false"
-    }
-
-    @VisibleForTesting(otherwise = PROTECTED)
-    internal open fun getIntentSource(intent: SafeIntent): String? {
-        return when {
-            intent.isLauncherIntent -> APP_ICON
-            intent.action == Intent.ACTION_VIEW -> "LINK"
-            else -> null
-        }
-    }
-
     /**
      * External sources such as 3rd party links and shortcuts use this function to enter
      * private mode directly before the content view is created. Returns the mode set by the intent
@@ -984,8 +961,6 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         }
     }
 
-    protected open fun getIntentSessionId(intent: SafeIntent): String? = null
-
     /**
      * Navigates to the browser fragment and loads a URL or performs a search (depending on the
      * value of [searchTermOrURL]).
@@ -1003,7 +978,6 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
      * was opened from history.
      * @param additionalHeaders The extra headers to use when loading the URL.
      */
-    @Suppress("LongParameterList")
     fun openToBrowserAndLoad(
         searchTermOrURL: String,
         newTab: Boolean,
@@ -1036,65 +1010,6 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         if (directions != null) {
             navHost.navController.nav(fragmentId, directions)
         }
-    }
-
-    protected open fun getNavDirections(
-        from: BrowserDirection,
-        customTabSessionId: String?,
-    ): NavDirections? = when (from) {
-        BrowserDirection.FromGlobal ->
-            NavGraphDirections.actionGlobalBrowser(customTabSessionId)
-        BrowserDirection.FromHome ->
-            HomeFragmentDirections.actionGlobalBrowser(customTabSessionId)
-        BrowserDirection.FromWallpaper ->
-            WallpaperSettingsFragmentDirections.actionGlobalBrowser(customTabSessionId)
-        BrowserDirection.FromSearchDialog ->
-            SearchDialogFragmentDirections.actionGlobalBrowser(customTabSessionId)
-        BrowserDirection.FromSettings ->
-            SettingsFragmentDirections.actionGlobalBrowser(customTabSessionId)
-        BrowserDirection.FromBookmarks ->
-            BookmarkFragmentDirections.actionGlobalBrowser(customTabSessionId)
-        BrowserDirection.FromHistory ->
-            HistoryFragmentDirections.actionGlobalBrowser(customTabSessionId)
-        BrowserDirection.FromHistoryMetadataGroup ->
-            HistoryMetadataGroupFragmentDirections.actionGlobalBrowser(customTabSessionId)
-        BrowserDirection.FromTrackingProtectionExceptions ->
-            TrackingProtectionExceptionsFragmentDirections.actionGlobalBrowser(customTabSessionId)
-        BrowserDirection.FromHttpsOnlyMode ->
-            HttpsOnlyFragmentDirections.actionGlobalBrowser(customTabSessionId)
-        BrowserDirection.FromAbout ->
-            AboutFragmentDirections.actionGlobalBrowser(customTabSessionId)
-        BrowserDirection.FromTrackingProtection ->
-            TrackingProtectionFragmentDirections.actionGlobalBrowser(customTabSessionId)
-        BrowserDirection.FromTrackingProtectionDialog ->
-            TrackingProtectionPanelDialogFragmentDirections.actionGlobalBrowser(customTabSessionId)
-        BrowserDirection.FromSavedLoginsFragment ->
-            SavedLoginsAuthFragmentDirections.actionGlobalBrowser(customTabSessionId)
-        BrowserDirection.FromAddNewDeviceFragment ->
-            AddNewDeviceFragmentDirections.actionGlobalBrowser(customTabSessionId)
-        BrowserDirection.FromSearchEngineFragment ->
-            SearchEngineFragmentDirections.actionGlobalBrowser(customTabSessionId)
-        BrowserDirection.FromSaveSearchEngineFragment ->
-            SaveSearchEngineFragmentDirections.actionGlobalBrowser(customTabSessionId)
-        BrowserDirection.FromAddonDetailsFragment ->
-            AddonDetailsFragmentDirections.actionGlobalBrowser(customTabSessionId)
-        BrowserDirection.FromAddonPermissionsDetailsFragment ->
-            AddonPermissionsDetailsFragmentDirections.actionGlobalBrowser(customTabSessionId)
-        BrowserDirection.FromLoginDetailFragment ->
-            LoginDetailFragmentDirections.actionGlobalBrowser(customTabSessionId)
-        BrowserDirection.FromTabsTray ->
-            TabsTrayFragmentDirections.actionGlobalBrowser(customTabSessionId)
-        BrowserDirection.FromRecentlyClosed ->
-            RecentlyClosedFragmentDirections.actionGlobalBrowser(customTabSessionId)
-        BrowserDirection.FromStudiesFragment -> StudiesFragmentDirections.actionGlobalBrowser(
-            customTabSessionId,
-        )
-        BrowserDirection.FromReviewQualityCheck -> ReviewQualityCheckFragmentDirections.actionGlobalBrowser(
-            customTabSessionId,
-        )
-        BrowserDirection.FromAddonsManagementFragment -> AddonsManagementFragmentDirections.actionGlobalBrowser(
-            customTabSessionId,
-        )
     }
 
     /**
@@ -1194,7 +1109,12 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         settings().openNextTabInDesktopMode = false
     }
 
-    open fun navigateToBrowserOnColdStart() {
+    @VisibleForTesting
+    internal fun navigateToBrowserOnColdStart() {
+        if (this is ExternalAppBrowserActivity) {
+            return
+        }
+
         // Normal tabs + cold start -> Should go back to browser if we had any tabs open when we left last
         // except for PBM + Cold Start there won't be any tabs since they're evicted so we never will navigate
         if (settings().shouldReturnToBrowser && !browsingModeManager.mode.isPrivate) {
@@ -1203,8 +1123,13 @@ open class HomeActivity : LocaleAwareAppCompatActivity(), NavHostActivity {
         }
     }
 
-    open fun navigateToHome() {
-        navHost.navController.navigate(NavGraphDirections.actionStartupHome())
+    @VisibleForTesting
+    internal fun navigateToHome(navController: NavController) {
+        if (this is ExternalAppBrowserActivity) {
+            return
+        }
+
+        navController.navigate(NavGraphDirections.actionStartupHome())
     }
 
     override fun attachBaseContext(base: Context) {

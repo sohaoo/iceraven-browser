@@ -22,8 +22,11 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.fenix.GleanMetrics.Shopping
 import org.mozilla.fenix.components.AppStore
+import org.mozilla.fenix.components.appstate.AppState
+import org.mozilla.fenix.components.appstate.shopping.ShoppingState
 import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
 import org.mozilla.fenix.shopping.ProductAnalysisTestData
+import org.mozilla.fenix.shopping.fake.FakeReviewQualityCheckTelemetryService
 import org.mozilla.fenix.shopping.store.BottomSheetDismissSource
 import org.mozilla.fenix.shopping.store.BottomSheetViewState
 import org.mozilla.fenix.shopping.store.ReviewQualityCheckAction
@@ -283,14 +286,6 @@ class ReviewQualityCheckTelemetryMiddlewareTest {
                 productVendor = ReviewQualityCheckState.ProductVendor.BEST_BUY,
             ),
             middleware = provideTelemetryMiddleware(),
-        )
-        val tested = ReviewQualityCheckStore(
-            initialState = ReviewQualityCheckState.OptedIn(
-                productRecommendationsPreference = null,
-                productRecommendationsExposure = true,
-                productVendor = ReviewQualityCheckState.ProductVendor.BEST_BUY,
-            ),
-            middleware = listOf(ReviewQualityCheckTelemetryMiddleware()),
         )
 
         tested.dispatch(

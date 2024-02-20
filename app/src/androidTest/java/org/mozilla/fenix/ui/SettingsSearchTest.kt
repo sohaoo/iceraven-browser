@@ -14,6 +14,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.customannotations.SmokeTest
 import org.mozilla.fenix.helpers.AndroidAssetDispatcher
+import org.mozilla.fenix.helpers.AppAndSystemHelper.resetSystemLocaleToEnUS
 import org.mozilla.fenix.helpers.AppAndSystemHelper.runWithSystemLocaleChanged
 import org.mozilla.fenix.helpers.AppAndSystemHelper.setSystemLocale
 import org.mozilla.fenix.helpers.DataGenerationHelper.setTextToClipBoard
@@ -64,6 +65,7 @@ class SettingsSearchTest {
     @After
     fun tearDown() {
         mockWebServer.shutdown()
+        resetSystemLocaleToEnUS()
     }
 
     // TestRail link: https://testrail.stage.mozaws.net/index.php?/cases/view/2203333
@@ -424,6 +426,10 @@ class SettingsSearchTest {
     fun verifyShowSearchSuggestionsToggleTest() {
         homeScreen {
         }.openSearch {
+            // The Google related suggestions aren't always displayed on cold run
+            // Bugzilla ticket: https://bugzilla.mozilla.org/show_bug.cgi?id=1813587
+            clickSearchSelectorButton()
+            selectTemporarySearchMethod("DuckDuckGo")
             typeSearch("mozilla ")
             verifySearchEngineSuggestionResults(
                 activityTestRule,
@@ -438,6 +444,10 @@ class SettingsSearchTest {
         }.goBack {
         }.goBack {
         }.openSearch {
+            // The Google related suggestions aren't always displayed on cold run
+            // Bugzilla ticket: https://bugzilla.mozilla.org/show_bug.cgi?id=1813587
+            clickSearchSelectorButton()
+            selectTemporarySearchMethod("DuckDuckGo")
             typeSearch("mozilla")
             verifySuggestionsAreNotDisplayed(activityTestRule, "mozilla firefox")
         }
