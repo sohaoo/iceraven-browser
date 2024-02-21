@@ -480,12 +480,6 @@
     <!--Message for the cookie banner re-engagement CFR -->
     <string name="cookie_banner_cfr_message">Malpli da distro, malpli da kuketoj klopodante spuri vin en tiu ĉi retejo.</string>
 
-    <!--Title for the cookie banner re-engagement CFR, the placeholder is replaced with app name -->
-    <string name="cookie_banner_cfr_title">%1$s ĵus rifuzis kuketojn por vi</string>
-
-    <!--Message for the cookie banner re-engagement CFR -->
-    <string name="cookie_banner_cfr_message">Malpli da distro, malpli da kuketoj klopodante spuri vin en tiu ĉi retejo.</string>
-
     <!-- Description of the preference to enable "HTTPS-Only" mode. -->
     <string name="preferences_https_only_summary">Aŭtomate provi konekti al retejoj per la ĉifrita protokolo HTTPS por pliigi sekurecon.</string>
     <!-- Summary of https only preference if https only is set to off -->
