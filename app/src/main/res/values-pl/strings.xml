@@ -1854,9 +1854,6 @@
     <!-- Preference summary for saving and filling address data -->
     <string name="preferences_addresses_save_and_autofill_addresses_summary_2">W tym numery telefonów i adresy e-mail</string>
 
-    <!-- Preference summary for saving and filling address data -->
-    <string name="preferences_addresses_save_and_autofill_addresses_summary_2" tools:ignore="UnusedResources">W tym numery telefonów i adresy e-mail</string>
-
     <!-- Title of the "Add card" screen -->
     <string name="credit_cards_add_card">Dodaj kartę</string>
     <!-- Title of the "Edit card" screen -->

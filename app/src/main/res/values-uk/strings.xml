@@ -1854,9 +1854,6 @@
     <!-- Preference summary for saving and filling address data -->
     <string name="preferences_addresses_save_and_autofill_addresses_summary_2">Містить номери телефонів і адреси електронної пошти</string>
 
-    <!-- Preference summary for saving and filling address data -->
-    <string name="preferences_addresses_save_and_autofill_addresses_summary_2" tools:ignore="UnusedResources">Містить номери телефонів і адреси електронної пошти</string>
-
     <!-- Title of the "Add card" screen -->
     <string name="credit_cards_add_card">Додати картку</string>
     <!-- Title of the "Edit card" screen -->

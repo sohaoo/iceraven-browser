@@ -1882,9 +1882,6 @@
     <!-- Preference summary for saving and filling address data -->
     <string name="preferences_addresses_save_and_autofill_addresses_summary_2">Include numeri di telefono e indirizzi email</string>
 
-    <!-- Preference summary for saving and filling address data -->
-    <string name="preferences_addresses_save_and_autofill_addresses_summary_2" tools:ignore="UnusedResources">Include numeri di telefono e indirizzi email</string>
-
     <!-- Title of the "Add card" screen -->
     <string name="credit_cards_add_card">Aggiungi carta</string>
     <!-- Title of the "Edit card" screen -->

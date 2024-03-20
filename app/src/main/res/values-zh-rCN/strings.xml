@@ -1894,9 +1894,6 @@
     <!-- Preference summary for saving and filling address data -->
     <string name="preferences_addresses_save_and_autofill_addresses_summary_2">包括电话号码和邮箱地址</string>
 
-    <!-- Preference summary for saving and filling address data -->
-    <string name="preferences_addresses_save_and_autofill_addresses_summary_2" tools:ignore="UnusedResources">包括电话号码和邮箱地址</string>
-
     <!-- Title of the "Add card" screen -->
     <string name="credit_cards_add_card">添加信用卡</string>
     <!-- Title of the "Edit card" screen -->

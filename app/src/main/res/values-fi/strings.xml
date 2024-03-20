@@ -1863,9 +1863,6 @@
     <!-- Preference summary for saving and filling address data -->
     <string name="preferences_addresses_save_and_autofill_addresses_summary_2">Sisältää puhelinnumerot ja sähköpostiosoitteet</string>
 
-    <!-- Preference summary for saving and filling address data -->
-    <string name="preferences_addresses_save_and_autofill_addresses_summary_2" tools:ignore="UnusedResources">Sisältää puhelinnumerot ja sähköpostiosoitteet</string>
-
     <!-- Title of the "Add card" screen -->
     <string name="credit_cards_add_card">Lisää kortti</string>
     <!-- Title of the "Edit card" screen -->

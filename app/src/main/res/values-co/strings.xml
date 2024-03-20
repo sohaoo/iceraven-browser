@@ -1859,9 +1859,6 @@
     <!-- Preference summary for saving and filling address data -->
     <string name="preferences_addresses_save_and_autofill_addresses_summary_2">Include i numeri di telefonu è l’indirizzi elettronichi</string>
 
-    <!-- Preference summary for saving and filling address data -->
-    <string name="preferences_addresses_save_and_autofill_addresses_summary_2" tools:ignore="UnusedResources">Include i numeri di telefonu è l’indirizzi elettronichi</string>
-
     <!-- Title of the "Add card" screen -->
     <string name="credit_cards_add_card">Aghjunghje una carta</string>
     <!-- Title of the "Edit card" screen -->

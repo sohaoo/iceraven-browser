@@ -1868,9 +1868,6 @@
     <!-- Preference summary for saving and filling address data -->
     <string name="preferences_addresses_save_and_autofill_addresses_summary_2">電話番号とメールアドレスを含みます</string>
 
-    <!-- Preference summary for saving and filling address data -->
-    <string name="preferences_addresses_save_and_autofill_addresses_summary_2" tools:ignore="UnusedResources">電話番号とメールアドレスを含みます</string>
-
     <!-- Title of the "Add card" screen -->
     <string name="credit_cards_add_card">カードの追加</string>
 

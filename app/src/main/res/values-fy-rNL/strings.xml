@@ -1839,9 +1839,6 @@
     <!-- Preference summary for saving and filling address data -->
     <string name="preferences_addresses_save_and_autofill_addresses_summary_2">Ynklusyf telefoannûmers en e-mailadressen</string>
 
-    <!-- Preference summary for saving and filling address data -->
-    <string name="preferences_addresses_save_and_autofill_addresses_summary_2" tools:ignore="UnusedResources">Ynklusyf telefoannûmers en e-mailadressen</string>
-
     <!-- Title of the "Add card" screen -->
     <string name="credit_cards_add_card">Kaart tafoegje</string>
 

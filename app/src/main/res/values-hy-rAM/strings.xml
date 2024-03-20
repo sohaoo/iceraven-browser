@@ -1839,9 +1839,6 @@
     <!-- Preference summary for saving and filling address data -->
     <string name="preferences_addresses_save_and_autofill_addresses_summary_2">Ներառում է հեռախոսահամարներ և էլ. փոստի հասցեներ</string>
 
-    <!-- Preference summary for saving and filling address data -->
-    <string name="preferences_addresses_save_and_autofill_addresses_summary_2" tools:ignore="UnusedResources">Ներառում է հեռախոսահամարներ և էլ. փոստի հասցեներ</string>
-
     <!-- Title of the "Add card" screen -->
     <string name="credit_cards_add_card">Ավելացնել քարտ</string>
     <!-- Title of the "Edit card" screen -->

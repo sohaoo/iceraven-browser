@@ -1860,9 +1860,6 @@
     <!-- Preference summary for saving and filling address data -->
     <string name="preferences_addresses_save_and_autofill_addresses_summary_2">Inkluderar telefonnummer och e-postadresser</string>
 
-    <!-- Preference summary for saving and filling address data -->
-    <string name="preferences_addresses_save_and_autofill_addresses_summary_2" tools:ignore="UnusedResources">Inkluderar telefonnummer och e-postadresser</string>
-
     <!-- Title of the "Add card" screen -->
     <string name="credit_cards_add_card">Lägg till kreditkort</string>
     <!-- Title of the "Edit card" screen -->

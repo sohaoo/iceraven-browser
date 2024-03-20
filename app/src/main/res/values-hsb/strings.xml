@@ -1850,9 +1850,6 @@
     <!-- Preference summary for saving and filling address data -->
     <string name="preferences_addresses_save_and_autofill_addresses_summary_2">Wobsahuje telefonowe čisła a e-mejlowe adresy</string>
 
-    <!-- Preference summary for saving and filling address data -->
-    <string name="preferences_addresses_save_and_autofill_addresses_summary_2" tools:ignore="UnusedResources">Wobsahuje telefonowe čisła a e-mejlowe adresy</string>
-
     <!-- Title of the "Add card" screen -->
     <string name="credit_cards_add_card">Kartu přidać</string>
     <!-- Title of the "Edit card" screen -->

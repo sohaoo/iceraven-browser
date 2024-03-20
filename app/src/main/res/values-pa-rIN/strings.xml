@@ -1865,9 +1865,6 @@
     <!-- Preference summary for saving and filling address data -->
     <string name="preferences_addresses_save_and_autofill_addresses_summary_2">ਫ਼ੋਨ ਨੰਬਰਾਂ ਅਤੇ ਈਮੇਲ ਸਿਰਨਾਵਿਆਂ ਸਮੇਤ</string>
 
-    <!-- Preference summary for saving and filling address data -->
-    <string name="preferences_addresses_save_and_autofill_addresses_summary_2" tools:ignore="UnusedResources">ਫ਼ੋਨ ਨੰਬਰਾਂ ਅਤੇ ਈਮੇਲ ਸਿਰਨਾਵਿਆਂ ਸਮੇਤ</string>
-
     <!-- Title of the "Add card" screen -->
     <string name="credit_cards_add_card">ਕਾਰਡ ਜੋੜੋ</string>
     <!-- Title of the "Edit card" screen -->

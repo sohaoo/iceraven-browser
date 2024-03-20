@@ -1835,9 +1835,6 @@
     <!-- Preference summary for saving and filling address data -->
     <string name="preferences_addresses_save_and_autofill_addresses_summary_2">Inkluderer telefonnumre og mailadresser</string>
 
-    <!-- Preference summary for saving and filling address data -->
-    <string name="preferences_addresses_save_and_autofill_addresses_summary_2" tools:ignore="UnusedResources">Inkluderer telefonnumre og mailadresser</string>
-
     <!-- Title of the "Add card" screen -->
     <string name="credit_cards_add_card">Tilføj kort</string>
     <!-- Title of the "Edit card" screen -->
