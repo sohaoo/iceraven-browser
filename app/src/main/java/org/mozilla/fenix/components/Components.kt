@@ -207,7 +207,7 @@ class Components(private val context: Context) {
         )
     }
 
-    val fxSuggest by lazyMonitored { FxSuggest(context, analytics.crashReporter) }
+    val fxSuggest by lazyMonitored { FxSuggest(context) }
 }
 
 /**

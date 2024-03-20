@@ -248,7 +248,11 @@ class HomeFragment : Fragment() {
         val components = requireComponents
 
         val currentWallpaperName = requireContext().settings().currentWallpaperName
-        applyWallpaper(wallpaperName = currentWallpaperName, orientationChange = false)
+        applyWallpaper(
+            wallpaperName = currentWallpaperName,
+            orientationChange = false,
+            orientation = requireContext().resources.configuration.orientation,
+        )
 
         components.appStore.dispatch(AppAction.ModeChange(browsingModeManager.mode))
 
@@ -454,7 +458,11 @@ class HomeFragment : Fragment() {
         homeMenuView?.dismissMenu()
 
         val currentWallpaperName = requireContext().settings().currentWallpaperName
-        applyWallpaper(wallpaperName = currentWallpaperName, orientationChange = true)
+        applyWallpaper(
+            wallpaperName = currentWallpaperName,
+            orientationChange = true,
+            orientation = newConfig.orientation,
+        )
     }
 
     /**
@@ -1000,7 +1008,7 @@ class HomeFragment : Fragment() {
     internal fun shouldEnableWallpaper() =
         (activity as? HomeActivity)?.themeManager?.currentTheme?.isPrivate?.not() ?: false
 
-    private fun applyWallpaper(wallpaperName: String, orientationChange: Boolean) {
+    private fun applyWallpaper(wallpaperName: String, orientationChange: Boolean, orientation: Int) {
         when {
             !shouldEnableWallpaper() ||
                 (wallpaperName == lastAppliedWallpaperName && !orientationChange) -> return
@@ -1013,8 +1021,7 @@ class HomeFragment : Fragment() {
                     // loadBitmap does file lookups based on name, so we don't need a fully
                     // qualified type to load the image
                     val wallpaper = Wallpaper.Default.copy(name = wallpaperName)
-                    val wallpaperImage =
-                        context?.let { requireComponents.useCases.wallpaperUseCases.loadBitmap(it, wallpaper) }
+                    val wallpaperImage = requireComponents.useCases.wallpaperUseCases.loadBitmap(wallpaper, orientation)
                     wallpaperImage?.let {
                         it.scaleToBottomOfView(binding.wallpaperImageView)
                         binding.wallpaperImageView.isVisible = true
@@ -1060,7 +1067,11 @@ class HomeFragment : Fragment() {
                 .distinctUntilChanged()
                 .collect {
                     if (it.name != lastAppliedWallpaperName) {
-                        applyWallpaper(wallpaperName = it.name, orientationChange = false)
+                        applyWallpaper(
+                            wallpaperName = it.name,
+                            orientationChange = false,
+                            orientation = requireContext().resources.configuration.orientation,
+                        )
                     }
                 }
         }
