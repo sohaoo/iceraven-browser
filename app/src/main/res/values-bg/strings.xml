@@ -1812,9 +1812,6 @@
     <!-- Content description (not visible, for screen readers etc.) -->
     <string name="saved_logins_menu_dropdown_chevron_icon_content_description_2">Меню за сортиране на пароли</string>
 
-    <!-- Content description (not visible, for screen readers etc.) -->
-    <string name="saved_logins_menu_dropdown_chevron_icon_content_description_2" tools:ignore="UnusedResources">Меню за сортиране на пароли</string>
-
     <!-- Autofill -->
     <!-- Preference and title for managing the autofill settings -->
     <string name="preferences_autofill">Автоматично попълване</string>

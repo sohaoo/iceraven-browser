@@ -1847,9 +1847,6 @@
     <!-- Content description (not visible, for screen readers etc.) -->
     <string name="saved_logins_menu_dropdown_chevron_icon_content_description_2">Ordinar le menu del contrasignos</string>
 
-    <!-- Content description (not visible, for screen readers etc.) -->
-    <string name="saved_logins_menu_dropdown_chevron_icon_content_description_2" tools:ignore="UnusedResources">Ordinar le menu del contrasignos</string>
-
     <!-- Autofill -->
     <!-- Preference and title for managing the autofill settings -->
     <string name="preferences_autofill">Autoplenar</string>
