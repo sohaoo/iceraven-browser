@@ -75,7 +75,7 @@
         <activity-alias
             android:name="${applicationId}.App"
             android:exported="true"
-            android:targetActivity=".${targetActivity}">
+            android:targetActivity=".HomeActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
