@@ -255,12 +255,4 @@ class OnboardingFragment : Fragment() {
             sequencePosition = pagesToDisplay.sequencePosition(OnboardingPageUiData.Type.DEFAULT_BROWSER),
         )
     }
-
-    private fun promptToSetAsDefaultBrowser() {
-        activity?.openSetDefaultBrowserOption(useCustomTab = true)
-        telemetryRecorder.onSetToDefaultClick(
-            sequenceId = pagesToDisplay.telemetrySequenceId(),
-            sequencePosition = pagesToDisplay.sequencePosition(OnboardingPageUiData.Type.DEFAULT_BROWSER),
-        )
-    }
 }
