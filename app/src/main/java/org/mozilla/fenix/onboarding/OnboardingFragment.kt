@@ -5,8 +5,6 @@
 package org.mozilla.fenix.onboarding
 
 import android.annotation.SuppressLint
-import android.appwidget.AppWidgetManager
-import android.content.ComponentName
 import android.content.Context
 import android.content.IntentFilter
 import android.content.pm.ActivityInfo
@@ -23,6 +21,7 @@ import androidx.fragment.app.Fragment
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.fragment.findNavController
 import mozilla.components.service.nimbus.evalJexlSafe
+import mozilla.components.service.nimbus.messaging.use
 import mozilla.components.support.base.ext.areNotificationsEnabledSafe
 import mozilla.components.support.utils.BrowsersCache
 import org.mozilla.fenix.R
@@ -42,7 +41,8 @@ import org.mozilla.fenix.onboarding.view.telemetrySequenceId
 import org.mozilla.fenix.onboarding.view.toPageUiData
 import org.mozilla.fenix.settings.SupportUtils
 import org.mozilla.fenix.theme.FirefoxTheme
-import org.mozilla.gecko.search.SearchWidgetProvider
+import org.mozilla.fenix.utils.canShowAddSearchWidgetPrompt
+import org.mozilla.fenix.utils.showAddSearchWidgetPrompt
 
 /**
  * Fragment displaying the onboarding flow.
@@ -53,7 +53,7 @@ class OnboardingFragment : Fragment() {
         pagesToDisplay(
             isNotDefaultBrowser(requireContext()),
             canShowNotificationPage(requireContext()),
-            canShowAddWidgetCard(),
+            canShowAddSearchWidgetPrompt(),
         )
     }
     private val telemetryRecorder by lazy { OnboardingTelemetryRecorder() }
@@ -161,7 +161,7 @@ class OnboardingFragment : Fragment() {
                     pagesToDisplay.telemetrySequenceId(),
                     pagesToDisplay.sequencePosition(OnboardingPageUiData.Type.ADD_SEARCH_WIDGET),
                 )
-                showAddSearchWidgetDialog()
+                showAddSearchWidgetPrompt(requireActivity())
             },
             onSkipFirefoxWidgetClick = {
                 telemetryRecorder.onSkipAddWidgetClick(
@@ -180,19 +180,6 @@ class OnboardingFragment : Fragment() {
                 )
             },
         )
-    }
-
-    private fun showAddSearchWidgetDialog() {
-        // Requesting to pin app widget is only available for Android 8.0 and above
-        if (canShowAddWidgetCard()) {
-            val appWidgetManager = AppWidgetManager.getInstance(activity)
-            val searchWidgetProvider =
-                ComponentName(requireActivity(), SearchWidgetProvider::class.java)
-            if (appWidgetManager.isRequestPinAppWidgetSupported) {
-                val successCallback = WidgetPinnedReceiver.getPendingIntent(requireContext())
-                appWidgetManager.requestPinAppWidget(searchWidgetProvider, null, successCallback)
-            }
-        }
     }
 
     private fun onFinish(onboardingPageUiData: OnboardingPageUiData?) {
@@ -221,8 +208,6 @@ class OnboardingFragment : Fragment() {
         !NotificationManagerCompat.from(context.applicationContext)
             .areNotificationsEnabledSafe() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
 
-    private fun canShowAddWidgetCard() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-
     private fun isNotATablet() = !resources.getBoolean(R.bool.tablet)
 
     private fun pagesToDisplay(
@@ -231,7 +216,7 @@ class OnboardingFragment : Fragment() {
         showAddWidgetPage: Boolean,
     ): List<OnboardingPageUiData> {
         val jexlConditions = FxNimbus.features.junoOnboarding.value().conditions
-        val jexlHelper = requireContext().components.analytics.messagingStorage.helper
+        val jexlHelper = requireContext().components.nimbus.createJexlHelper()
 
         val privacyCaption = Caption(
             text = getString(R.string.juno_onboarding_privacy_notice_text),
@@ -252,13 +237,23 @@ class OnboardingFragment : Fragment() {
                 },
             ),
         )
-        return FxNimbus.features.junoOnboarding.value().cards.values.toPageUiData(
-            privacyCaption,
-            showDefaultBrowserPage,
-            showNotificationPage,
-            showAddWidgetPage,
-            jexlConditions,
-        ) { condition -> jexlHelper.evalJexlSafe(condition) }
+        return jexlHelper.use {
+            FxNimbus.features.junoOnboarding.value().cards.values.toPageUiData(
+                privacyCaption,
+                showDefaultBrowserPage,
+                showNotificationPage,
+                showAddWidgetPage,
+                jexlConditions,
+            ) { condition -> jexlHelper.evalJexlSafe(condition) }
+        }
+    }
+
+    private fun promptToSetAsDefaultBrowser() {
+        activity?.openSetDefaultBrowserOption(useCustomTab = true)
+        telemetryRecorder.onSetToDefaultClick(
+            sequenceId = pagesToDisplay.telemetrySequenceId(),
+            sequencePosition = pagesToDisplay.sequencePosition(OnboardingPageUiData.Type.DEFAULT_BROWSER),
+        )
     }
 
     private fun promptToSetAsDefaultBrowser() {

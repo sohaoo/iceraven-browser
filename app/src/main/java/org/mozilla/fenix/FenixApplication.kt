@@ -433,7 +433,7 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
         fun queueNimbusFetchInForeground() {
             queue.runIfReadyOrQueue {
                 GlobalScope.launch(Dispatchers.IO) {
-                    components.analytics.experiments.maybeFetchExperiments(
+                    components.nimbus.sdk.maybeFetchExperiments(
                         context = this@FenixApplication,
                     )
                 }
@@ -502,7 +502,7 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
         beginSetupMegazord()
 
         // This lazily constructs the Nimbus object…
-        val nimbus = components.analytics.experiments
+        val nimbus = components.nimbus.sdk
         // … which we then can populate the feature configuration.
         FxNimbus.initialize { nimbus }
     }
@@ -1039,7 +1039,7 @@ open class FenixApplication : LocaleAwareApplication(), Provider {
         }
     }
 
-    override fun getWorkManagerConfiguration() = Builder().setMinimumLoggingLevel(INFO).build()
+    override val workManagerConfiguration = Builder().setMinimumLoggingLevel(INFO).build()
 
     @OptIn(DelicateCoroutinesApi::class)
     open fun downloadWallpapers() {
