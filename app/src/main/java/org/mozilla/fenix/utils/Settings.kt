@@ -1238,6 +1238,11 @@ class Settings(private val appContext: Context) : PreferencesHolder {
         default = true,
     )
 
+    var shouldShowQRScanSearch by booleanPreference(
+        appContext.getPreferenceKey(R.string.pref_key_show_qr_scan_search),
+        default = true,
+    )
+
     /**
      * Used in [SearchDialogFragment.kt], [SearchFragment.kt] (deprecated), and [PairFragment.kt]
      * to see if we need to check for camera permissions before using the QR code scanner.

@@ -103,6 +103,11 @@ class SearchEngineFragment : PreferenceFragmentCompat() {
                 isChecked = context.settings().shouldShowVoiceSearch
             }
 
+        val showQRScanSearchPreference =
+            requirePreference<SwitchPreference>(R.string.pref_key_show_qr_scan_search).apply {
+                isChecked = context.settings().shouldShowQRScanSearch
+            }
+
         val showSponsoredSuggestionsPreference =
             requirePreference<SwitchPreference>(R.string.pref_key_show_sponsored_suggestions).apply {
                 isChecked = context.settings().showSponsoredSuggestions
@@ -138,6 +143,7 @@ class SearchEngineFragment : PreferenceFragmentCompat() {
                 return true
             }
         }
+        showQRScanSearchPreference.onPreferenceChangeListener = SharedPreferenceUpdater()
         autocompleteURLsPreference.onPreferenceChangeListener = SharedPreferenceUpdater()
 
         searchSuggestionsPreference.setOnPreferenceClickListener {

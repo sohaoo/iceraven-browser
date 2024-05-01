@@ -850,7 +850,8 @@ class SearchDialogFragment : AppCompatDialogFragment(), UserInteractionHandler {
     private fun updateQrButton(searchFragmentState: SearchFragmentState) {
         val searchEngine = searchFragmentState.searchEngineSource.searchEngine
         when (
-            searchEngine?.isGeneral == true || searchEngine?.type == SearchEngine.Type.CUSTOM
+            requireContext().settings().shouldShowQRScanSearch &&
+                    (searchEngine?.isGeneral == true || searchEngine?.type == SearchEngine.Type.CUSTOM)
         ) {
             true -> {
                 if (qrButtonAction == null) {
