@@ -8,11 +8,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.mapNotNull
-import mozilla.components.browser.state.selector.findTab
+import mozilla.components.browser.state.action.TranslationsAction
+import mozilla.components.browser.state.selector.selectedTab
 import mozilla.components.browser.state.state.BrowserState
 import mozilla.components.browser.state.state.TranslationsState
 import mozilla.components.browser.state.store.BrowserStore
-import mozilla.components.concept.engine.translate.Language
 import mozilla.components.concept.engine.translate.initialFromLanguage
 import mozilla.components.concept.engine.translate.initialToLanguage
 import mozilla.components.lib.state.helpers.AbstractBinding
@@ -24,23 +24,18 @@ import org.mozilla.fenix.translations.TranslationsFlowState
  * from the [BrowserStore] and updating the translations action button.
  *
  * @param browserStore [BrowserStore] observed for any changes related to [TranslationsState].
- * @param sessionId Current open tab session id.
- * @param onStateUpdated Invoked when the translations action button should be updated with the new translations state.
+ * @param onTranslationsActionUpdated Invoked when the translations action button
+ * should be updated with the new translations state.
  * @param onShowTranslationsDialog Invoked when [TranslationDialogBottomSheet]
  * should be automatically shown to the user.
  */
 class TranslationsBinding(
     private val browserStore: BrowserStore,
-    private val sessionId: String,
-    private val onStateUpdated: (
-        isVisible: Boolean,
-        isTranslated: Boolean,
-        fromSelectedLanguage: Language?,
-        toSelectedLanguage: Language?,
-    ) -> Unit,
+    private val onTranslationsActionUpdated: (TranslationsIconState) -> Unit,
     private val onShowTranslationsDialog: () -> Unit,
 ) : AbstractBinding<BrowserState>(browserStore) {
 
+    @Suppress("LongMethod")
     override suspend fun onState(flow: Flow<BrowserState>) {
         // Browser level flows
         val browserFlow = flow.mapNotNull { state -> state }
@@ -49,9 +44,9 @@ class TranslationsBinding(
             }
 
         // Session level flows
-        val sessionFlow = flow.mapNotNull { state -> state.findTab(sessionId) }
+        val sessionFlow = flow.mapNotNull { state -> state.selectedTab }
             .distinctUntilChangedBy {
-                it.translationsState
+                Pair(it.translationsState, it.readerState)
             }
 
         // Applying the flows together
@@ -69,11 +64,19 @@ class TranslationsBinding(
                     browserTranslationsState.supportedLanguages?.fromLanguages
                 val translateToLanguages =
                     browserTranslationsState.supportedLanguages?.toLanguages
+                val isEngineSupported = browserTranslationsState.isEngineSupported
 
                 // Session Translations State Behavior (Tab)
                 val sessionTranslationsState = state.sessionState.translationsState
 
-                if (sessionTranslationsState.isTranslated) {
+                if (state.sessionState.readerState.active) {
+                    onTranslationsActionUpdated(
+                        TranslationsIconState(
+                            isVisible = false,
+                            isTranslated = false,
+                        ),
+                    )
+                } else if (isEngineSupported == true && sessionTranslationsState.isTranslated) {
                     val fromSelected =
                         sessionTranslationsState.translationEngineState?.initialFromLanguage(
                             translateFromLanguages,
@@ -84,25 +87,38 @@ class TranslationsBinding(
                         )
 
                     if (fromSelected != null && toSelected != null) {
-                        onStateUpdated(
-                            true,
-                            true,
-                            fromSelected,
-                            toSelected,
+                        onTranslationsActionUpdated(
+                            TranslationsIconState(
+                                isVisible = true,
+                                isTranslated = true,
+                                fromSelectedLanguage = fromSelected,
+                                toSelectedLanguage = toSelected,
+                            ),
                         )
                     }
-                } else if (sessionTranslationsState.isExpectedTranslate) {
-                    onStateUpdated(
-                        true,
-                        false,
-                        null,
-                        null,
+                } else if (isEngineSupported == true && sessionTranslationsState.isExpectedTranslate) {
+                    onTranslationsActionUpdated(
+                        TranslationsIconState(
+                            isVisible = true,
+                            isTranslated = false,
+                        ),
                     )
                 } else {
-                    onStateUpdated(false, false, null, null)
+                    onTranslationsActionUpdated(
+                        TranslationsIconState(
+                            isVisible = false,
+                            isTranslated = false,
+                        ),
+                    )
                 }
 
-                if (sessionTranslationsState.isOfferTranslate) {
+                if (isEngineSupported == true && sessionTranslationsState.isOfferTranslate) {
+                    browserStore.dispatch(
+                        TranslationsAction.TranslateOfferAction(
+                            tabId = state.sessionState.id,
+                            isOfferTranslate = false,
+                        ),
+                    )
                     onShowTranslationsDialog()
                 }
             }

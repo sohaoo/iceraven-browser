@@ -131,6 +131,83 @@ To make it easier to triage, we have these issue requirements:
 
 Please keep in mind that even though a feature you have in mind may seem like a small ask, as a small team, we have to prioritize our planned work and every new feature adds complexity and maintenance and may take up design, research, product, and engineering time. We appreciate everyone’s passion but we will not be able to incorporate every feature request or even fix every bug. That being said, just because we haven't replied, doesn't mean we don't care about the issue, please be patient with our response times as we're very busy.
 
+Note: If while pushing you encounter this error "Could not initialize class org.codehaus.groovy.runtime.InvokerHelper" and are currently on Java14 then downgrading your Java version to Java13 or lower can resolve the issue
+
+Steps to downgrade Java Version on Mac with Brew:
+1. Install Homebrew (https://brew.sh/)
+2. run ```brew update```
+3. To uninstall your current java version, run ```sudo rm -fr /Library/Java/JavaVirtualMachines/<jdk-version>```
+4. run ```brew tap homebrew/cask-versions```
+5. run ```brew search java```
+6. If you see java11, then run ```brew install java11```
+7. Verify java-version by running ```java -version```
+
+## local.properties helpers
+You can speed up local development by setting a few helper flags available in `local.properties`. Some flags will make it easy to
+work across multiple layers of the dependency stack - specifically, with android-components, geckoview or application-services.
+
+### Automatically sign release builds
+To sign your release builds with your debug key automatically, add the following to `<proj-root>/local.properties`:
+
+```sh
+autosignReleaseWithDebugKey
+```
+
+With this line, release build variants will automatically be signed with your debug key (like debug builds), allowing them to be built and installed directly through Android Studio or the command line.
+
+This is helpful when you're building release variants frequently, for example to test feature flags and or do performance analyses.
+
+### Building debuggable release variants
+
+Nightly, Beta and Release variants are getting published to Google Play and therefore are not debuggable. To locally create debuggable builds of those variants, add the following to `<proj-root>/local.properties`:
+
+```sh
+debuggable
+```
+
+### Setting raptor manifest flag
+
+To set the raptor manifest flag in Nightly, Beta and Release variants, add the following to `<proj-root>/local.properties`:
+
+```sh
+raptorEnabled
+```
+
+### Auto-publication workflow for application-services and glean
+If you're making changes to these projects and want to test them in Fenix, auto-publication workflow is the fastest, most reliable
+way to do that.
+
+In `local.properties`, specify a relative path to your local `glean` and/or `application-services` projects. E.g.:
+- `autoPublish.glean.dir=../glean`
+- `autoPublish.application-services.dir=../application-services`
+
+Once these flags are set, your Fenix builds will include any local modifications present in these projects.
+
+See a [demo of auto-publication workflow in action](https://www.youtube.com/watch?v=qZKlBzVvQGc).
+
+In order to build successfully, you need to check out a commit in the dependency repository that has no breaking changes. The two best ways to do this are:
+- Run the `<android-components>/tools/list_compatible_dependency_versions.py` script to output a compatible commit
+- Check out the latest commit from main in this repository and the dependency repository. However, this may fail if there were breaking changes added recently to the dependency.
+
+If you're trying to build fenix with a local ac AND a local GV, you'll have to use another method: see [this doc](https://github.com/mozilla-mobile/fenix/blob/main/docs/substituting-local-ac-and-gv.md).
+
+### Using Nimbus servers during local development
+If you're working with the Nimbus experiments platform, by default for local development Fenix configures Nimbus to not use a server.
+
+If you wish to use a Nimbus server during local development, you can add a `https://` or `file://` endpoint to the `local.properties` file.
+
+- `nimbus.remote-settings.url`
+
+Testing experimental branches should be possible without a server.
+
+### Using custom Glean servers during local development
+If you wish to use a custom Glean server during local development, you can add a `https://` endpoint to the `local.properties` file.
+
+- `glean.custom.server.url`
+
+### GeckoView
+For building with a local checkout of `mozilla-central` see [Substituting Local GeckoView](https://github.com/mozilla-mobile/firefox-android/blob/main/fenix/docs/substituting-local-gv.md)
+
 ## License
 
 

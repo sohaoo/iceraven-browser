@@ -276,25 +276,10 @@ internal object TranslationsDialogReducer {
                 )
             }
 
-            is TranslationsDialogAction.InitTranslationsDialog -> {
-                state.copy(
-                    positiveButtonType = if (state.initialTo == null || state.initialFrom == null) {
-                        PositiveButtonType.Disabled
-                    } else {
-                        state.positiveButtonType
-                    },
-                )
-            }
-
             is TranslationsDialogAction.UpdateTranslationError -> {
                 state.copy(
                     error = action.translationError,
                     documentLangDisplayName = action.documentLangDisplayName,
-                    positiveButtonType = if (action.translationError is TranslationError.LanguageNotSupportedError) {
-                        PositiveButtonType.Disabled
-                    } else {
-                        PositiveButtonType.Enabled
-                    },
                 )
             }
 
@@ -323,6 +308,7 @@ internal object TranslationsDialogReducer {
                 )
             }
 
+            TranslationsDialogAction.InitTranslationsDialog,
             is TranslationsDialogAction.TranslateAction,
             is TranslationsDialogAction.UpdatePageSettingsValue,
             TranslationsDialogAction.TranslateAction,

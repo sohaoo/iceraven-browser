@@ -52,12 +52,20 @@
 
     <!-- Home - Recently saved bookmarks -->
     <!-- Title for the home screen section with recently saved bookmarks. -->
-    <string name="recently_saved_title">최근에 저장됨</string>
+    <string name="recently_saved_title" moz:removedIn="127" tools:ignore="UnusedResources">최근에 저장됨</string>
     <!-- Content description for the button which navigates the user to show all of their saved bookmarks. -->
-    <string name="recently_saved_show_all_content_description_2">저장된 북마크 모두 표시</string>
+    <string name="recently_saved_show_all_content_description_2" moz:removedIn="127" tools:ignore="UnusedResources">저장된 북마크 모두 표시</string>
 
     <!-- Text for the menu button to remove a recently saved bookmark from the user's home screen -->
-    <string name="recently_saved_menu_item_remove">삭제</string>
+    <string name="recently_saved_menu_item_remove" moz:removedIn="127" tools:ignore="UnusedResources">삭제</string>
+
+    <!-- Home - Bookmarks -->
+    <!-- Title for the home screen section with bookmarks. -->
+    <string name="home_bookmarks_title">북마크</string>
+    <!-- Content description for the button which navigates the user to show all of their bookmarks. -->
+    <string name="home_bookmarks_show_all_content_description">모든 북마크 표시</string>
+    <!-- Text for the menu button to remove a recently saved bookmark from the user's home screen -->
+    <string name="home_bookmarks_menu_item_remove">제거</string>
 
     <!-- About content. The first parameter is the name of the application. (For example: Fenix) -->
     <string name="about_content">%1$s는 Mozilla에서 제작했습니다.</string>
@@ -149,8 +157,10 @@
     <!-- Shortcut action to open new private tab -->
     <string name="home_screen_shortcut_open_new_private_tab_2">새 사생활 보호 탭</string>
 
-    <!-- Shortcut action to open Passwords screens -->
-    <string name="home_screen_shortcut_open_password_screen">비밀번호 바로 가기</string>
+    <!-- Shortcut action to open Passwords screen -->
+    <string name="home_screen_shortcut_passwords">비밀번호</string>
+    <!-- Shortcut action to open Passwords screen -->
+    <string name="home_screen_shortcut_open_password_screen" moz:removedIn="126" tools:ignore="UnusedResources">비밀번호 바로 가기</string>
 
     <!-- Recent Tabs -->
     <!-- Header text for jumping back into the recent tab in the home screen -->
@@ -219,6 +229,8 @@
     <string name="resync_button_content_description">다시 동기화</string>
     <!-- Browser menu button that opens the find in page menu -->
     <string name="browser_menu_find_in_page">페이지에서 찾기</string>
+    <!-- Browser menu button that opens the find in page menu -->
+    <string name="browser_menu_find_in_page_2">페이지에서 찾기…</string>
     <!-- Browser menu button that opens the translations dialog, which has options to translate the current browser page. -->
     <string name="browser_menu_translations">페이지 번역</string>
     <!-- Browser menu button that saves the current tab to a collection -->
@@ -254,9 +266,30 @@
     <string name="browser_menu_customize_home_1">홈페이지 개인화</string>
 
     <!-- Browser menu label to sign in to sync on the device using Mozilla accounts -->
-    <string name="browser_menu_sign_in" tools:ignore="UnusedResources">로그인</string>
-    <!-- Browser menu caption label for the "Sign in" browser menu item described in browser_menu_sign_in -->
-    <string name="browser_menu_sign_in_caption" tools:ignore="UnusedResources">비밀번호, 탭 등을 동기화하세요</string>
+    <string name="browser_menu_sign_in">로그인</string>
+    <!-- Browser menu caption label for the "Sign in" browser menu item described in `browser_menu_sign_in` -->
+    <string name="browser_menu_sign_in_caption">비밀번호, 탭 등을 동기화하세요</string>
+
+    <!-- Browser menu label to sign back in to sync on the device when the user's account needs to be reauthenticated -->
+    <string name="browser_menu_sign_back_in_to_sync">동기화하려면 다시 로그인</string>
+    <!-- Browser menu caption label for the "Sign back in to sync" browser menu item described in `browser_menu_sign_back_in_to_sync` when there is an error in syncing -->
+    <string name="browser_menu_syncing_paused_caption">동기화가 일시중지됨</string>
+    <!-- Browser menu label that creates a private tab -->
+    <string name="browser_menu_new_private_tab">새 사생활 보호 탭</string>
+    <!-- Browser menu label that navigates to the Password screen -->
+    <string name="browser_menu_passwords">비밀번호</string>
+
+    <!-- Browser menu label that navigates to the SUMO page for the Firefox for Android release notes.
+         The first parameter is the name of the app defined in app_name (for example: Fenix)-->
+    <string name="browser_menu_new_in_firefox">%1$s 새 기능</string>
+
+    <!-- Browser menu label that toggles the request for the desktop site of the currently visited page -->
+    <string name="browser_menu_switch_to_desktop_site">데스크톱 사이트로 전환</string>
+    <!-- Browser menu label that navigates to the page tools sub-menu -->
+    <string name="browser_menu_tools">도구</string>
+    <!-- Browser menu label that navigates to the save sub-menu, which contains various save related menu items such as
+         bookmarking a page, saving to collection, shortcut or as a PDF, and adding to home screen -->
+    <string name="browser_menu_save">저장</string>
 
     <!-- Extensions management fragment -->
     <!-- Text displayed when there are no extensions to be shown -->
@@ -566,6 +599,8 @@
     <string name="preferences_account_sync_error">다시 연결하여 동기화를 계속하세요</string>
     <!-- Preference for language -->
     <string name="preferences_language">언어</string>
+    <!-- Preference for translation -->
+    <string name="preferences_translation">번역</string>
     <!-- Preference for data choices -->
     <string name="preferences_data_choices">데이터 선택</string>
     <!-- Preference for data collection -->
@@ -634,6 +669,21 @@
     <!-- Summary for notification preference indicating notifications are not allowed -->
     <string name="notifications_not_allowed_summary">허용되지 않음</string>
 
+    <!-- Add-on Permissions -->
+    <!-- The title of the required permissions section from addon's permissions screen -->
+    <string name="addons_permissions_heading_required" tools:ignore="UnusedResources">필수</string>
+    <!-- The title of the optional permissions section from addon's permissions screen -->
+    <string name="addons_permissions_heading_optional" tools:ignore="UnusedResources">선택 사항</string>
+
+    <!-- The title of the section with websites that have permissions granted from addon's permissions screen -->
+    <string name="addons_permissions_heading_read_and_change_website_data" tools:ignore="UnusedResources">웹 사이트 데이터 읽기 및 변경</string>
+    <!-- The description of the icon that can delete one of the websites displayed  -->
+    <string name="addons_permissions_icon_description_delete_website" tools:ignore="UnusedResources">웹 사이트 삭제</string>
+    <!-- The title of the origin permission option allowing a user to enable the extension to run on all sites -->
+    <string name="addons_permissions_allow_for_all_sites" tools:ignore="UnusedResources">모든 사이트에 허용</string>
+    <!-- The subtitle for the allow for all sites preference toggle -->
+    <string name="addons_permissions_allow_for_all_sites_subtitle" tools:ignore="UnusedResources">이 확장 기능을 신뢰한다면 모든 웹 사이트에 권한을 부여할 수 있습니다.</string>
+
     <!-- Add-on Preferences -->
     <!-- Preference to customize the configured AMO (addons.mozilla.org) collection -->
     <string name="preferences_customize_amo_collection" moz:removedIn="126" tools:ignore="UnusedResources">사용자 지정 부가 기능 모음집</string>
@@ -657,7 +707,9 @@
     <!-- Header text for jumping back into the recent tab in customize the home screen -->
     <string name="customize_toggle_jump_back_in">최근 탭으로 이동</string>
     <!-- Title for the customize home screen section with recently saved bookmarks. -->
-    <string name="customize_toggle_recent_bookmarks">최근 북마크</string>
+    <string name="customize_toggle_recent_bookmarks" moz:removedIn="127" tools:ignore="UnusedResources">최근 북마크</string>
+    <!-- Title for the customize home screen section with bookmarks. -->
+    <string name="customize_toggle_bookmarks">북마크</string>
     <!-- Title for the customize home screen section with recently visited. Recently visited is
     a section where users see a list of tabs that they have visited in the past few days -->
     <string name="customize_toggle_recently_visited">최근에 방문함</string>
@@ -1715,7 +1767,7 @@
 
     <!-- Content description (not visible, for screen readers etc.):
     Enhanced tracking protection exception preference icon for ETP settings. -->
-    <string name="preference_etp_exceptions_icon_description">향상된 추적 보호 예외 설정 아이콘</string>
+    <string name="preference_etp_exceptions_icon_description">향상된 추적 방지 기능의 예외 설정 아이콘</string>
 
     <!-- About page link text to open support link -->
     <string name="about_support">지원</string>
@@ -2519,10 +2571,14 @@
     <string name="translations_bottom_sheet_translate_from">원본 언어:</string>
     <!-- Label for the dropdown to select which language to translate to on the translations dialog. Usually the translate to language selected will be the user's preferred language. -->
     <string name="translations_bottom_sheet_translate_to">대상 언어:</string>
+    <!-- Label for the dropdown to select which language to translate from on the translations dialog when the page language is not supported. This selection is to allow the user to select another language, in case we automatically detected the page language incorrectly. -->
+    <string name="translations_bottom_sheet_translate_from_unsupported_language">다른 원본 언어 사용</string>
     <!-- Button text on the translations dialog to dismiss the dialog and return to the browser. -->
     <string name="translations_bottom_sheet_negative_button">나중에</string>
     <!-- Button text on the translations dialog to restore the translated website back to the original untranslated version. -->
     <string name="translations_bottom_sheet_negative_button_restore">원본 보기</string>
+    <!-- Accessibility announcement (not visible, for screen readers etc.) for the translations dialog after restore button was pressed that indicates the original untranslated page was loaded. -->
+    <string name="translations_bottom_sheet_restore_accessibility_announcement">번역되지 않은 원본 페이지가 로드됨</string>
     <!-- Button text on the translations dialog when a translation error appears, used to dismiss the dialog and return to the browser. -->
     <string name="translations_bottom_sheet_negative_button_error">완료</string>
     <!-- Button text on the translations dialog to begin a translation of the website. -->
@@ -2543,7 +2599,7 @@
     <!-- The title of the warning card informs the user that a language is not supported. The first parameter is the name of the language that is not supported. -->
     <string name="translation_error_language_not_supported_warning_text">죄송합니다. 아직 %1$s 언어는 지원되지 않습니다.</string>
     <!-- Button text on the warning card when a language is not supported. The link will take the user to a page to a support page about translations. -->
-    <string name="translation_error_language_not_supported_learn_more">더 알아보기</string>
+    <string name="translation_error_language_not_supported_learn_more" moz:removedIn="126" tools:ignore="UnusedResources">더 알아보기</string>
 
     <!-- Snackbar title shown if the user closes the Translation Request dialogue and a translation is in progress. -->
     <string name="translation_in_progress_snackbar">번역 중…</string>
@@ -2557,7 +2613,9 @@
 
     <!-- Translations options dialog -->
     <!-- Title of the translation options dialog that allows a user to set their translation options for the site the user is currently on. -->
-    <string name="translation_option_bottom_sheet_title">번역 옵션</string>
+    <string name="translation_option_bottom_sheet_title" moz:removedIn="126" tools:ignore="UnusedResources">번역 옵션</string>
+    <!-- Title of the translation options dialog that allows a user to set their translation options for the site the user is currently on. -->
+    <string name="translation_option_bottom_sheet_title_heading">번역 옵션</string>
     <!-- Toggle switch label that allows a user to set the setting if they would like the browser to always offer or suggest translations when available. -->
     <string name="translation_option_bottom_sheet_always_translate">항상 번역 제안</string>
     <!-- Toggle switch label that allows a user to set if they would like a given language to automatically translate or not. The first parameter is the language name, for example, "Spanish". -->
@@ -2574,6 +2632,9 @@
     <string name="translation_option_bottom_sheet_translation_settings">번역 설정</string>
     <!-- Button text for the button that will take the user to a website to learn more about how translations works in the given app. The first parameter is the name of the application, for example, "Fenix". -->
     <string name="translation_option_bottom_sheet_about_translations">%1$s 번역 정보</string>
+
+    <!-- Content description (not visible, for screen readers etc.) for closing the translations bottom sheet. -->
+    <string name="translation_option_bottom_sheet_close_content_description">번역 시트 닫기</string>
 
     <!-- Translation settings dialog -->
     <!-- Title of the translation settings dialog that allows a user to set their preferred translation settings. -->
@@ -2699,6 +2760,8 @@
     <string name="debug_drawer_title">디버그 도구</string>
     <!-- Content description (not visible, for screen readers etc.): Navigate back within the debug drawer. -->
     <string name="debug_drawer_back_button_content_description">뒤로</string>
+
+    <!-- Debug drawer tabs tools -->
     <!-- The title of the Tab Tools feature in the Debug Drawer. -->
     <string name="debug_drawer_tab_tools_title">탭 도구</string>
     <!-- The title of the tab count section in Tab Tools. -->
@@ -2721,4 +2784,40 @@
     <string name="debug_drawer_tab_tools_tab_creation_tool_button_text_inactive">비활성 탭에 추가</string>
     <!-- The button text to add tabs to the private tab group in the tab creation tool. -->
     <string name="debug_drawer_tab_tools_tab_creation_tool_button_text_private">사생활 보호 탭에 추가</string>
+
+    <!-- Micro survey -->
+
+    <!-- The continue button label -->
+    <string name="micro_survey_continue_button_label" tools:ignore="UnusedResources">계속</string>
+    <!-- The survey header -->
+    <string name="micro_survey_survey_header">이 설문 조사를 완료하세요</string>
+    <!-- The privacy notice link -->
+    <string name="micro_survey_privacy_notice">개인정보처리방침</string>
+    <!-- The submit button label text -->
+    <string name="micro_survey_submit_button_label" tools:ignore="UnusedResources">보내기</string>
+    <!-- The close button label text -->
+    <string name="micro_survey_close_button_label">닫기</string>
+
+    <!-- The survey completion confirmation text -->
+    <string name="micro_survey_feedback_confirmation" tools:ignore="UnusedResources">의견을 보내 주셔서 감사합니다!</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_1" tools:ignore="UnusedResources">매우 만족</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_2" tools:ignore="UnusedResources">만족</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_3" tools:ignore="UnusedResources">보통</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_4" tools:ignore="UnusedResources">불만족</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_5" tools:ignore="UnusedResources">매우 불만족</string>
+
+    <!-- Debug drawer logins -->
+    <!-- The title of the Logins feature in the Debug Drawer. -->
+    <string name="debug_drawer_logins_title">로그인</string>
+    <!-- The title of the logins section in the Logins feature, where the parameter will be the site domain  -->
+    <string name="debug_drawer_logins_current_domain_label">현재 도메인: %s</string>
+    <!-- The label for a button to add a new fake login for the current domain in the Logins feature. -->
+    <string name="debug_drawer_logins_add_login_button">이 도메인에 대한 가짜 로그인 추가</string>
+    <!-- Content description for delete button where parameter will be the username of the login -->
+    <string name="debug_drawer_logins_delete_login_button_content_description">사용자 이름 %s의 로그인 삭제</string>
 </resources>

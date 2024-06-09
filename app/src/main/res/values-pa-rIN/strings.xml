@@ -50,12 +50,21 @@
 
     <!-- Home - Recently saved bookmarks -->
     <!-- Title for the home screen section with recently saved bookmarks. -->
-    <string name="recently_saved_title">ਤਾਜ਼ਾ ਸੰਭਾਲੇ</string>
+    <string name="recently_saved_title" moz:removedIn="127" tools:ignore="UnusedResources">ਤਾਜ਼ਾ ਸੰਭਾਲੇ</string>
     <!-- Content description for the button which navigates the user to show all of their saved bookmarks. -->
-    <string name="recently_saved_show_all_content_description_2">ਸਾਰੇ ਸੰਭਾਲੇ ਬੁੱਕਮਾਰਕਾਂ ਨੂੰ ਵੇਖੋ</string>
+    <string name="recently_saved_show_all_content_description_2" moz:removedIn="127" tools:ignore="UnusedResources">ਸਾਰੇ ਸੰਭਾਲੇ ਬੁੱਕਮਾਰਕਾਂ ਨੂੰ ਵੇਖੋ</string>
 
     <!-- Text for the menu button to remove a recently saved bookmark from the user's home screen -->
-    <string name="recently_saved_menu_item_remove">ਹਟਾਓ</string>
+    <string name="recently_saved_menu_item_remove" moz:removedIn="127" tools:ignore="UnusedResources">ਹਟਾਓ</string>
+
+    <!-- Home - Bookmarks -->
+    <!-- Title for the home screen section with bookmarks. -->
+    <string name="home_bookmarks_title">ਬੁੱਕਮਾਰਕ</string>
+
+    <!-- Content description for the button which navigates the user to show all of their bookmarks. -->
+    <string name="home_bookmarks_show_all_content_description">ਸਭ ਬੁੱਕਮਾਰਕਾਂ ਨੂੰ ਵੇਖੋ</string>
+    <!-- Text for the menu button to remove a recently saved bookmark from the user's home screen -->
+    <string name="home_bookmarks_menu_item_remove">ਹਟਾਓ</string>
 
     <!-- About content. The first parameter is the name of the application. (For example: Fenix) -->
     <string name="about_content">%1$s ਮੌਜ਼ੀਲਾ ਵਲੋਂ ਤਿਆਰ ਕੀਤਾ</string>
@@ -148,8 +157,10 @@
     <!-- Shortcut action to open new private tab -->
     <string name="home_screen_shortcut_open_new_private_tab_2">ਨਵੀਂ ਨਿੱਜੀ ਟੈਬ</string>
 
-    <!-- Shortcut action to open Passwords screens -->
-    <string name="home_screen_shortcut_open_password_screen">ਪਾਸਵਰਡ ਸ਼ਾਰਟਕੱਟ</string>
+    <!-- Shortcut action to open Passwords screen -->
+    <string name="home_screen_shortcut_passwords">ਪਾਸਵਰਡ</string>
+    <!-- Shortcut action to open Passwords screen -->
+    <string name="home_screen_shortcut_open_password_screen" moz:removedIn="126" tools:ignore="UnusedResources">ਪਾਸਵਰਡ ਸ਼ਾਰਟਕੱਟ</string>
 
     <!-- Recent Tabs -->
     <!-- Header text for jumping back into the recent tab in the home screen -->
@@ -191,11 +202,13 @@
     <!-- Content description (not visible, for screen readers etc.): Stop loading current website -->
     <string name="browser_menu_stop">ਰੋਕੋ</string>
     <!-- Browser menu button that opens the addon manager -->
-    <string name="browser_menu_add_ons">ਐਡ-ਆਨ</string>
+    <string name="browser_menu_add_ons" moz:removedIn="126" tools:ignore="UnusedResources">ਐਡ-ਆਨ</string>
+    <!-- Browser menu button that opens the extensions manager -->
+    <string name="browser_menu_extensions">ਇਕਸਟੈਨਸ਼ਨਾਂ</string>
     <!-- Browser menu button that opens account settings -->
     <string name="browser_menu_account_settings">ਖਾਤਾ ਜਾਣਕਾਰੀ</string>
     <!-- Text displayed when there are no add-ons to be shown -->
-    <string name="no_add_ons">ਕੋਈ ਐਡ-ਆਨ ਨਹੀਂ ਹੈ</string>
+    <string name="no_add_ons" moz:removedIn="126" tools:ignore="UnusedResources">ਕੋਈ ਐਡ-ਆਨ ਨਹੀਂ ਹੈ</string>
     <!-- Browser menu button that sends a user to help articles -->
     <string name="browser_menu_help">ਮਦਦ</string>
     <!-- Browser menu button that sends a to a the what's new article -->
@@ -211,12 +224,14 @@
     <!-- Browser menu toggle that adds a shortcut to the site on the device home screen. -->
     <string name="browser_menu_add_to_homescreen">ਮੁੱਖ ਸਕਰੀਨ ‘ਤੇ ਜੋੜੋ</string>
     <!-- Browser menu toggle that installs a Progressive Web App shortcut to the site on the device home screen. -->
-    <string name="browser_menu_install_on_homescreen">ਇੰਸਟਾਲ ਕਰੋ</string>
+    <string name="browser_menu_install_on_homescreen" moz:removedIn="126" tools:ignore="UnusedResources">ਇੰਸਟਾਲ ਕਰੋ</string>
     <!-- Content description (not visible, for screen readers etc.) for the Resync tabs button -->
     <string name="resync_button_content_description">ਮੁੜ-ਸਿੰਕ ਕਰੋ</string>
     <!-- Browser menu button that opens the find in page menu -->
     <string name="browser_menu_find_in_page">ਸਫ਼ੇ ‘ਚ ਲੱਭੋ</string>
 
+    <!-- Browser menu button that opens the find in page menu -->
+    <string name="browser_menu_find_in_page_2">…ਸਫ਼ੇ ਵਿੱਚ ਲੱਭੋ</string>
     <!-- Browser menu button that opens the translations dialog, which has options to translate the current browser page. -->
     <string name="browser_menu_translations">ਸਫ਼ੇ ਦਾ ਉਲੱਥਾ ਕਰੋ</string>
     <!-- Browser menu button that saves the current tab to a collection -->
@@ -249,6 +264,36 @@
 
     <!-- Button shown on the home page that opens the Customize home settings -->
     <string name="browser_menu_customize_home_1">ਮੁੱਖ-ਸਫ਼ੇ ਨੂੰ ਕਸਟਮਾਈਜ਼ ਕਰੋ</string>
+
+    <!-- Browser menu label to sign in to sync on the device using Mozilla accounts -->
+    <string name="browser_menu_sign_in">ਸਾਈਨ ਇਨ</string>
+    <!-- Browser menu caption label for the "Sign in" browser menu item described in `browser_menu_sign_in` -->
+    <string name="browser_menu_sign_in_caption">ਪਾਸਵਰਡ, ਟੈਬਾਂ ਤੇ ਹੋਰਾਂ ਨੂੰ ਸਿੰਕ ਕਰੋ</string>
+
+    <!-- Browser menu label to sign back in to sync on the device when the user's account needs to be reauthenticated -->
+    <string name="browser_menu_sign_back_in_to_sync">ਸਿੰਕ ਕਰਨ ਲਈ ਵਾਪਸ ਸਾਈਨ ਇਨ ਕਰੋ</string>
+    <!-- Browser menu caption label for the "Sign back in to sync" browser menu item described in `browser_menu_sign_back_in_to_sync` when there is an error in syncing -->
+    <string name="browser_menu_syncing_paused_caption">ਸਿੰਕ ਨੂੰ ਰੋਕਿਆ ਗਿਆ ਹੈ</string>
+    <!-- Browser menu label that creates a private tab -->
+    <string name="browser_menu_new_private_tab">ਨਵੀਂ ਪ੍ਰਾਈਵੇਟ ਟੈਬ</string>
+    <!-- Browser menu label that navigates to the Password screen -->
+    <string name="browser_menu_passwords">ਪਾਸਵਰਡ</string>
+
+    <!-- Browser menu label that navigates to the SUMO page for the Firefox for Android release notes.
+         The first parameter is the name of the app defined in app_name (for example: Fenix)-->
+    <string name="browser_menu_new_in_firefox">%1$s ਵਿੱਚ ਨਵਾਂ</string>
+
+    <!-- Browser menu label that toggles the request for the desktop site of the currently visited page -->
+    <string name="browser_menu_switch_to_desktop_site">ਡੈਸਕਟਾਪ ਸਾਈਟ ਲਈ ਬਦਲੋ</string>
+    <!-- Browser menu label that navigates to the page tools sub-menu -->
+    <string name="browser_menu_tools">ਟੂਲ</string>
+    <!-- Browser menu label that navigates to the save sub-menu, which contains various save related menu items such as
+         bookmarking a page, saving to collection, shortcut or as a PDF, and adding to home screen -->
+    <string name="browser_menu_save">ਸੰਭਾਲੋ</string>
+
+    <!-- Extensions management fragment -->
+    <!-- Text displayed when there are no extensions to be shown -->
+    <string name="extensions_management_no_extensions">ਇੱਥੇ ਕੋਈ ਇਕਸਟੈਨਸ਼ਨ ਨਹੀਂ ਹੈ</string>
 
     <!-- Browser Toolbar -->
     <!-- Content description for the Home screen button on the browser toolbar -->
@@ -555,6 +600,8 @@
     <string name="preferences_account_sync_error">ਸਿੰਕ ਕਰਨ ਨੂੰ ਬਹਾਲ ਕਰਨ ਲਈ ਮੁੜ-ਕਨੈਕਟ ਕਰੋ</string>
     <!-- Preference for language -->
     <string name="preferences_language">ਭਾਸ਼ਾ</string>
+    <!-- Preference for translation -->
+    <string name="preferences_translation">ਉਲੱਥਾ</string>
     <!-- Preference for data choices -->
     <string name="preferences_data_choices">ਡਾਟਾ ਚੋਣਾਂ</string>
     <!-- Preference for data collection -->
@@ -607,10 +654,14 @@
     <string name="quit_application">ਤਬਦੀਲੀਆਂ ਲਾਗੂ ਕਰਨ ਲਈ ਐਪਲੀਕੇਸ਼ਨ ਨੂੰ ਬੰਦ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ…</string>
 
     <!-- Preference for add_ons -->
-    <string name="preferences_addons">ਐਡ-ਆਨ</string>
+    <string name="preferences_addons" moz:removedIn="126" tools:ignore="UnusedResources">ਐਡ-ਆਨ</string>
 
+    <!-- Preference for extensions -->
+    <string name="preferences_extensions">ਇਕਸਟੈਨਸ਼ਨਾਂ</string>
     <!-- Preference for installing a local add-on -->
-    <string name="preferences_install_local_addon">ਫਾਈਲ ਤੋਂ ਐਡ-ਆਨ ਇੰਸਟਾਲ ਕਰੋ</string>
+    <string name="preferences_install_local_addon" moz:removedIn="126" tools:ignore="UnusedResources">ਫਾਈਲ ਤੋਂ ਐਡ-ਆਨ ਇੰਸਟਾਲ ਕਰੋ</string>
+    <!-- Preference for installing a local extension -->
+    <string name="preferences_install_local_extension">ਫ਼ਾਇਲ ਤੋਂ ਇਕਸਟੈਨਸ਼ਨ ਨੂੰ ਇੰਸਟਾਲ ਕਰੋ</string>
     <!-- Preference for notifications -->
     <string name="preferences_notifications">ਨੋਟੀਫਿਕੇਸ਼ਨ</string>
 
@@ -619,9 +670,25 @@
     <!-- Summary for notification preference indicating notifications are not allowed -->
     <string name="notifications_not_allowed_summary">ਇਜ਼ਾਜਤ ਨਹੀ ਹੈ</string>
 
+    <!-- Add-on Permissions -->
+    <!-- The title of the required permissions section from addon's permissions screen -->
+    <string name="addons_permissions_heading_required" tools:ignore="UnusedResources">ਲੋੜੀਂਦਾ</string>
+    <!-- The title of the optional permissions section from addon's permissions screen -->
+    <string name="addons_permissions_heading_optional" tools:ignore="UnusedResources">ਚੋਣਵਾਂ</string>
+    <!-- The title of the section with websites that have permissions granted from addon's permissions screen -->
+    <string name="addons_permissions_heading_read_and_change_website_data" tools:ignore="UnusedResources">ਵੈੱਬਸਾਈਟ ਡਾਟਾ ਪੜ੍ਹਨ ਅਤੇ ਬਦਲਣ</string>
+    <!-- The description of the icon that can delete one of the websites displayed  -->
+    <string name="addons_permissions_icon_description_delete_website" tools:ignore="UnusedResources">ਵੈੱਬਸਾਈਟ ਨੂੰ ਹਟਾਉਣ</string>
+    <!-- The title of the origin permission option allowing a user to enable the extension to run on all sites -->
+    <string name="addons_permissions_allow_for_all_sites" tools:ignore="UnusedResources">ਸਭ ਸਾਈਟਾਂ ਲਈ ਮਨਜ਼ੂਰੀ</string>
+    <!-- The subtitle for the allow for all sites preference toggle -->
+    <string name="addons_permissions_allow_for_all_sites_subtitle" tools:ignore="UnusedResources">ਜੇ ਤੁਸੀਂ ਇਸ ਇਕਸਟੈਨਸ਼ਨ ਉੱਤੇ ਭਰੋਸਾ ਕਦੇ ਹੋ ਤਾਂ ਤੁਸੀਂ ਹਰ ਵੈੱਬਸਾਈਟ ਲਈ ਇਸ ਨੂੰ ਇਜਾਜ਼ਤ ਦੇ ਸਕਦੇ ਹੋ।</string>
+
     <!-- Add-on Preferences -->
     <!-- Preference to customize the configured AMO (addons.mozilla.org) collection -->
-    <string name="preferences_customize_amo_collection">ਕਸਟਮ ਐਡ-ਆਨ ਭੰਡਾਰ</string>
+    <string name="preferences_customize_amo_collection" moz:removedIn="126" tools:ignore="UnusedResources">ਕਸਟਮ ਐਡ-ਆਨ ਭੰਡਾਰ</string>
+    <!-- Preference to customize the configured AMO (addons.mozilla.org) collection -->
+    <string name="preferences_customize_extension_collection">ਪਸੰਦੀਦਾ ਇਕਸਟੈਨਸ਼ਨ ਭੰਡਾਰ</string>
     <!-- Button caption to confirm the add-on collection configuration -->
     <string name="customize_addon_collection_ok">ਠੀਕ ਹੈ</string>
     <!-- Button caption to abort the add-on collection configuration -->
@@ -632,14 +699,19 @@
     <string name="customize_addon_collection_user_hint">ਭੰਡਾਰ ਮਾਲਕ (ਵਰਤੋਂਕਾਰ ID)</string>
 
     <!-- Toast shown after confirming the custom add-on collection configuration -->
-    <string name="toast_customize_addon_collection_done">ਐਡ-ਆਨ ਭੰਡਾਰ ਸੋਧਿਆ ਗਿਆ। ਤਬਦੀਲੀਆਂ ਲਾਗੂ ਕਰਨ ਲਈ ਐਪਲੀਕੇਸ਼ਨ ਨੂੰ
+    <string name="toast_customize_addon_collection_done" moz:removedIn="126" tools:ignore="UnusedResources">ਐਡ-ਆਨ ਭੰਡਾਰ ਸੋਧਿਆ ਗਿਆ। ਤਬਦੀਲੀਆਂ ਲਾਗੂ ਕਰਨ ਲਈ ਐਪਲੀਕੇਸ਼ਨ ਨੂੰ
 ਬੰਦ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ…</string>
+
+    <!-- Toast shown after confirming the custom extension collection configuration -->
+    <string name="toast_customize_extension_collection_done">ਇਕਸਟੈਨਸ਼ਨ ਭੰਡਾਰ ਨੂੰ ਸੋਧਿਆ ਗਿਆ। ਤਬਦੀਲੀਆਂ ਲਾਗੂ ਕਰਨ ਲਈ ਐਪਲੀਕੇਸ਼ਨ ਨੂੰਬੰਦ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ…</string>
 
     <!-- Customize Home -->
     <!-- Header text for jumping back into the recent tab in customize the home screen -->
     <string name="customize_toggle_jump_back_in">ਵਾਪਸ ਜਾਓ</string>
     <!-- Title for the customize home screen section with recently saved bookmarks. -->
-    <string name="customize_toggle_recent_bookmarks">ਸੱਜਰੇ ਬੁੱਕਮਾਰਕ</string>
+    <string name="customize_toggle_recent_bookmarks" moz:removedIn="127" tools:ignore="UnusedResources">ਸੱਜਰੇ ਬੁੱਕਮਾਰਕ</string>
+    <!-- Title for the customize home screen section with bookmarks. -->
+    <string name="customize_toggle_bookmarks">ਬੁੱਕਮਾਰਕ</string>
     <!-- Title for the customize home screen section with recently visited. Recently visited is
     a section where users see a list of tabs that they have visited in the past few days -->
     <string name="customize_toggle_recently_visited">ਤਾਜ਼ਾ ਖੋਲ੍ਹੇ ਗਏ</string>
@@ -688,21 +760,37 @@
 
     <!-- Add-ons general availability nimbus message-->
     <!-- Title of the Nimbus message for add-ons general availability-->
-    <string name="addon_ga_message_title" tools:ignore="UnusedResources">ਨਵੀਆਂ ਐਡ-ਆਨ ਹੁਣ ਮੌਜੂਦ ਹਨ</string>
+    <string name="addon_ga_message_title" moz:removedIn="126" tools:ignore="UnusedResources">ਨਵੀਆਂ ਐਡ-ਆਨ ਹੁਣ ਮੌਜੂਦ ਹਨ</string>
+    <!-- Title of the Nimbus message for extension general availability-->
+    <string name="addon_ga_message_title_2" tools:ignore="UnusedResources">ਨਵੀਆਂ ਇਕਸਟੈਨਸ਼ਨਾਂ ਹੁਣ ਮੌਜੂਦ ਹਨ</string>
     <!-- Body of the Nimbus message for add-ons general availability. 'Firefox' intentionally hardcoded here-->
     <string name="addon_ga_message_body" tools:ignore="UnusedResources">100+ ਤੋਂ ਵੱਧ ਇਕਸਟੈਨਸ਼ਨ ਨੂੰ ਵੇਖੋ, ਜੋ Firefox ਨੂੰ ਤੁਹਾਡਾ ਆਪਣਾ ਬਣਾਉਣ ਲਈ ਸਹਾਇਕ ਹੋਣਗੀਆਂ।</string>
     <!-- Button text of the Nimbus message for add-ons general availability. -->
-    <string name="addon_ga_message_button" tools:ignore="UnusedResources">ਐਡ-ਆਨ ਬਾਰੇ ਜਾਣੋ</string>
+    <string name="addon_ga_message_button" moz:removedIn="126" tools:ignore="UnusedResources">ਐਡ-ਆਨ ਬਾਰੇ ਜਾਣੋ</string>
 
-    <!-- Add-on process crash dialog to user -->
+    <!-- Button text of the Nimbus message for extensions general availability. -->
+    <string name="addon_ga_message_button_2" tools:ignore="UnusedResources">ਇਕਸਟੈਨਸ਼ਨਾਂ ਦੀ ਪੜਚੋਲ ਕਰੋ</string>
+
+    <!-- Extension process crash dialog to user -->
     <!-- Title of a dialog shown to the user when enough errors have occurred with addons and they need to be temporarily disabled -->
-    <string name="addon_process_crash_dialog_title" tools:ignore="UnusedResources">ਐਡ-ਆਨ ਆਰਜ਼ੀ ਤੌਰ ਉੱਤੇ ਅਸਮਰੱਥ ਹਨ</string>
+    <string name="addon_process_crash_dialog_title" moz:removedIn="126" tools:ignore="UnusedResources">ਐਡ-ਆਨ ਆਰਜ਼ੀ ਤੌਰ ਉੱਤੇ ਅਸਮਰੱਥ ਹਨ</string>
+    <!-- Title of the extension crash dialog shown to the user when enough errors have occurred with extensions and they need to be temporarily disabled -->
+    <string name="extension_process_crash_dialog_title">ਇਕਸਟੈਨਸ਼ਨਾਂ ਆਰਜ਼ੀ ਤੌਰ ਉੱਤੇ ਅਸਮਰੱਥ ਹਨ</string>
     <!-- The first parameter is the application name. This is a message shown to the user when too many errors have occurred with the addons process and they have been disabled. The user can decide if they would like to continue trying to start add-ons or if they'd rather continue without them. -->
-    <string name="addon_process_crash_dialog_message" tools:ignore="UnusedResources">ਇੱਕ ਜਾਂ ਵੱਧ ਐਡ-ਆਨ ਕੰਮ ਨਹੀਂ ਕਰ ਰਹੀਆਂ, ਜਿਸ ਨਾਲ ਤੁਹਾਡਾ ਸਿਸਟਮ ਅਸਥਿਰ ਹੋ ਰਿਹਾ ਹੈ। %1$s ਨੇ ਐਡ-ਆਨ ਨੂੰ ਮੁੜ-ਚਾਲੂ ਕਰਨ ਦੀ ਅਸਫ਼ਲ ਕੋਸ਼ਿਸ਼ ਕੀਤੀ ਸੀ।\n\nਤੁਹਾਡੇ ਮੌਜੂਦਾ ਸ਼ੈਸ਼ਨ ਦੇ ਦੌਰਾਨ ਐਡ-ਆਨ ਮੁੜ-ਸ਼ੁਰੂ ਨਹੀਂ ਹੋਵੇਗੀ।\n\nਐਡ-ਆਨ ਨੂੰ ਹਟਾਉਣ ਜਾਂ ਅਸਮਰੱਥ ਕਰਨ ਨਾਲ ਇਹ ਮਸਲਾ ਠੀਕ ਹੋ ਸਕਦਾ ਹੈ।</string>
+    <string name="addon_process_crash_dialog_message" moz:removedIn="126" tools:ignore="UnusedResources">ਇੱਕ ਜਾਂ ਵੱਧ ਐਡ-ਆਨ ਕੰਮ ਨਹੀਂ ਕਰ ਰਹੀਆਂ, ਜਿਸ ਨਾਲ ਤੁਹਾਡਾ ਸਿਸਟਮ ਅਸਥਿਰ ਹੋ ਰਿਹਾ ਹੈ। %1$s ਨੇ ਐਡ-ਆਨ ਨੂੰ ਮੁੜ-ਚਾਲੂ ਕਰਨ ਦੀ ਅਸਫ਼ਲ ਕੋਸ਼ਿਸ਼ ਕੀਤੀ ਸੀ।\n\nਤੁਹਾਡੇ ਮੌਜੂਦਾ ਸ਼ੈਸ਼ਨ ਦੇ ਦੌਰਾਨ ਐਡ-ਆਨ ਮੁੜ-ਸ਼ੁਰੂ ਨਹੀਂ ਹੋਵੇਗੀ।\n\nਐਡ-ਆਨ ਨੂੰ ਹਟਾਉਣ ਜਾਂ ਅਸਮਰੱਥ ਕਰਨ ਨਾਲ ਇਹ ਮਸਲਾ ਠੀਕ ਹੋ ਸਕਦਾ ਹੈ।</string>
+    <!-- This is a message shown to the user when too many errors have occurred with the extensions process and they have been disabled.
+    The user can decide if they would like to continue trying to start extensions or if they'd rather continue without them.
+    The first parameter is the application name. -->
+    <string name="extension_process_crash_dialog_message">ਇੱਕ ਜਾਂ ਵੱਧ ਇਕਸਟੈਨਸ਼ਨਾਂ ਕੰਮ ਨਹੀਂ ਕਰ ਰਹੀਆਂ, ਜਿਸ ਨਾਲ ਤੁਹਾਡਾ ਸਿਸਟਮ ਅਸਥਿਰ ਹੋ ਰਿਹਾ ਹੈ। %1$s ਨੇ ਇਕਸਟੈਨਸ਼ਨਾਂ ਨੂੰ ਮੁੜ-ਚਾਲੂ ਕਰਨ ਦੀ ਅਸਫ਼ਲ ਕੋਸ਼ਿਸ਼ ਕੀਤੀ ਸੀ।\n\nਤੁਹਾਡੇ ਮੌਜੂਦਾ ਸ਼ੈਸ਼ਨ ਦੇ ਦੌਰਾਨ ਇਕਸਟੈਨਸ਼ਨ ਮੁੜ-ਸ਼ੁਰੂ ਨਹੀਂ ਹੋਵੇਗੀ।\n\nਐਡ-ਆਨ ਨੂੰ ਹਟਾਉਣ ਜਾਂ ਅਸਮਰੱਥ ਕਰਨ ਨਾਲ ਇਹ ਮਸਲਾ ਠੀਕ ਹੋ ਸਕਦਾ ਹੈ।</string>
     <!-- This will cause the add-ons to try restarting but the dialog will reappear if it is unsuccessful again -->
-    <string name="addon_process_crash_dialog_retry_button_text" tools:ignore="UnusedResources">ਐਡ-ਆਨ ਮੁੜ-ਚਾਲੂ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰੋ</string>
+    <string name="addon_process_crash_dialog_retry_button_text" moz:removedIn="126" tools:ignore="UnusedResources">ਐਡ-ਆਨ ਮੁੜ-ਚਾਲੂ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰੋ</string>
+    <!-- Button text on the extension crash dialog to prompt the user to try restarting the extensions but the dialog will reappear if it is unsuccessful again -->
+    <string name="extension_process_crash_dialog_retry_button_text" tools:ignore="UnusedResources">ਇਕਸਟੈਨਸ਼ਨਾਂ ਨੂੰ ਮੁੜ-ਚਾਲੂ ਕਰਕੇ ਵੇਖੋ</string>
     <!-- The user will continue with all add-ons disabled -->
-    <string name="addon_process_crash_dialog_disable_addons_button_text" tools:ignore="UnusedResources">ਐਡ-ਆਨ ਨੂੰ ਬੰਦ ਕਰਕੇ ਜਾਰੀ ਰੱਖੋ</string>
+    <string name="addon_process_crash_dialog_disable_addons_button_text" moz:removedIn="126" tools:ignore="UnusedResources">ਐਡ-ਆਨ ਨੂੰ ਬੰਦ ਕਰਕੇ ਜਾਰੀ ਰੱਖੋ</string>
+
+    <!-- Button text on the extension crash dialog to prompt the user to continue with all extensions disabled. -->
+    <string name="extension_process_crash_dialog_disable_extensions_button_text">ਇਕਸਟੈਨਸ਼ਨਾਂ ਨੂੰ ਬੰਦ ਕਰਕੇ ਜਾਰੀ ਰੱਖੋ</string>
 
     <!-- Account Preferences -->
     <!-- Preference for managing your account via accounts.firefox.com -->
@@ -2362,24 +2450,14 @@
     <string name="review_quality_check_contextual_onboarding_learn_more">Mozilla ਵਲੋਂ %1$s ਦੇ ਰਾਹੀਂ ਅਸੀਂ ਤੁਹਾਨੂੰ ਪੱਖਪਾਤੀ ਅਤੇ ਗ਼ੈਰ-ਪ੍ਰਮਾਣਿਤ ਰੀਵਿਊਆਂ ਤੋਂ ਬਚਾਅ ਸਕਦੇ ਹਾਂ। ਸਾਡਾ AI ਮਾਡਲ ਤੁਹਾਨੂੰ ਖਰੀਦਦਾਰੀ ਕਰਨ ਦੌਰਾਨ ਸੁਰੱਖਿਅਤ ਕਰਨ ਲਈ ਹਮੇਸ਼ਾਂ ਸੁਧਾਰ ਕਰ ਰਿਹਾ ਹੈ। %2$s</string>
     <!-- Clickable text from the contextual onboarding card that links to review quality check support article. -->
     <string name="review_quality_check_contextual_onboarding_learn_more_link">ਹੋਰ ਜਾਣੋ</string>
-    <!-- Caption text to be displayed in review quality check contextual onboarding card above the opt-in button. First parameter is the Fakespot product name. Following parameters are for clickable texts defined in review_quality_check_contextual_onboarding_privacy_policy and review_quality_check_contextual_onboarding_terms_use. In the phrase "Fakespot by Mozilla", "by" can be localized. Does not need to stay by. -->
-    <string name="review_quality_check_contextual_onboarding_caption" moz:RemovedIn="123" tools:ignore="UnusedResources">“ਹਾਂ, ਇਸ ਨੂੰ ਅਜ਼ਮਾਓ” ਚੁਣ ਕੇ ਤੁਸੀਂ Mozilla ਵਲੋਂ %1$s ਦੀ %2$s ਅਤੇ %3$s ਲਈ ਸਹਿਮਤ ਹੁੰਦੇ ਹੋ।</string>
-    <!-- Caption text to be displayed in review quality check contextual onboarding card above the opt-in button. Parameter is the Fakespot product name. After the colon, what appears are two links, each on their own line. The first link is to a Privacy policy (review_quality_check_contextual_onboarding_privacy_policy_2). The second link is to Terms of use (review_quality_check_contextual_onboarding_terms_use_2). -->
-    <string name="review_quality_check_contextual_onboarding_caption_2" moz:RemovedIn="123" tools:ignore="UnusedResources">“ਹਾਂ, ਇਸ ਨੂੰ ਅਜ਼ਮਾਓ” ਨੂੰ ਚੁਣ ਕੇ ਤੁਸੀਂ %1$s ਤੋਂ ਹੇਠ ਦਿੱਤਿਆਂ ਨਾਲ ਸਹਿਮਤ ਹੁੰਦੇ ਹੋ:</string>
     <!-- Caption text to be displayed in review quality check contextual onboarding card above the opt-in button. First parameter is Firefox app name, third parameter is the Fakespot product name. Second & fourth are for clickable texts defined in review_quality_check_contextual_onboarding_privacy_policy_3 and review_quality_check_contextual_onboarding_terms_use. -->
     <string name="review_quality_check_contextual_onboarding_caption_3" moz:RemovedIn="124" tools:ignore="UnusedResources">“ਹਾਂ, ਇਸ ਨੂੰ ਅਜ਼ਮਾਓ” ਚੁਣ ਕੇ ਤੁਸੀਂ %1$s ਦੀ %2$s ਅਤੇ %3$s ਦੀ %4$s ਨਾਲ ਸਹਿਮਤ ਹੁੰਦੇ ਹੋ।</string>
     <!-- Caption text to be displayed in review quality check contextual onboarding card above the opt-in button. First parameter is Firefox app name, third parameter is the Fakespot product name. Second & fourth are for clickable texts defined in review_quality_check_contextual_onboarding_privacy_policy_3 and review_quality_check_contextual_onboarding_terms_use. -->
     <string name="review_quality_check_contextual_onboarding_caption_4">“ਹਾਂ, ਇਸ ਨੂੰ ਅਜ਼ਮਾਓ” ਚੁਣ ਕੇ ਤੁਸੀਂ %1$s ਦੀ %2$s ਅਤੇ %3$s ਦੀ %4$s ਨਾਲ ਸਹਿਮਤ ਹੁੰਦੇ ਹੋ।</string>
-    <!-- Clickable text from the review quality check contextual onboarding card that links to Fakespot privacy policy. -->
-    <string name="review_quality_check_contextual_onboarding_privacy_policy" moz:RemovedIn="123" tools:ignore="UnusedResources">ਪਰਦੇਦਾਰੀ ਨੀਤੀ</string>
-    <!-- Clickable text from the review quality check contextual onboarding card that links to Fakespot privacy policy. -->
-    <string name="review_quality_check_contextual_onboarding_privacy_policy_2" moz:RemovedIn="123" tools:ignore="UnusedResources">ਪਰਦੇਦਾਰੀ ਨੀਤੀ</string>
     <!-- Clickable text from the review quality check contextual onboarding card that links to Fakespot privacy notice. -->
     <string name="review_quality_check_contextual_onboarding_privacy_policy_3">ਪਰਦੇਦਾਰੀ ਸੂਚਨਾ</string>
     <!-- Clickable text from the review quality check contextual onboarding card that links to Fakespot terms of use. -->
     <string name="review_quality_check_contextual_onboarding_terms_use">ਵਰਤਣ ਲਈ ਸ਼ਰਤਾਂ</string>
-    <!-- Clickable text from the review quality check contextual onboarding card that links to Fakespot terms of use. -->
-    <string name="review_quality_check_contextual_onboarding_terms_use_2" moz:RemovedIn="123" tools:ignore="UnusedResources">ਵਰਤਣ ਦੀ ਸ਼ਰਤਾਂ</string>
     <!-- Text for opt-in button from the review quality check contextual onboarding card. -->
     <string name="review_quality_check_contextual_onboarding_primary_button_text">ਹਾਂ, ਇਸ ਨੂੰ ਅਜ਼ਮਾਓ</string>
     <!-- Text for opt-out button from the review quality check contextual onboarding card. -->
@@ -2461,6 +2539,8 @@
     <string name="translations_bottom_sheet_translate_from">ਇਸ ਤੋਂ ਉਲੱਥਾ ਕਰੋ</string>
     <!-- Label for the dropdown to select which language to translate to on the translations dialog. Usually the translate to language selected will be the user's preferred language. -->
     <string name="translations_bottom_sheet_translate_to">ਇਸ ਵਿੱਚ ਉਲੱਥਾ ਕਰੋ</string>
+    <!-- Label for the dropdown to select which language to translate from on the translations dialog when the page language is not supported. This selection is to allow the user to select another language, in case we automatically detected the page language incorrectly. -->
+    <string name="translations_bottom_sheet_translate_from_unsupported_language">ਹੋਰ ਸਰੋਤ ਭਾਸ਼ਾ ਅਜ਼ਮਾਓ</string>
     <!-- Button text on the translations dialog to dismiss the dialog and return to the browser. -->
     <string name="translations_bottom_sheet_negative_button">ਹਾਲੇ ਨਹੀਂ</string>
     <!-- Button text on the translations dialog to restore the translated website back to the original untranslated version. -->
@@ -2485,7 +2565,7 @@
     <!-- The title of the warning card informs the user that a language is not supported. The first parameter is the name of the language that is not supported. -->
     <string name="translation_error_language_not_supported_warning_text">ਅਫ਼ਸੋਸ ਅਸੀਂ ਹਾਲੇ %1$s ਲਈ ਸਹਾਇਕ ਨਹੀਂ ਹਾਂ।</string>
     <!-- Button text on the warning card when a language is not supported. The link will take the user to a page to a support page about translations. -->
-    <string name="translation_error_language_not_supported_learn_more">ਹੋਰ ਜਾਣੋ</string>
+    <string name="translation_error_language_not_supported_learn_more" moz:removedIn="126" tools:ignore="UnusedResources">ਹੋਰ ਜਾਣੋ</string>
 
     <!-- Snackbar title shown if the user closes the Translation Request dialogue and a translation is in progress. -->
     <string name="translation_in_progress_snackbar">…ਉਲੱਥਾ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ</string>
@@ -2499,7 +2579,9 @@
 
     <!-- Translations options dialog -->
     <!-- Title of the translation options dialog that allows a user to set their translation options for the site the user is currently on. -->
-    <string name="translation_option_bottom_sheet_title">ਉਲੱਥੇ ਲਈ ਚੋਣਾਂ</string>
+    <string name="translation_option_bottom_sheet_title" moz:removedIn="126" tools:ignore="UnusedResources">ਉਲੱਥੇ ਲਈ ਚੋਣਾਂ</string>
+    <!-- Title of the translation options dialog that allows a user to set their translation options for the site the user is currently on. -->
+    <string name="translation_option_bottom_sheet_title_heading">ਉਲੱਥੇ ਲਈ ਚੋਣਾਂ</string>
     <!-- Toggle switch label that allows a user to set the setting if they would like the browser to always offer or suggest translations when available. -->
     <string name="translation_option_bottom_sheet_always_translate">ਹਮੇਸ਼ਾਂ ਉਲੱਥਾ ਦੀ ਪੇਸ਼ਕਸ਼ ਕਰੋ</string>
     <!-- Toggle switch label that allows a user to set if they would like a given language to automatically translate or not. The first parameter is the language name, for example, "Spanish". -->
@@ -2516,6 +2598,9 @@
     <string name="translation_option_bottom_sheet_translation_settings">ਉਲੱਥਾ ਸੈਟਿੰਗਾਂ</string>
     <!-- Button text for the button that will take the user to a website to learn more about how translations works in the given app. The first parameter is the name of the application, for example, "Fenix". -->
     <string name="translation_option_bottom_sheet_about_translations">%1$s ਵਿੱਚ ਉਲੱਥਾ ਬਾਰੇ</string>
+
+    <!-- Content description (not visible, for screen readers etc.) for closing the translations bottom sheet. -->
+    <string name="translation_option_bottom_sheet_close_content_description">ਉਲੱਥਾ ਸ਼ੀਟ ਬੰਦ ਕਰੋ</string>
 
     <!-- Translation settings dialog -->
     <!-- Title of the translation settings dialog that allows a user to set their preferred translation settings. -->
@@ -2623,6 +2708,8 @@
 
     <!-- Additional information for the data saving mode warning dialog used by the translations feature. This text explains the reason a download is required for a translation. -->
     <string name="download_language_file_dialog_message_all_languages">ਅਸੀਂ ਅਧੂਰੀਆਂ ਭਾਸ਼ਾਵਾਂ ਨੂੰ ਤੁਹਾਡੀ ਕੈਸ਼ ਲਈ ਡਾਊਨਲੋਡ ਕਰਦੇ ਹਾਂ ਤਾਂ ਕਿ ਉਲੱਥੇ ਨੂੰ ਪ੍ਰਾਈਵੇਟ ਰੱਖਿਆ ਜਾਵੇ।</string>
+    <!-- Additional information for the data saving mode warning dialog used by the translations feature. This text explains the reason a download is required for a translation without mentioning the cache. -->
+    <string name="download_language_file_dialog_message_all_languages_no_cache">ਅਸੀਂ ਅਧੂਰੀਆਂ ਭਾਸ਼ਾਵਾਂ ਨੂੰ ਡਾਊਨਲੋਡ ਕਰਦੇ ਹਾਂ ਤਾਂ ਕਿ ਉਲੱਥੇ ਨੂੰ ਪ੍ਰਾਈਵੇਟ ਰੱਖਿਆ ਜਾਵੇ।</string>
     <!-- Checkbox label text on the data saving mode warning dialog used by the translations feature. This checkbox allows users to ignore the data usage warnings. -->
     <string name="download_language_file_dialog_checkbox_text">ਡਾਟਾ ਬਚਾਉਣ ਢੰਗ ਵਿੱਚ ਹਮੇਸ਼ਾਂ ਡਾਊਨਲੋਡ ਕਰੋ</string>
     <!-- Button text on the data saving mode warning dialog used by the translations feature to allow users to confirm they wish to continue and download the language file. -->
@@ -2637,6 +2724,8 @@
     <string name="debug_drawer_title">ਡੀਬੱਗ ਟੂਲ</string>
     <!-- Content description (not visible, for screen readers etc.): Navigate back within the debug drawer. -->
     <string name="debug_drawer_back_button_content_description">ਪਿੱਛੇ ਜਾਓ</string>
+
+    <!-- Debug drawer tabs tools -->
     <!-- The title of the Tab Tools feature in the Debug Drawer. -->
     <string name="debug_drawer_tab_tools_title">ਟੈਬ ਟੂਲ</string>
     <!-- The title of the tab count section in Tab Tools. -->
@@ -2659,4 +2748,39 @@
     <string name="debug_drawer_tab_tools_tab_creation_tool_button_text_inactive">ਨਾ-ਸਰਗਰਮ ਟੈਬਾਂ ਵਿੱਚ ਜੋੜੋ</string>
     <!-- The button text to add tabs to the private tab group in the tab creation tool. -->
     <string name="debug_drawer_tab_tools_tab_creation_tool_button_text_private">ਪ੍ਰਾਈਵੇਟ ਟੈਬਾਂ ਵਿੱਚ ਜੋੜੋ</string>
+
+    <!-- Micro survey -->
+
+    <!-- The continue button label -->
+    <string name="micro_survey_continue_button_label" tools:ignore="UnusedResources">ਜਾਰੀ ਰੱਖੋ</string>
+    <!-- The survey header -->
+    <string name="micro_survey_survey_header">ਇਹ ਸਰਵੇਖਣ ਨੂੰ ਪੂਰਾ ਕਰੋ</string>
+    <!-- The privacy notice link -->
+    <string name="micro_survey_privacy_notice">ਪਰਦੇਦਾਰੀ ਸੂਚਨਾ</string>
+    <!-- The submit button label text -->
+    <string name="micro_survey_submit_button_label" tools:ignore="UnusedResources">ਭੇਜੋ</string>
+    <!-- The close button label text -->
+    <string name="micro_survey_close_button_label">ਬੰਦ ਕਰੋ</string>
+    <!-- The survey completion confirmation text -->
+    <string name="micro_survey_feedback_confirmation" tools:ignore="UnusedResources">ਤੁਹਾਡੀ ਫ਼ੀਡਬੈਕ ਲਈ ਤੁਹਾਡਾ ਧੰਨਵਾਦ ਹੈ!</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_1" tools:ignore="UnusedResources">ਬਹੁਤ ਸੰਤੁਸ਼ਟ</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_2" tools:ignore="UnusedResources">ਸੰਤੁਸ਼ਟ</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_3" tools:ignore="UnusedResources">ਠੀਕ-ਠਾਕ</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_4" tools:ignore="UnusedResources">ਅਸੰਤੁਸ਼ਟ</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_5" tools:ignore="UnusedResources">ਬਹੁਤ ਅਸੰਤੁਸ਼ਟ</string>
+
+    <!-- Debug drawer logins -->
+    <!-- The title of the Logins feature in the Debug Drawer. -->
+    <string name="debug_drawer_logins_title">ਲਾਗਇਨ</string>
+    <!-- The title of the logins section in the Logins feature, where the parameter will be the site domain  -->
+    <string name="debug_drawer_logins_current_domain_label">ਮੌਜੂਦਾ ਡੋਮੇਨ: %s</string>
+    <!-- The label for a button to add a new fake login for the current domain in the Logins feature. -->
+    <string name="debug_drawer_logins_add_login_button">ਇਸ ਡੋਮੇਨ ਲਈ ਫ਼ਰਜ਼ੀ ਲਾਗਇਨ ਜੋੜੋ</string>
+    <!-- Content description for delete button where parameter will be the username of the login -->
+    <string name="debug_drawer_logins_delete_login_button_content_description">%s ਵਰਤੋਂਕਾਰ-ਨਾਂ ਨਾਲ ਲਾਗਇਨ ਨੂੰ ਹਟਾਓ</string>
 </resources>

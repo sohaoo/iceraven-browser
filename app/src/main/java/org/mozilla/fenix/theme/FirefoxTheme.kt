@@ -98,15 +98,16 @@ private val darkColorPalette = FirefoxColors(
     layerAccent = PhotonColors.Violet40,
     layerAccentNonOpaque = PhotonColors.Violet50A32,
     layerAccentOpaque = Color(0xFF423262),
-    scrim = PhotonColors.DarkGrey90A95,
-    gradientStart = PhotonColors.Violet70,
-    gradientEnd = PhotonColors.Violet40,
+    layerScrim = PhotonColors.DarkGrey90A95,
+    layerGradientStart = PhotonColors.Violet70,
+    layerGradientEnd = PhotonColors.Violet40,
     layerWarning = PhotonColors.Yellow70A77,
     layerConfirmation = PhotonColors.Green80,
     layerError = PhotonColors.Pink80,
     layerInfo = PhotonColors.Blue50,
     layerSearch = PhotonColors.DarkGrey80,
     actionPrimary = PhotonColors.Violet60,
+    actionPrimaryDisabled = PhotonColors.Violet60A50,
     actionSecondary = PhotonColors.LightGrey30,
     actionTertiary = PhotonColors.DarkGrey10,
     actionQuarternary = PhotonColors.DarkGrey80,
@@ -132,6 +133,7 @@ private val darkColorPalette = FirefoxColors(
     textOnColorPrimary = PhotonColors.LightGrey05,
     textOnColorSecondary = PhotonColors.LightGrey40,
     textActionPrimary = PhotonColors.LightGrey05,
+    textActionPrimaryDisabled = PhotonColors.LightGrey05A40,
     textActionSecondary = PhotonColors.DarkGrey90,
     textActionTertiary = PhotonColors.LightGrey05,
     textActionTertiaryActive = PhotonColors.LightGrey05,
@@ -157,6 +159,7 @@ private val darkColorPalette = FirefoxColors(
     iconGradientStart = PhotonColors.Violet20,
     iconGradientEnd = PhotonColors.Blue20,
     borderPrimary = PhotonColors.DarkGrey05,
+    borderSecondary = PhotonColors.DarkGrey10,
     borderInverted = PhotonColors.LightGrey30,
     borderFormDefault = PhotonColors.LightGrey05,
     borderAccent = PhotonColors.Violet40,
@@ -175,15 +178,16 @@ private val lightColorPalette = FirefoxColors(
     layerAccent = PhotonColors.Ink20,
     layerAccentNonOpaque = PhotonColors.Violet70A12,
     layerAccentOpaque = Color(0xFFEAE4F9),
-    scrim = PhotonColors.DarkGrey30A95,
-    gradientStart = PhotonColors.Violet70,
-    gradientEnd = PhotonColors.Violet40,
+    layerScrim = PhotonColors.DarkGrey30A95,
+    layerGradientStart = PhotonColors.Violet70,
+    layerGradientEnd = PhotonColors.Violet40,
     layerWarning = PhotonColors.Yellow20,
     layerConfirmation = PhotonColors.Green20,
     layerError = PhotonColors.Red10,
     layerInfo = PhotonColors.Blue50A44,
     layerSearch = PhotonColors.LightGrey30,
     actionPrimary = PhotonColors.Ink20,
+    actionPrimaryDisabled = PhotonColors.Ink20A50,
     actionSecondary = PhotonColors.LightGrey30,
     actionTertiary = PhotonColors.LightGrey40,
     actionQuarternary = PhotonColors.LightGrey10,
@@ -209,6 +213,7 @@ private val lightColorPalette = FirefoxColors(
     textOnColorPrimary = PhotonColors.LightGrey05,
     textOnColorSecondary = PhotonColors.LightGrey40,
     textActionPrimary = PhotonColors.LightGrey05,
+    textActionPrimaryDisabled = PhotonColors.LightGrey05A60,
     textActionSecondary = PhotonColors.DarkGrey90,
     textActionTertiary = PhotonColors.DarkGrey90,
     textActionTertiaryActive = PhotonColors.LightGrey05,
@@ -234,6 +239,7 @@ private val lightColorPalette = FirefoxColors(
     iconGradientStart = PhotonColors.Violet50,
     iconGradientEnd = PhotonColors.Blue60,
     borderPrimary = PhotonColors.LightGrey30,
+    borderSecondary = PhotonColors.LightGrey20,
     borderInverted = PhotonColors.DarkGrey05,
     borderFormDefault = PhotonColors.DarkGrey90,
     borderAccent = PhotonColors.Ink20,
@@ -247,6 +253,7 @@ private val privateColorPalette = darkColorPalette.copy(
     layer2 = PhotonColors.Ink50,
     layer3 = PhotonColors.Ink90,
     layerSearch = PhotonColors.Ink90,
+    borderSecondary = PhotonColors.Ink10,
     borderToolbarDivider = PhotonColors.Violet80,
 )
 
@@ -265,15 +272,16 @@ class FirefoxColors(
     layerAccent: Color,
     layerAccentNonOpaque: Color,
     layerAccentOpaque: Color,
-    scrim: Color,
-    gradientStart: Color,
-    gradientEnd: Color,
+    layerScrim: Color,
+    layerGradientStart: Color,
+    layerGradientEnd: Color,
     layerWarning: Color,
     layerConfirmation: Color,
     layerError: Color,
     layerInfo: Color,
     layerSearch: Color,
     actionPrimary: Color,
+    actionPrimaryDisabled: Color,
     actionSecondary: Color,
     actionTertiary: Color,
     actionQuarternary: Color,
@@ -299,6 +307,7 @@ class FirefoxColors(
     textOnColorPrimary: Color,
     textOnColorSecondary: Color,
     textActionPrimary: Color,
+    textActionPrimaryDisabled: Color,
     textActionSecondary: Color,
     textActionTertiary: Color,
     textActionTertiaryActive: Color,
@@ -324,6 +333,7 @@ class FirefoxColors(
     iconGradientStart: Color,
     iconGradientEnd: Color,
     borderPrimary: Color,
+    borderSecondary: Color,
     borderInverted: Color,
     borderFormDefault: Color,
     borderAccent: Color,
@@ -369,15 +379,15 @@ class FirefoxColors(
     var layerAccentOpaque by mutableStateOf(layerAccentOpaque)
         private set
 
-    var scrim by mutableStateOf(scrim)
+    var layerScrim by mutableStateOf(layerScrim)
         private set
 
     // Tooltip
-    var gradientStart by mutableStateOf(gradientStart)
+    var layerGradientStart by mutableStateOf(layerGradientStart)
         private set
 
     // Tooltip
-    var gradientEnd by mutableStateOf(gradientEnd)
+    var layerGradientEnd by mutableStateOf(layerGradientEnd)
         private set
 
     // Warning background
@@ -404,6 +414,10 @@ class FirefoxColors(
 
     // Primary button, Snackbar, Floating action button, Chip selected
     var actionPrimary by mutableStateOf(actionPrimary)
+        private set
+
+    // Primary disabled button background
+    var actionPrimaryDisabled by mutableStateOf(actionPrimaryDisabled)
         private set
 
     // Secondary button
@@ -508,6 +522,10 @@ class FirefoxColors(
     var textActionPrimary by mutableStateOf(textActionPrimary)
         private set
 
+    // Disabled Action Primary text
+    var textActionPrimaryDisabled by mutableStateOf(textActionPrimaryDisabled)
+        private set
+
     // Action Secondary text
     var textActionSecondary by mutableStateOf(textActionSecondary)
         private set
@@ -600,6 +618,9 @@ class FirefoxColors(
     var borderPrimary by mutableStateOf(borderPrimary)
         private set
 
+    var borderSecondary by mutableStateOf(borderSecondary)
+        private set
+
     // Onboarding
     var borderInverted by mutableStateOf(borderInverted)
         private set
@@ -638,15 +659,16 @@ class FirefoxColors(
         layerAccent = other.layerAccent
         layerAccentNonOpaque = other.layerAccentNonOpaque
         layerAccentOpaque = other.layerAccentOpaque
-        scrim = other.scrim
-        gradientStart = other.gradientStart
-        gradientEnd = other.gradientEnd
+        layerScrim = other.layerScrim
+        layerGradientStart = other.layerGradientStart
+        layerGradientEnd = other.layerGradientEnd
         layerWarning = other.layerWarning
         layerConfirmation = other.layerConfirmation
         layerError = other.layerError
         layerInfo = other.layerInfo
         layerSearch = other.layerSearch
         actionPrimary = other.actionPrimary
+        actionPrimaryDisabled = other.actionPrimaryDisabled
         actionSecondary = other.actionSecondary
         actionTertiary = other.actionTertiary
         actionQuarternary = other.actionQuarternary
@@ -672,6 +694,7 @@ class FirefoxColors(
         textOnColorPrimary = other.textOnColorPrimary
         textOnColorSecondary = other.textOnColorSecondary
         textActionPrimary = other.textActionPrimary
+        textActionPrimaryDisabled = other.textActionPrimaryDisabled
         textActionSecondary = other.textActionSecondary
         textActionTertiary = other.textActionTertiary
         textActionTertiaryActive = other.textActionTertiaryActive
@@ -697,6 +720,7 @@ class FirefoxColors(
         iconGradientStart = other.iconGradientStart
         iconGradientEnd = other.iconGradientEnd
         borderPrimary = other.borderPrimary
+        borderSecondary = other.borderSecondary
         borderInverted = other.borderInverted
         borderFormDefault = other.borderFormDefault
         borderAccent = other.borderAccent
@@ -719,15 +743,16 @@ class FirefoxColors(
         layerAccent: Color = this.layerAccent,
         layerAccentNonOpaque: Color = this.layerAccentNonOpaque,
         layerAccentOpaque: Color = this.layerAccentOpaque,
-        scrim: Color = this.scrim,
-        gradientStart: Color = this.gradientStart,
-        gradientEnd: Color = this.gradientEnd,
+        layerScrim: Color = this.layerScrim,
+        layerGradientStart: Color = this.layerGradientStart,
+        layerGradientEnd: Color = this.layerGradientEnd,
         layerWarning: Color = this.layerWarning,
         layerConfirmation: Color = this.layerConfirmation,
         layerError: Color = this.layerError,
         layerInfo: Color = this.layerInfo,
         layerSearch: Color = this.layerSearch,
         actionPrimary: Color = this.actionPrimary,
+        actionPrimaryDisabled: Color = this.actionPrimaryDisabled,
         actionSecondary: Color = this.actionSecondary,
         actionTertiary: Color = this.actionTertiary,
         actionQuarternary: Color = this.actionQuarternary,
@@ -753,6 +778,7 @@ class FirefoxColors(
         textOnColorPrimary: Color = this.textOnColorPrimary,
         textOnColorSecondary: Color = this.textOnColorSecondary,
         textActionPrimary: Color = this.textActionPrimary,
+        textActionPrimaryDisabled: Color = this.textActionPrimaryDisabled,
         textActionSecondary: Color = this.textActionSecondary,
         textActionTertiary: Color = this.textActionTertiary,
         textActionTertiaryActive: Color = this.textActionTertiaryActive,
@@ -778,6 +804,7 @@ class FirefoxColors(
         iconGradientStart: Color = this.iconGradientStart,
         iconGradientEnd: Color = this.iconGradientEnd,
         borderPrimary: Color = this.borderPrimary,
+        borderSecondary: Color = this.borderSecondary,
         borderInverted: Color = this.borderInverted,
         borderFormDefault: Color = this.borderFormDefault,
         borderAccent: Color = this.borderAccent,
@@ -794,15 +821,16 @@ class FirefoxColors(
         layerAccent = layerAccent,
         layerAccentNonOpaque = layerAccentNonOpaque,
         layerAccentOpaque = layerAccentOpaque,
-        scrim = scrim,
-        gradientStart = gradientStart,
-        gradientEnd = gradientEnd,
+        layerScrim = layerScrim,
+        layerGradientStart = layerGradientStart,
+        layerGradientEnd = layerGradientEnd,
         layerWarning = layerWarning,
         layerConfirmation = layerConfirmation,
         layerError = layerError,
         layerInfo = layerInfo,
         layerSearch = layerSearch,
         actionPrimary = actionPrimary,
+        actionPrimaryDisabled = actionPrimaryDisabled,
         actionSecondary = actionSecondary,
         actionTertiary = actionTertiary,
         actionQuarternary = actionQuarternary,
@@ -828,6 +856,7 @@ class FirefoxColors(
         textOnColorPrimary = textOnColorPrimary,
         textOnColorSecondary = textOnColorSecondary,
         textActionPrimary = textActionPrimary,
+        textActionPrimaryDisabled = textActionPrimaryDisabled,
         textActionSecondary = textActionSecondary,
         textActionTertiary = textActionTertiary,
         textActionTertiaryActive = textActionTertiaryActive,
@@ -853,6 +882,7 @@ class FirefoxColors(
         iconGradientStart = iconGradientStart,
         iconGradientEnd = iconGradientEnd,
         borderPrimary = borderPrimary,
+        borderSecondary = borderSecondary,
         borderInverted = borderInverted,
         borderFormDefault = borderFormDefault,
         borderAccent = borderAccent,

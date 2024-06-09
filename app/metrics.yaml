@@ -45,7 +45,7 @@ events:
       source:
         description: |
           The view the user was on when they initiated the search (For example:
-          `Home` or `Browser`)
+          `HOME`, `HOME_QR`, `HOME_VOICE` or `BROWSER`)
         type: string
     bugs:
       - https://github.com/mozilla-mobile/fenix/issues/959
@@ -137,7 +137,7 @@ events:
           include:
           add_to_homescreen, add_to_top_sites, addons_manager, back, back_long_press,
           bookmark, bookmarks, desktop_view_off, desktop_view_on, downloads,
-          find_in_page, forward, forward_long_press, history, new_tab, open_in_app, 
+          find_in_page, forward, forward_long_press, history, new_tab, open_in_app,
           open_in_fenix, quit, reader_mode_appearance, reload, remove_from_top_sites,
           save_to_collection, set_default_browser, settings, share, stop,
           sync_account, translate and print_content.
@@ -854,7 +854,9 @@ events:
     notification_emails:
       - android-probes@mozilla.com
     expires: never
-  translations_action:
+
+translations:
+  action:
     type: event
     description: |
       An area inside the translations feature was tapped.
@@ -865,19 +867,126 @@ events:
         description: |
           A string containing the name of the item the user tapped. These items
           include:
-          main_flow_toolbar, main_flow_browser, page_settings, global_settings, 
+          main_flow_toolbar, main_flow_browser, page_settings, global_settings,
           global_lang_settings, global_site_settings, downloads
         type: string
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1883968
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1886851
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1883968#c6
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1886851#c8
     data_sensitivity:
       - interaction
     notification_emails:
       - android-probes@mozilla.com
     expires: never
-
+  offer_event:
+    type: event
+    description: |
+      The translations engine decided the user may be interested in a translation or that the user
+      should be offered a translation.
+      An "expected" event means the user is expected to want to translate and we should show the feature on the toolbar.
+      An "offer" event means we should popup the translations dialog.
+    extra_keys:
+      item:
+        description: |
+          A string containing the type of signal sent by the translations engine.
+          These signals include:
+          expected, offer
+        type: string
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1886851
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1886851#c8
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  translate_requested:
+    type: event
+    description: |
+      The user requested a translation of the page.
+    extra_keys:
+      to_language:
+        description: |
+          A string containing the BCP 47 that the user is translating the page to. Predefined based
+          on published translation models. For example, possible values are:
+          "en", "es", "fr", and all other translations engine "to" language codes.
+        type: string
+      from_language:
+        description: |
+          A string containing the BCP 47 that the user is translating the page from. Predefined based
+          on published translation models. For example, possible values are:
+          "en", "es", "fr", and all other translations engine "from" language codes.
+        type: string
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1886221
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1886221#c3
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  translate_success:
+    type: event
+    description: |
+      The user requested a translation of the page and it completed successfully.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1886221
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1886221#c3
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  translate_failed:
+    type: event
+    description: |
+      The user requested a translation of the page and it failed.
+    extra_keys:
+      error:
+        description: |
+          A string containing the name of the error that occurred. Possible values are predefined
+          in TranslationError and include:
+          unknown, unexpected-null, missing-session-coordinator, engine-not-supported, unknown-engine-support
+          could-not-translate, could-not-restore, could-not-determine-translation-download-size, could-not-load-languages,
+          could-not-load-settings, could-not-load-language-settings, could-not-load-never-translate-sites,
+          language-not-supported, model-could-not-retrieve, model-could-not-delete, model-could-not-download,
+          model-language-required, model-download-required
+        type: string
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1886221
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1886221#c3
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  engine_supported:
+    type: event
+    description: |
+      The translations engine for translating pages is only supported on certain devices.
+      This probe indicates if the device supports the translations engine or not.
+    extra_keys:
+      support:
+        description: |
+          A string describing the support of the engine, either:
+          supported, unsupported,
+        type: string
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1886221
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1886221#c3
+    data_sensitivity:
+      - technical
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
 splash_screen:
   first_launch_extended:
     type: event
@@ -5436,6 +5545,73 @@ tabs_tray:
       - interaction
     expires: never
 
+tab_strip:
+  new_tab_tapped:
+    type: event
+    description: |
+      A user clicked new tab button in tab strip
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1882111
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1882111
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+    metadata:
+      tags:
+        - Tabs
+  close_tab:
+    type: event
+    description: |
+      A user closed the tab via tab strip
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1882111
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1882111
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+    metadata:
+      tags:
+        - Tabs
+  select_tab:
+    type: event
+    description: |
+      A user selected a tab via tab strip
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1882111
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1882111
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+    metadata:
+      tags:
+        - Tabs
+  enabled:
+    type: boolean
+    description: |
+      Whether or not the tab strip feature is enabled
+    send_in_pings:
+      - metrics
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1882111
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1882111
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+    metadata:
+      tags:
+        - Tabs
 
 collections:
   renamed:
@@ -10713,7 +10889,7 @@ shopping:
       source:
         description: |
           The method used to close the bottom sheet. Possible values are: `sheet_slide`,
-          `link_opened`, `click_outside`, `back_pressed`, `handle_clicked`, `not_now` 
+          `link_opened`, `click_outside`, `back_pressed`, `handle_clicked`, `not_now`
           or `opt_out`.
         type: string
     send_in_pings:
@@ -11405,6 +11581,179 @@ debug_drawer:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1876596
     data_reviews:
       - https://github.com/mozilla-mobile/firefox-android/pull/5356
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+
+navigation_bar:
+  home_search_tapped:
+    type: event
+    description: |
+      When navigation bar search button is tapped by the user.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  home_tab_tray_tapped:
+    type: event
+    description: |
+      When navigation bar tab tray button is tapped by the user.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  home_menu_tapped:
+    type: event
+    description: |
+      When navigation bar menu button is tapped by the user.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  browser_back_tapped:
+    type: event
+    description: |
+      When navigation bar back button is tapped by the user.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  browser_back_long_tapped:
+    type: event
+    description: |
+      When navigation bar back button is long tapped by the user.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  browser_forward_tapped:
+    type: event
+    description: |
+      When navigation bar forward button is tapped by the user.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  browser_forward_long_tapped:
+    type: event
+    description: |
+      When navigation bar forward button is long tapped by the user.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  browser_tab_tray_tapped:
+    type: event
+    description: |
+      When navigation bar tab tray button is tapped by the user.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  browser_menu_tapped:
+    type: event
+    description: |
+      When navigation bar menu button is tapped by the user.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  browser_home_tapped:
+    type: event
+    description: |
+      When navigation bar home button is tapped by the user.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+
+address_toolbar:
+  share_tapped:
+    type: event
+    description: |
+      When share button is tapped on the toolbar.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  reload_tapped:
+    type: event
+    description: |
+      When reload button is tapped on the toolbar.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - android-probes@mozilla.com
+    expires: never
+  cancel_tapped:
+    type: event
+    description: |
+      When cancel button is tapped on the toolbar.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1889484
     data_sensitivity:
       - interaction
     notification_emails:

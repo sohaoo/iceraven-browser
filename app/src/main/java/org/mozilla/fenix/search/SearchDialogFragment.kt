@@ -105,6 +105,13 @@ import org.mozilla.fenix.settings.SupportUtils
 
 typealias SearchDialogFragmentStore = SearchFragmentStore
 
+/**
+ * Possible extra actions when opening search dialog fragment.
+ */
+enum class ExtraAction {
+    QR_READER, VOICE_SEARCH, NONE,
+}
+
 @SuppressWarnings("LargeClass", "TooManyFunctions")
 class SearchDialogFragment : AppCompatDialogFragment(), UserInteractionHandler {
     private var _binding: FragmentSearchDialogBinding? = null
@@ -257,6 +264,7 @@ class SearchDialogFragment : AppCompatDialogFragment(), UserInteractionHandler {
                 it.view.hidePageActionSeparator()
             } else {
                 it.view.showPageActionSeparator()
+                it.view.isNavBarEnabled = true
             }
             inlineAutocompleteEditText = it.view.findViewById(R.id.mozac_browser_toolbar_edit_url_view)
             inlineAutocompleteEditText.increaseTapArea(TAP_INCREASE_DPS_4)
@@ -473,6 +481,13 @@ class SearchDialogFragment : AppCompatDialogFragment(), UserInteractionHandler {
             addSearchSelector()
             updateQrButton(it)
             updateVoiceSearchButton()
+        }
+
+        val args by navArgs<SearchDialogFragmentArgs>()
+        when (args.extraAction) {
+            ExtraAction.QR_READER -> launchQr()
+            ExtraAction.VOICE_SEARCH -> launchVoiceSearch()
+            ExtraAction.NONE -> {}
         }
     }
 

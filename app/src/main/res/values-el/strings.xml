@@ -52,12 +52,20 @@
 
     <!-- Home - Recently saved bookmarks -->
     <!-- Title for the home screen section with recently saved bookmarks. -->
-    <string name="recently_saved_title">Πρόσφατα αποθηκευμένα</string>
+    <string name="recently_saved_title" moz:removedIn="127" tools:ignore="UnusedResources">Πρόσφατα αποθηκευμένα</string>
     <!-- Content description for the button which navigates the user to show all of their saved bookmarks. -->
-    <string name="recently_saved_show_all_content_description_2">Εμφάνιση όλων των αποθηκευμένων σελιδοδεικτών</string>
+    <string name="recently_saved_show_all_content_description_2" moz:removedIn="127" tools:ignore="UnusedResources">Εμφάνιση όλων των αποθηκευμένων σελιδοδεικτών</string>
 
     <!-- Text for the menu button to remove a recently saved bookmark from the user's home screen -->
-    <string name="recently_saved_menu_item_remove">Αφαίρεση</string>
+    <string name="recently_saved_menu_item_remove" moz:removedIn="127" tools:ignore="UnusedResources">Αφαίρεση</string>
+
+    <!-- Home - Bookmarks -->
+    <!-- Title for the home screen section with bookmarks. -->
+    <string name="home_bookmarks_title">Σελιδοδείκτες</string>
+    <!-- Content description for the button which navigates the user to show all of their bookmarks. -->
+    <string name="home_bookmarks_show_all_content_description">Εμφάνιση όλων των σελιδοδεικτών</string>
+    <!-- Text for the menu button to remove a recently saved bookmark from the user's home screen -->
+    <string name="home_bookmarks_menu_item_remove">Αφαίρεση</string>
 
     <!-- About content. The first parameter is the name of the application. (For example: Fenix) -->
     <string name="about_content">Το %1$s αναπτύσσεται από τη Mozilla.</string>
@@ -149,8 +157,10 @@
     <!-- Shortcut action to open new private tab -->
     <string name="home_screen_shortcut_open_new_private_tab_2">Νέα ιδιωτική καρτέλα</string>
 
-    <!-- Shortcut action to open Passwords screens -->
-    <string name="home_screen_shortcut_open_password_screen">Συντόμευση κωδικών πρόσβασης</string>
+    <!-- Shortcut action to open Passwords screen -->
+    <string name="home_screen_shortcut_passwords">Κωδικοί πρόσβασης</string>
+    <!-- Shortcut action to open Passwords screen -->
+    <string name="home_screen_shortcut_open_password_screen" moz:removedIn="126" tools:ignore="UnusedResources">Συντόμευση κωδικών πρόσβασης</string>
 
     <!-- Recent Tabs -->
     <!-- Header text for jumping back into the recent tab in the home screen -->
@@ -220,6 +230,8 @@
     <!-- Browser menu button that opens the find in page menu -->
     <string name="browser_menu_find_in_page">Εύρεση στη σελίδα</string>
 
+    <!-- Browser menu button that opens the find in page menu -->
+    <string name="browser_menu_find_in_page_2">Εύρεση στη σελίδα…</string>
     <!-- Browser menu button that opens the translations dialog, which has options to translate the current browser page. -->
     <string name="browser_menu_translations">Μετάφραση σελίδας</string>
     <!-- Browser menu button that saves the current tab to a collection -->
@@ -253,10 +265,31 @@
     <string name="browser_menu_customize_home_1">Προσαρμογή αρχικής σελίδας</string>
 
     <!-- Browser menu label to sign in to sync on the device using Mozilla accounts -->
-    <string name="browser_menu_sign_in" tools:ignore="UnusedResources">Σύνδεση</string>
+    <string name="browser_menu_sign_in">Σύνδεση</string>
 
-    <!-- Browser menu caption label for the "Sign in" browser menu item described in browser_menu_sign_in -->
-    <string name="browser_menu_sign_in_caption" tools:ignore="UnusedResources">Συγχρονίστε κωδικούς πρόσβασης, καρτέλες και πολλά άλλα</string>
+    <!-- Browser menu caption label for the "Sign in" browser menu item described in `browser_menu_sign_in` -->
+    <string name="browser_menu_sign_in_caption">Συγχρονίστε κωδικούς πρόσβασης, καρτέλες και πολλά άλλα</string>
+
+    <!-- Browser menu label to sign back in to sync on the device when the user's account needs to be reauthenticated -->
+    <string name="browser_menu_sign_back_in_to_sync">Συνδεθείτε ξανά για συγχρονισμό</string>
+    <!-- Browser menu caption label for the "Sign back in to sync" browser menu item described in `browser_menu_sign_back_in_to_sync` when there is an error in syncing -->
+    <string name="browser_menu_syncing_paused_caption">Συγχρονισμός σε παύση</string>
+    <!-- Browser menu label that creates a private tab -->
+    <string name="browser_menu_new_private_tab">Νέα ιδιωτική καρτέλα</string>
+    <!-- Browser menu label that navigates to the Password screen -->
+    <string name="browser_menu_passwords">Κωδικοί πρόσβασης</string>
+
+    <!-- Browser menu label that navigates to the SUMO page for the Firefox for Android release notes.
+         The first parameter is the name of the app defined in app_name (for example: Fenix)-->
+    <string name="browser_menu_new_in_firefox">Νέο στο %1$s</string>
+
+    <!-- Browser menu label that toggles the request for the desktop site of the currently visited page -->
+    <string name="browser_menu_switch_to_desktop_site">Εναλλαγή σε έκδοση για υπολογιστές</string>
+    <!-- Browser menu label that navigates to the page tools sub-menu -->
+    <string name="browser_menu_tools">Εργαλεία</string>
+    <!-- Browser menu label that navigates to the save sub-menu, which contains various save related menu items such as
+         bookmarking a page, saving to collection, shortcut or as a PDF, and adding to home screen -->
+    <string name="browser_menu_save">Αποθήκευση</string>
 
     <!-- Extensions management fragment -->
     <!-- Text displayed when there are no extensions to be shown -->
@@ -565,6 +598,8 @@
     <string name="preferences_account_sync_error">Συνδεθείτε ξανά για συνέχεια συγχρονισμού</string>
     <!-- Preference for language -->
     <string name="preferences_language">Γλώσσα</string>
+    <!-- Preference for translation -->
+    <string name="preferences_translation">Μετάφραση</string>
     <!-- Preference for data choices -->
     <string name="preferences_data_choices">Επιλογές δεδομένων</string>
     <!-- Preference for data collection -->
@@ -631,6 +666,21 @@
     <!-- Summary for notification preference indicating notifications are not allowed -->
     <string name="notifications_not_allowed_summary">Δεν επιτρέπονται</string>
 
+    <!-- Add-on Permissions -->
+    <!-- The title of the required permissions section from addon's permissions screen -->
+    <string name="addons_permissions_heading_required" tools:ignore="UnusedResources">Απαιτείται</string>
+    <!-- The title of the optional permissions section from addon's permissions screen -->
+    <string name="addons_permissions_heading_optional" tools:ignore="UnusedResources">Προαιρετικό</string>
+    <!-- The title of the section with websites that have permissions granted from addon's permissions screen -->
+    <string name="addons_permissions_heading_read_and_change_website_data" tools:ignore="UnusedResources">Ανάγνωση και αλλαγή δεδομένων ιστοτόπων</string>
+    <!-- The description of the icon that can delete one of the websites displayed  -->
+    <string name="addons_permissions_icon_description_delete_website" tools:ignore="UnusedResources">Διαγραφή ιστοτόπου</string>
+    <!-- The title of the origin permission option allowing a user to enable the extension to run on all sites -->
+    <string name="addons_permissions_allow_for_all_sites" tools:ignore="UnusedResources">Αποδοχή για όλους τους ιστοτόπους</string>
+
+    <!-- The subtitle for the allow for all sites preference toggle -->
+    <string name="addons_permissions_allow_for_all_sites_subtitle" tools:ignore="UnusedResources">Εάν εμπιστεύεστε αυτήν την επέκταση, μπορείτε να παραχωρήσετε άδεια σε κάθε ιστότοπο.</string>
+
     <!-- Add-on Preferences -->
     <!-- Preference to customize the configured AMO (addons.mozilla.org) collection -->
     <string name="preferences_customize_amo_collection" moz:removedIn="126" tools:ignore="UnusedResources">Προσαρμοσμένη συλλογή προσθέτων</string>
@@ -655,7 +705,9 @@
     <!-- Header text for jumping back into the recent tab in customize the home screen -->
     <string name="customize_toggle_jump_back_in">Άμεση επιστροφή</string>
     <!-- Title for the customize home screen section with recently saved bookmarks. -->
-    <string name="customize_toggle_recent_bookmarks">Πρόσφατοι σελιδοδείκτες</string>
+    <string name="customize_toggle_recent_bookmarks" moz:removedIn="127" tools:ignore="UnusedResources">Πρόσφατοι σελιδοδείκτες</string>
+    <!-- Title for the customize home screen section with bookmarks. -->
+    <string name="customize_toggle_bookmarks">Σελιδοδείκτες</string>
     <!-- Title for the customize home screen section with recently visited. Recently visited is
     a section where users see a list of tabs that they have visited in the past few days -->
     <string name="customize_toggle_recently_visited">Πρόσφατες επισκέψεις</string>
@@ -2489,6 +2541,8 @@
     <string name="translations_bottom_sheet_translate_from">Μετάφραση από</string>
     <!-- Label for the dropdown to select which language to translate to on the translations dialog. Usually the translate to language selected will be the user's preferred language. -->
     <string name="translations_bottom_sheet_translate_to">Μετάφραση σε</string>
+    <!-- Label for the dropdown to select which language to translate from on the translations dialog when the page language is not supported. This selection is to allow the user to select another language, in case we automatically detected the page language incorrectly. -->
+    <string name="translations_bottom_sheet_translate_from_unsupported_language">Δοκιμάστε μια άλλη αρχική γλώσσα</string>
     <!-- Button text on the translations dialog to dismiss the dialog and return to the browser. -->
     <string name="translations_bottom_sheet_negative_button">Όχι τώρα</string>
     <!-- Button text on the translations dialog to restore the translated website back to the original untranslated version. -->
@@ -2513,7 +2567,7 @@
     <!-- The title of the warning card informs the user that a language is not supported. The first parameter is the name of the language that is not supported. -->
     <string name="translation_error_language_not_supported_warning_text">Δυστυχώς, δεν υποστηρίζουμε ακόμα τα %1$s.</string>
     <!-- Button text on the warning card when a language is not supported. The link will take the user to a page to a support page about translations. -->
-    <string name="translation_error_language_not_supported_learn_more">Μάθετε περισσότερα</string>
+    <string name="translation_error_language_not_supported_learn_more" moz:removedIn="126" tools:ignore="UnusedResources">Μάθετε περισσότερα</string>
 
     <!-- Snackbar title shown if the user closes the Translation Request dialogue and a translation is in progress. -->
     <string name="translation_in_progress_snackbar">Μετάφραση…</string>
@@ -2527,7 +2581,9 @@
 
     <!-- Translations options dialog -->
     <!-- Title of the translation options dialog that allows a user to set their translation options for the site the user is currently on. -->
-    <string name="translation_option_bottom_sheet_title">Επιλογές μετάφρασης</string>
+    <string name="translation_option_bottom_sheet_title" moz:removedIn="126" tools:ignore="UnusedResources">Επιλογές μετάφρασης</string>
+    <!-- Title of the translation options dialog that allows a user to set their translation options for the site the user is currently on. -->
+    <string name="translation_option_bottom_sheet_title_heading">Επιλογές μετάφρασης</string>
     <!-- Toggle switch label that allows a user to set the setting if they would like the browser to always offer or suggest translations when available. -->
     <string name="translation_option_bottom_sheet_always_translate">Να γίνεται πάντα πρόταση για μετάφραση</string>
     <!-- Toggle switch label that allows a user to set if they would like a given language to automatically translate or not. The first parameter is the language name, for example, "Spanish". -->
@@ -2544,6 +2600,9 @@
     <string name="translation_option_bottom_sheet_translation_settings">Ρυθμίσεις μεταφράσεων</string>
     <!-- Button text for the button that will take the user to a website to learn more about how translations works in the given app. The first parameter is the name of the application, for example, "Fenix". -->
     <string name="translation_option_bottom_sheet_about_translations">Σχετικά με τις μεταφράσεις στο %1$s</string>
+
+    <!-- Content description (not visible, for screen readers etc.) for closing the translations bottom sheet. -->
+    <string name="translation_option_bottom_sheet_close_content_description">Κλείσιμο σελίδας μεταφράσεων</string>
 
     <!-- Translation settings dialog -->
     <!-- Title of the translation settings dialog that allows a user to set their preferred translation settings. -->
@@ -2667,6 +2726,8 @@
     <string name="debug_drawer_title">Εργαλεία εντοπισμού σφαλμάτων</string>
     <!-- Content description (not visible, for screen readers etc.): Navigate back within the debug drawer. -->
     <string name="debug_drawer_back_button_content_description">Πλοήγηση προς τα πίσω</string>
+
+    <!-- Debug drawer tabs tools -->
     <!-- The title of the Tab Tools feature in the Debug Drawer. -->
     <string name="debug_drawer_tab_tools_title">Εργαλεία καρτελών</string>
     <!-- The title of the tab count section in Tab Tools. -->
@@ -2689,4 +2750,40 @@
     <string name="debug_drawer_tab_tools_tab_creation_tool_button_text_inactive">Προσθήκη στις ανενεργές καρτέλες</string>
     <!-- The button text to add tabs to the private tab group in the tab creation tool. -->
     <string name="debug_drawer_tab_tools_tab_creation_tool_button_text_private">Προσθήκη στις ιδιωτικές καρτέλες</string>
+
+    <!-- Micro survey -->
+
+    <!-- The continue button label -->
+    <string name="micro_survey_continue_button_label" tools:ignore="UnusedResources">Συνέχεια</string>
+    <!-- The survey header -->
+    <string name="micro_survey_survey_header">Συμπληρώστε αυτήν την έρευνα</string>
+    <!-- The privacy notice link -->
+    <string name="micro_survey_privacy_notice">Σημείωση απορρήτου</string>
+    <!-- The submit button label text -->
+    <string name="micro_survey_submit_button_label" tools:ignore="UnusedResources">Υποβολή</string>
+    <!-- The close button label text -->
+    <string name="micro_survey_close_button_label">Κλείσιμο</string>
+    <!-- The survey completion confirmation text -->
+    <string name="micro_survey_feedback_confirmation" tools:ignore="UnusedResources">Ευχαριστούμε για τα σχόλιά σας!</string>
+
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_1" tools:ignore="UnusedResources">Πολύ ικανοποιημένος/-η</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_2" tools:ignore="UnusedResources">Ικανοποιημένος/-η</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_3" tools:ignore="UnusedResources">Ουδέτερος/-η</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_4" tools:ignore="UnusedResources">Δυσαρεστημένος/-η</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_5" tools:ignore="UnusedResources">Πολύ δυσαρεστημένος/-η</string>
+
+    <!-- Debug drawer logins -->
+    <!-- The title of the Logins feature in the Debug Drawer. -->
+    <string name="debug_drawer_logins_title">Συνδέσεις</string>
+    <!-- The title of the logins section in the Logins feature, where the parameter will be the site domain  -->
+    <string name="debug_drawer_logins_current_domain_label">Τρέχων τομέας: %s</string>
+    <!-- The label for a button to add a new fake login for the current domain in the Logins feature. -->
+    <string name="debug_drawer_logins_add_login_button">Προσθήκη ψεύτικων στοιχείων σύνδεσης για αυτόν τον τομέα</string>
+    <!-- Content description for delete button where parameter will be the username of the login -->
+    <string name="debug_drawer_logins_delete_login_button_content_description">Διαγραφή στοιχείων σύνδεσης με όνομα χρήστη %s</string>
 </resources>

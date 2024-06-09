@@ -524,6 +524,14 @@ class Settings(private val appContext: Context) : PreferencesHolder {
         default = true,
     )
 
+    /**
+     * Indicates if the user wants translations to automatically be offered as a popup of the dialog.
+     */
+    var offerTranslation: Boolean by booleanPreference(
+        appContext.getPreferenceKey(R.string.pref_key_translations_offer),
+        default = true,
+    )
+
     @VisibleForTesting
     internal fun timeNowInMillis(): Long = System.currentTimeMillis()
 
@@ -1387,6 +1395,11 @@ class Settings(private val appContext: Context) : PreferencesHolder {
         default = "",
     )
 
+    var useReactFxAServer by booleanPreference(
+        appContext.getPreferenceKey(R.string.pref_key_use_react_fxa),
+        default = false,
+    )
+
     var overrideSyncTokenServer by stringPreference(
         appContext.getPreferenceKey(R.string.pref_key_override_sync_tokenserver),
         default = "",
@@ -1717,7 +1730,7 @@ class Settings(private val appContext: Context) : PreferencesHolder {
      */
     var showContileFeature by booleanPreference(
         key = appContext.getPreferenceKey(R.string.pref_key_enable_contile),
-        default = false,
+        default = true,
     )
 
     /**
@@ -1905,6 +1918,14 @@ class Settings(private val appContext: Context) : PreferencesHolder {
     )
 
     /**
+     * Indicates if the menu redesign is enabled.
+     */
+    var enableMenuRedesign by booleanPreference(
+        key = appContext.getPreferenceKey(R.string.pref_key_enable_menu_redesign),
+        default = FeatureFlags.menuRedesignEnabled,
+    )
+
+    /**
      * Adjust Activated User sent
      */
     var growthUserActivatedSent by booleanPreference(
@@ -2045,7 +2066,7 @@ class Settings(private val appContext: Context) : PreferencesHolder {
      */
     fun getBottomToolbarHeight(): Int {
         val isNavBarEnabled = enableIncompleteToolbarRedesign
-        val isToolbarAtBottom = shouldUseBottomToolbar
+        val isToolbarAtBottom = toolbarPosition == ToolbarPosition.BOTTOM
         val toolbarHeight = appContext.resources.getDimensionPixelSize(R.dimen.browser_toolbar_height)
         val navbarHeight = appContext.resources.getDimensionPixelSize(R.dimen.browser_navbar_height)
 
@@ -2059,12 +2080,16 @@ class Settings(private val appContext: Context) : PreferencesHolder {
 
     /**
      * Returns the height of the top toolbar.
+     *
+     * @param includeTabStrip If true, the height of the tab strip is included in the calculation.
      */
-    fun getTopToolbarHeight(): Int {
-        val isToolbarAtTop = !shouldUseBottomToolbar
+    fun getTopToolbarHeight(includeTabStrip: Boolean): Int {
+        val isToolbarAtTop = toolbarPosition == ToolbarPosition.TOP
         val toolbarHeight = appContext.resources.getDimensionPixelSize(R.dimen.browser_toolbar_height)
 
-        return if (isToolbarAtTop) {
+        return if (isToolbarAtTop && includeTabStrip && isTabletAndTabStripEnabled) {
+            toolbarHeight + appContext.resources.getDimensionPixelSize(R.dimen.tab_strip_height)
+        } else if (isToolbarAtTop) {
             toolbarHeight
         } else {
             0
@@ -2073,12 +2098,10 @@ class Settings(private val appContext: Context) : PreferencesHolder {
 
     /**
      * Indicates if the user is shown incomplete new redesigned Toolbar UI components and behaviors.
-     *
-     * DEV ONLY
      */
     var enableIncompleteToolbarRedesign by lazyFeatureFlagPreference(
         key = appContext.getPreferenceKey(R.string.pref_key_toolbar_use_redesign_incomplete),
         default = { false },
-        featureFlag = FeatureFlags.incompleteToolbarRedesignEnabled,
+        featureFlag = FxNimbus.features.toolbarRedesign.value().enabled,
     )
 }

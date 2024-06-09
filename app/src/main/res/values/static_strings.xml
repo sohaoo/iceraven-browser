@@ -60,6 +60,8 @@
     <string name="preferences_sync_debug">Sync Debug</string>
     <!-- Preference to override the Push server -->
     <string name="preferences_override_push_server">Custom Push server</string>
+    <!-- Preference to use the experimental React (The web framework) Mozilla Account page, used only in testing -->
+    <string name="preferences_use_react_fxa">Use New React Mozilla Account page</string>
     <!-- Quit app button title for the Sync Debug preferences -->
     <string name="preferences_sync_debug_quit_button_title">Stop Firefox</string>
     <!-- Quit app button summary for the Sync Debug preferences -->
@@ -68,6 +70,8 @@
     <string name="preferences_debug_settings_tabs_tray_to_compose" translatable="false">Enable Tabs Tray to Compose rewrite</string>
     <!-- Label for enabling the Compose Top Sites -->
     <string name="preferences_debug_settings_compose_top_sites" translatable="false">Enable Compose Top Sites</string>
+    <!-- Label for enabling the menu redesign -->
+    <string name="preferences_debug_settings_menu_redesign" translatable="false">Enable Menu Redesign</string>
     <!-- Label for enabling Firefox Suggest -->
     <string name="preferences_debug_settings_fxsuggest" translatable="false">Enable Firefox Suggest</string>
     <!-- Label for enabling Toolbar Redesign incomplete portions -->

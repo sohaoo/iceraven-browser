@@ -160,6 +160,10 @@
     <action
         android:id="@+id/action_global_tabSettingsFragment"
         app:destination="@id/tabsSettingsFragment" />
+    <action
+        android:id="@+id/action_global_menuDialogFragment"
+        app:destination="@id/menu_graph" />
+
     <dialog
         android:id="@+id/tabsTrayFragment"
         android:name="org.mozilla.fenix.tabstray.TabsTrayFragment">
@@ -253,6 +257,10 @@
             android:defaultValue="@null"
             app:argType="string"
             app:nullable="true" />
+        <argument
+            android:name="extra_action"
+            android:defaultValue="NONE"
+            app:argType="org.mozilla.fenix.search.ExtraAction" />
     </dialog>
 
     <fragment
@@ -1506,5 +1514,13 @@
                 app:argType="long"
                 app:nullable="false" />
         </dialog>
+    </navigation>
+
+    <navigation
+        android:id="@+id/menu_graph"
+        app:startDestination="@id/menuDialogFragment">
+        <dialog
+            android:id="@+id/menuDialogFragment"
+            android:name="org.mozilla.fenix.components.menu.MenuDialogFragment" />
     </navigation>
 </navigation>

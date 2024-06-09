@@ -78,16 +78,14 @@ import mozilla.components.feature.top.sites.TopSitesFrecencyConfig
 import mozilla.components.feature.top.sites.TopSitesProviderConfig
 import mozilla.components.lib.state.ext.consumeFlow
 import mozilla.components.lib.state.ext.consumeFrom
-import mozilla.components.lib.state.ext.flow
 import mozilla.components.service.glean.private.NoExtras
 import mozilla.components.support.base.feature.ViewBoundFeatureWrapper
 import mozilla.components.ui.colors.PhotonColors
 import org.mozilla.fenix.BrowserDirection
-import org.mozilla.fenix.GleanMetrics.Events
 import org.mozilla.fenix.GleanMetrics.HomeScreen
 import org.mozilla.fenix.GleanMetrics.Homepage
+import org.mozilla.fenix.GleanMetrics.NavigationBar
 import org.mozilla.fenix.GleanMetrics.PrivateBrowsingShortcutCfr
-import org.mozilla.fenix.GleanMetrics.StartOnHome
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.NavGraphDirections
 import org.mozilla.fenix.R
@@ -146,6 +144,7 @@ import org.mozilla.fenix.utils.Settings.Companion.TOP_SITES_PROVIDER_MAX_THRESHO
 import org.mozilla.fenix.utils.allowUndo
 import org.mozilla.fenix.wallpapers.Wallpaper
 import java.lang.ref.WeakReference
+import org.mozilla.fenix.GleanMetrics.TabStrip as TabStripMetrics
 
 @Suppress("TooManyFunctions", "LargeClass")
 class HomeFragment : Fragment() {
@@ -449,89 +448,11 @@ class HomeFragment : Fragment() {
             binding = binding,
             context = requireContext(),
             interactor = sessionControlInteractor,
+            searchEngine = components.core.store.state.search.selectedOrDefaultSearchEngine,
         )
 
         if (IncompleteRedesignToolbarFeature(requireContext().settings()).isEnabled) {
-            val isToolbarAtBottom = requireContext().components.settings.toolbarPosition == ToolbarPosition.BOTTOM
-
-            // The toolbar view has already been added directly to the container.
-            // We should remove it and add the view to the navigation bar container.
-            // Should refactor this so there is no added view to remove to begin with:
-            // https://bugzilla.mozilla.org/show_bug.cgi?id=1870976
-            if (isToolbarAtBottom) {
-                binding.root.removeView(binding.toolbarLayout)
-            }
-
-            val menuButton = MenuButton(requireContext())
-            HomeMenuView(
-                view = binding.root,
-                context = requireContext(),
-                lifecycleOwner = viewLifecycleOwner,
-                homeActivity = activity,
-                navController = findNavController(),
-                menuButton = WeakReference(menuButton),
-            ).also { it.build() }
-
-            _bottomToolbarContainerView = BottomToolbarContainerView(
-                context = requireContext(),
-                parent = binding.homeLayout,
-                hideOnScroll = false,
-                composableContent = {
-                    FirefoxTheme {
-                        Column {
-                            if (isToolbarAtBottom) {
-                                AndroidView(factory = { _ -> binding.toolbarLayout })
-                            } else {
-                                Divider()
-                            }
-
-                            HomeNavBar(
-                                isPrivateMode = activity.browsingModeManager.mode.isPrivate,
-                                browserStore = requireContext().components.core.store,
-                                onSearchButtonClick = {
-                                    val directions =
-                                        NavGraphDirections.actionGlobalSearchDialog(
-                                            sessionId = null,
-                                        )
-
-                                    findNavController().nav(
-                                        findNavController().currentDestination?.id,
-                                        directions,
-                                        BrowserAnimator.getToolbarNavOptions(activity),
-                                    )
-
-                                    Events.searchBarTapped.record(Events.SearchBarTappedExtra("HOME"))
-                                },
-                                menuButton = menuButton,
-                                onTabsButtonClick = {
-                                    StartOnHome.openTabsTray.record(NoExtras())
-                                    findNavController().nav(
-                                        findNavController().currentDestination?.id,
-                                        NavGraphDirections.actionGlobalTabsTrayFragment(
-                                            page = when (browsingModeManager.mode) {
-                                                BrowsingMode.Normal -> Page.NormalTabs
-                                                BrowsingMode.Private -> Page.PrivateTabs
-                                            },
-                                        ),
-                                    )
-                                },
-                            )
-                        }
-                    }
-                },
-            )
-
-            navbarIntegration.set(
-                feature = NavbarIntegration(
-                    toolbar = bottomToolbarContainerView.toolbarContainerView,
-                    store = requireComponents.core.store,
-                    appStore = requireComponents.appStore,
-                    bottomToolbarContainerView = bottomToolbarContainerView,
-                    sessionId = null,
-                ),
-                owner = this,
-                view = binding.root,
-            )
+            initializeNavBar(activity = activity)
         }
 
         sessionControlView = SessionControlView(
@@ -570,6 +491,96 @@ class HomeFragment : Fragment() {
         )
     }
 
+    @Suppress("LongMethod")
+    private fun initializeNavBar(activity: HomeActivity) {
+        val isToolbarAtBottom = requireContext().components.settings.toolbarPosition == ToolbarPosition.BOTTOM
+
+        // The toolbar view has already been added directly to the container.
+        // We should remove it and add the view to the navigation bar container.
+        // Should refactor this so there is no added view to remove to begin with:
+        // https://bugzilla.mozilla.org/show_bug.cgi?id=1870976
+        if (isToolbarAtBottom) {
+            binding.root.removeView(binding.toolbarLayout)
+        }
+
+        val menuButton = MenuButton(requireContext())
+        menuButton.recordClickEvent = { NavigationBar.homeMenuTapped.record(NoExtras()) }
+        HomeMenuView(
+            view = binding.root,
+            context = requireContext(),
+            lifecycleOwner = viewLifecycleOwner,
+            homeActivity = activity,
+            navController = findNavController(),
+            menuButton = WeakReference(menuButton),
+        ).also { it.build() }
+
+        _bottomToolbarContainerView = BottomToolbarContainerView(
+            context = requireContext(),
+            parent = binding.homeLayout,
+            hideOnScroll = false,
+            composableContent = {
+                FirefoxTheme {
+                    Column {
+                        if (isToolbarAtBottom) {
+                            AndroidView(factory = { _ -> binding.toolbarLayout })
+                        } else {
+                            Divider()
+                        }
+
+                        HomeNavBar(
+                            isPrivateMode = activity.browsingModeManager.mode.isPrivate,
+                            browserStore = requireContext().components.core.store,
+                            menuButton = menuButton,
+                            onSearchButtonClick = {
+                                NavigationBar.homeSearchTapped.record(NoExtras())
+                                val directions =
+                                    NavGraphDirections.actionGlobalSearchDialog(
+                                        sessionId = null,
+                                    )
+
+                                findNavController().nav(
+                                    findNavController().currentDestination?.id,
+                                    directions,
+                                    BrowserAnimator.getToolbarNavOptions(activity),
+                                )
+                            },
+                            onTabsButtonClick = {
+                                NavigationBar.homeTabTrayTapped.record(NoExtras())
+                                findNavController().nav(
+                                    findNavController().currentDestination?.id,
+                                    NavGraphDirections.actionGlobalTabsTrayFragment(
+                                        page = when (browsingModeManager.mode) {
+                                            BrowsingMode.Normal -> Page.NormalTabs
+                                            BrowsingMode.Private -> Page.PrivateTabs
+                                        },
+                                    ),
+                                )
+                            },
+                            onMenuButtonClick = {
+                                findNavController().nav(
+                                    findNavController().currentDestination?.id,
+                                    HomeFragmentDirections.actionGlobalMenuDialogFragment(),
+                                )
+                            },
+                        )
+                    }
+                }
+            },
+        )
+
+        navbarIntegration.set(
+            feature = NavbarIntegration(
+                toolbar = bottomToolbarContainerView.toolbarContainerView,
+                store = requireComponents.core.store,
+                appStore = requireComponents.appStore,
+                bottomToolbarContainerView = bottomToolbarContainerView,
+                sessionId = null,
+            ),
+            owner = this,
+            view = binding.root,
+        )
+    }
+
     /**
      * Returns a [TopSitesConfig] which specifies how many top sites to display and whether or
      * not frequently visited sites should be displayed.
@@ -593,7 +604,6 @@ class HomeFragment : Fragment() {
                     }
                 },
             ),
-            showTopRecentSites = settings.showTopRecentSites,
         )
     }
 
@@ -778,13 +788,16 @@ class HomeFragment : Fragment() {
                         onHome = true,
                         onAddTabClick = {
                             sessionControlInteractor.onNavigateSearch()
+                            TabStripMetrics.newTabTapped.record()
                         },
                         onSelectedTabClick = {
                             (requireActivity() as HomeActivity).openToBrowser(BrowserDirection.FromHome)
+                            TabStripMetrics.selectTab.record()
                         },
                         onLastTabClose = {},
                         onCloseTabClick = { isPrivate ->
                             showUndoSnackbar(requireContext().tabClosedUndoMessage(isPrivate))
+                            TabStripMetrics.closeTab.record()
                         },
                     )
                 }
@@ -947,7 +960,7 @@ class HomeFragment : Fragment() {
             },
             operation = { },
             elevation = TOAST_ELEVATION,
-            anchorView = null,
+            anchorView = snackbarAnchorView,
         )
 
         lifecycleScope.launch(IO) {

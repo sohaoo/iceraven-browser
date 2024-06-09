@@ -10,65 +10,11 @@ import java.nio.file.StandardCopyOption
 buildscript {
     // This logic is duplicated in the allprojects block: I don't know how to fix that.
     repositories {
-        maven {
-            name "Mozilla Nightly"
-            url "https://nightly.maven.mozilla.org/maven2"
-            content {
-                // Improve performance: only check moz maven for mozilla deps.
-                includeGroupByRegex RepoMatching.mozilla
-            }
-        }
-
-        maven {
-            name "Mozilla"
-            url "https://maven.mozilla.org/maven2"
-            content {
-                // Improve performance: only check moz maven for mozilla deps.
-                includeGroupByRegex RepoMatching.mozilla
-            }
-        }
-
-        if (ExtraRepositories.mozillaStaging) {
+        gradle.mozconfig.substs.GRADLE_MAVEN_REPOSITORIES.each { repository ->
             maven {
-                name "Mozilla Staging"
-                url "https://maven-default.stage.mozaws.net/maven2"
-                content {
-                    // Improve performance: only check moz maven for mozilla deps.
-                    includeGroupByRegex RepoMatching.mozilla
-                }
-            }
-        }
-
-        if (project.hasProperty("googleRepo")) {
-            maven {
-                name "Google"
-                allowInsecureProtocol true // Local Nexus in CI uses HTTP
-                url project.property("googleRepo")
-            }
-        } else {
-            google() {
-                content {
-                    // Improve performance: only check google maven for google deps.
-                    includeGroupByRegex RepoMatching.androidx
-                    includeGroupByRegex RepoMatching.comAndroid
-                    includeGroupByRegex RepoMatching.comGoogle
-                }
-            }
-        }
-
-        if (project.hasProperty("centralRepo")) {
-            maven {
-                name "MavenCentral"
-                url project.property("centralRepo")
-                allowInsecureProtocol true // Local Nexus in CI uses HTTP
-            }
-        } else {
-            mavenCentral() {
-                content {
-                    // Improve security: don't search deps with known repos.
-                    excludeGroupByRegex RepoMatching.mozilla
-                    excludeGroupByRegex RepoMatching.androidx
-                    excludeGroupByRegex RepoMatching.comAndroid
+                url repository
+                if (gradle.mozconfig.substs.ALLOW_INSECURE_GRADLE_REPOSITORIES) {
+                    allowInsecureProtocol = true
                 }
             }
         }
@@ -105,65 +51,11 @@ plugins {
 allprojects {
     // This logic is duplicated in the buildscript block: I don't know how to fix that.
     repositories {
-        maven {
-            name "Mozilla Nightly"
-            url "https://nightly.maven.mozilla.org/maven2"
-            content {
-                // Improve performance: only check moz maven for mozilla deps.
-                includeGroupByRegex RepoMatching.mozilla
-            }
-        }
-
-        maven {
-            name "Mozilla"
-            url "https://maven.mozilla.org/maven2"
-            content {
-                // Improve performance: only check moz maven for mozilla deps.
-                includeGroupByRegex RepoMatching.mozilla
-            }
-        }
-
-        if (ExtraRepositories.mozillaStaging) {
+        gradle.mozconfig.substs.GRADLE_MAVEN_REPOSITORIES.each { repository ->
             maven {
-                name "Mozilla Staging"
-                url "https://maven-default.stage.mozaws.net/maven2"
-                content {
-                    // Improve performance: only check moz maven for mozilla deps.
-                    includeGroupByRegex RepoMatching.mozilla
-                }
-            }
-        }
-
-        if (project.hasProperty("googleRepo")) {
-            maven {
-                name "Google"
-                url project.property("googleRepo")
-                allowInsecureProtocol true // Local Nexus in CI uses HTTP
-            }
-        } else {
-            google() {
-                content {
-                    // Improve performance: only check google maven for google deps.
-                    includeGroupByRegex RepoMatching.androidx
-                    includeGroupByRegex RepoMatching.comAndroid
-                    includeGroupByRegex RepoMatching.comGoogle
-                }
-            }
-        }
-
-        if (project.hasProperty("centralRepo")) {
-            maven {
-                name "MavenCentral"
-                url project.property("centralRepo")
-                allowInsecureProtocol true // Local Nexus in CI uses HTTP
-            }
-        } else {
-            mavenCentral() {
-                content {
-                    // Improve security: don't search deps with known repos.
-                    excludeGroupByRegex RepoMatching.mozilla
-                    excludeGroupByRegex RepoMatching.androidx
-                    excludeGroupByRegex RepoMatching.comAndroid
+                url repository
+                if (gradle.mozconfig.substs.ALLOW_INSECURE_GRADLE_REPOSITORIES) {
+                    allowInsecureProtocol = true
                 }
             }
         }
@@ -172,7 +64,7 @@ allprojects {
     tasks.withType(KotlinCompile).configureEach {
         kotlinOptions.allWarningsAsErrors = true
         kotlinOptions.freeCompilerArgs += [
-            "-opt-in=kotlin.RequiresOptIn", "-Xjvm-default=all-compatibility"
+                "-opt-in=kotlin.RequiresOptIn", "-Xjvm-default=all-compatibility"
         ]
     }
 }
@@ -181,6 +73,41 @@ subprojects {
     afterEvaluate {
         kotlin {
             jvmToolchain(config.jvmTargetCompatibility)
+        }
+    }
+
+    tasks.withType(KotlinCompile).configureEach { task ->
+        // Translate Kotlin messages like "w: ..." and "e: ..." into
+        // "...: warning: ..." and "...: error: ...", to make Treeherder understand.
+        def listener = {
+
+            if (it.startsWith("e: warnings found")) {
+                return
+            }
+
+            if (it.startsWith('w: ') || it.startsWith('e: ')) {
+                def matches = (it =~ /([ew]): (.+):(\d+):(\d+) (.*)/)
+                if (!matches) {
+                    logger.quiet "kotlinc message format has changed!"
+                    if (it.startsWith('w: ')) {
+                        // For warnings, don't continue because we don't want to throw an
+                        // exception. For errors, we want the exception so that the new error
+                        // message format gets translated properly.
+                        return
+                    }
+                }
+                def (_, type, file, line, column, message) = matches[0]
+                type = (type == 'w') ? 'warning' : 'error'
+                // Use logger.lifecycle, which does not go through stderr again.
+                logger.lifecycle "$file:$line:$column: $type: $message"
+            }
+        } as StandardOutputListener
+
+        doFirst {
+            logging.addStandardErrorListener(listener)
+        }
+        doLast {
+            logging.removeStandardErrorListener(listener)
         }
     }
 }
@@ -267,18 +194,6 @@ tasks.register("listRepositories") {
         println "Repositories:"
         project.repositories.each { println "Name: " + it.name + "; url: " + it.url }
     }
-}
-
-tasks.register("githubTestDetails", GithubDetailsTask) {
-    text = "### [Unit Test Results Fenix]({reportsUrl}/test/testFenixDebugUnitTest/index.html)"
-}
-
-tasks.register("githubLintDetektDetails", GithubDetailsTask) {
-    text = "### [Detekt Results Fenix]({reportsUrl}/detekt.html)"
-}
-
-tasks.register("githubLintAndroidDetails", GithubDetailsTask) {
-    text = "### [Android Lint Results Fenix]({reportsUrl}/lint-results-debug.html)"
 }
 
 // Task to copy generated baseline profile to the app module nightly variant.

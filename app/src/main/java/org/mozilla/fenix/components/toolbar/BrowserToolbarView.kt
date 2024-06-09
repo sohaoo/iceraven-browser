@@ -13,14 +13,19 @@ import android.view.ViewGroup
 import androidx.annotation.LayoutRes
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.LifecycleOwner
 import mozilla.components.browser.state.selector.selectedTab
 import mozilla.components.browser.state.state.CustomTabSessionState
 import mozilla.components.browser.state.state.ExternalAppType
 import mozilla.components.browser.toolbar.BrowserToolbar
 import mozilla.components.browser.toolbar.display.DisplayToolbar
+import mozilla.components.concept.toolbar.ScrollableToolbar
 import mozilla.components.support.ktx.util.URLStringUtils
 import mozilla.components.ui.widgets.behavior.EngineViewScrollingBehavior
 import org.mozilla.fenix.R
@@ -36,7 +41,7 @@ import org.mozilla.fenix.utils.ToolbarPopupWindow
 import java.lang.ref.WeakReference
 import mozilla.components.ui.widgets.behavior.ViewPosition as MozacToolbarPosition
 
-@SuppressWarnings("LargeClass")
+@SuppressWarnings("LargeClass", "LongParameterList")
 class BrowserToolbarView(
     context: Context,
     container: ViewGroup,
@@ -44,19 +49,26 @@ class BrowserToolbarView(
     private val interactor: BrowserToolbarInteractor,
     private val customTabSession: CustomTabSessionState?,
     private val lifecycleOwner: LifecycleOwner,
+    private val tabStripContent: @Composable () -> Unit,
 ) {
 
     @LayoutRes
     private val toolbarLayout = when (settings.toolbarPosition) {
         ToolbarPosition.BOTTOM -> R.layout.component_bottom_browser_toolbar
-        ToolbarPosition.TOP -> R.layout.component_browser_top_toolbar
+        ToolbarPosition.TOP -> if (shouldShowTabStrip()) {
+            R.layout.component_browser_top_toolbar_with_tab_strip
+        } else {
+            R.layout.component_browser_top_toolbar
+        }
     }
 
-    private val layout = LayoutInflater.from(context)
-        .inflate(toolbarLayout, container, true)
+    internal val layout = LayoutInflater.from(context)
+        .inflate(toolbarLayout, container, false)
 
     var view: BrowserToolbar = layout
         .findViewById(R.id.toolbar)
+
+    private val tabStripView: ComposeView by lazy { layout.findViewById(R.id.tabStripView) }
 
     val toolbarIntegration: ToolbarIntegration
     val menuToolbar: ToolbarMenu
@@ -67,7 +79,17 @@ class BrowserToolbarView(
             customTabSession?.config?.externalAppType == ExternalAppType.TRUSTED_WEB_ACTIVITY
 
     init {
+        container.addView(layout)
         val isCustomTabSession = customTabSession != null
+
+        if (shouldShowTabStrip()) {
+            tabStripView.apply {
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+                setContent {
+                    tabStripContent()
+                }
+            }
+        }
 
         view.display.setOnUrlLongClickListener {
             ToolbarPopupWindow.show(
@@ -87,10 +109,11 @@ class BrowserToolbarView(
                 R.drawable.search_old_url_background
             }
 
+            layout.elevation = resources.getDimension(R.dimen.browser_fragment_toolbar_elevation)
+
             view.apply {
                 setToolbarBehavior()
 
-                elevation = resources.getDimension(R.dimen.browser_fragment_toolbar_elevation)
                 if (!isCustomTabSession) {
                     display.setUrlBackground(
                         AppCompatResources.getDrawable(
@@ -193,6 +216,7 @@ class BrowserToolbarView(
                 CustomTabToolbarIntegration(
                     this,
                     view,
+                    view as ScrollableToolbar,
                     menuToolbar,
                     customTabSession.id,
                     isPrivate = customTabSession.content.private,
@@ -203,6 +227,7 @@ class BrowserToolbarView(
                 DefaultToolbarIntegration(
                     this,
                     view,
+                    layout as ScrollableToolbar,
                     menuToolbar,
                     lifecycleOwner,
                     sessionId = null,
@@ -214,14 +239,22 @@ class BrowserToolbarView(
         }
     }
 
+    internal fun gone() {
+        layout.isVisible = false
+    }
+
+    internal fun visible() {
+        layout.isVisible = true
+    }
+
     fun expand() {
         // expand only for normal tabs and custom tabs not for PWA or TWA
         if (isPwaTabOrTwaTab) {
             return
         }
 
-        (view.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
-            (behavior as? EngineViewScrollingBehavior)?.forceExpand(view)
+        (layout.layoutParams as CoordinatorLayout.LayoutParams).apply {
+            (behavior as? EngineViewScrollingBehavior)?.forceExpand(layout)
         }
     }
 
@@ -231,8 +264,8 @@ class BrowserToolbarView(
             return
         }
 
-        (view.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
-            (behavior as? EngineViewScrollingBehavior)?.forceCollapse(view)
+        (layout.layoutParams as CoordinatorLayout.LayoutParams).apply {
+            (behavior as? EngineViewScrollingBehavior)?.forceCollapse(layout)
         }
     }
 
@@ -277,15 +310,15 @@ class BrowserToolbarView(
     @VisibleForTesting
     internal fun expandToolbarAndMakeItFixed() {
         expand()
-        (view.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
+        (layout.layoutParams as CoordinatorLayout.LayoutParams).apply {
             behavior = null
         }
     }
 
     @VisibleForTesting
     internal fun setDynamicToolbarBehavior(toolbarPosition: MozacToolbarPosition) {
-        (view.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
-            behavior = EngineViewScrollingBehavior(view.context, null, toolbarPosition)
+        (layout.layoutParams as CoordinatorLayout.LayoutParams).apply {
+            behavior = EngineViewScrollingBehavior(layout.context, null, toolbarPosition)
         }
     }
 
@@ -298,4 +331,7 @@ class BrowserToolbarView(
             view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
         }
     }
+
+    private fun shouldShowTabStrip() =
+        customTabSession == null && settings.isTabletAndTabStripEnabled
 }

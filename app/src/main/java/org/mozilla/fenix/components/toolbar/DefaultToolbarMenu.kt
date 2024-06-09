@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat.getColor
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import mozilla.components.browser.menu.BrowserMenuHighlight
@@ -156,19 +157,15 @@ open class DefaultToolbarMenu(
 
         registerForIsBookmarkedUpdates()
 
+        registerForScreenReaderUpdates()
+
         BrowserMenuItemToolbar(listOf(back, forward, share, refresh), isSticky = true)
     }
 
     // Predicates that need to be repeatedly called as the session changes
     @VisibleForTesting(otherwise = PRIVATE)
     fun canAddToHomescreen(): Boolean =
-        selectedSession != null && isPinningSupported &&
-            !context.components.useCases.webAppUseCases.isInstallable()
-
-    @VisibleForTesting(otherwise = PRIVATE)
-    fun canInstall(): Boolean =
-        selectedSession != null && isPinningSupported &&
-            context.components.useCases.webAppUseCases.isInstallable()
+        selectedSession != null && isPinningSupported
 
     /**
      * Should the "Open in regular tab" menu item be visible?
@@ -198,27 +195,17 @@ open class DefaultToolbarMenu(
      * Should Translations menu item be visible?
      */
     @VisibleForTesting(otherwise = PRIVATE)
-    fun shouldShowTranslations(): Boolean = selectedSession?.let {
-        store.state.translationEngine.isEngineSupported == true &&
-            FxNimbus.features.translations.value().mainFlowBrowserMenuEnabled
-    } ?: false
-    // End of predicates //
-
-    private val installToHomescreen = BrowserMenuHighlightableItem(
-        label = context.getString(R.string.browser_menu_install_on_homescreen),
-        startImageResource = R.drawable.mozac_ic_add_to_homescreen_24,
-        iconTintColorResource = primaryTextColor(),
-        highlight = BrowserMenuHighlight.LowPriority(
-            label = context.getString(R.string.browser_menu_install_on_homescreen),
-            notificationTint = getColor(context, R.color.fx_mobile_icon_color_information),
-        ),
-        isCollapsingMenuLimit = true,
-        isHighlighted = {
-            !context.settings().installPwaOpened
-        },
-    ) {
-        onItemTapped.invoke(ToolbarMenu.Item.InstallPwaToHomeScreen)
+    fun shouldShowTranslations(): Boolean {
+        val isEngineSupported = store.state.translationEngine.isEngineSupported
+        if (isEngineSupported == true) {
+            FxNimbus.features.translations.recordExposure()
+        }
+        return selectedSession?.let {
+            isEngineSupported == true &&
+                FxNimbus.features.translations.value().mainFlowBrowserMenuEnabled
+        } ?: false
     }
+    // End of predicates //
 
     @VisibleForTesting
     internal val newTabItem = BrowserMenuImageText(
@@ -314,7 +301,11 @@ open class DefaultToolbarMenu(
         iconTintColorResource = primaryTextColor(),
         isCollapsingMenuLimit = true,
     ) {
-        onItemTapped.invoke(ToolbarMenu.Item.AddToHomeScreen)
+        if (context.components.useCases.webAppUseCases.isInstallable()) {
+            onItemTapped.invoke(ToolbarMenu.Item.InstallPwaToHomeScreen)
+        } else {
+            onItemTapped.invoke(ToolbarMenu.Item.AddToHomeScreen)
+        }
     }
 
     private val addRemoveTopSitesItem = TwoStateBrowserMenuImageText(
@@ -430,7 +421,6 @@ open class DefaultToolbarMenu(
                 reportSiteIssuePlaceholder,
                 BrowserMenuDivider(),
                 addToHomeScreenItem.apply { visible = ::canAddToHomescreen },
-                installToHomescreen.apply { visible = ::canInstall },
                 if (shouldShowTopSites) addRemoveTopSitesItem else null,
                 saveToCollectionItem,
                 if (FxNimbus.features.print.value().browserPrintEnabled) printPageItem else null,
@@ -493,6 +483,25 @@ open class DefaultToolbarMenu(
             isCurrentUrlBookmarked = bookmarksStorage
                 .getBookmarksWithUrl(newUrl)
                 .any { it.url == newUrl }
+        }
+    }
+
+    private fun registerForScreenReaderUpdates() {
+        store.flowScoped(lifecycleOwner) { flow ->
+            flow.mapNotNull { state -> state.selectedTab }
+                .distinctUntilChangedBy { it.readerState }
+                .collect {
+                    translationsItem.enabled = !it.readerState.active
+                    translationsItem.iconTintColorResource =
+                        if (it.readerState.active) {
+                            ThemeManager.resolveAttribute(
+                                R.attr.textDisabled,
+                                context,
+                            )
+                        } else {
+                            primaryTextColor()
+                        }
+                }
         }
     }
 }

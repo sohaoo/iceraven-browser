@@ -51,7 +51,7 @@ class FirefoxSuggestTest : TestSetup() {
                 ),
             "Houzz" to listOf(
                 "Houzz.com - Official Site",
-                "houzz.com/products?m_refid=us-dsp-mpl-admp-219577_15416306_kwd-353208810&adcid=319104989us1287${getSponsoredFxSuggestPlaceHolder()}&mfadid=adm",
+                "houzz.com/products?m_refid=us-dsp-mpl-admp-219577_15416306_kwd-353208810&adcid=319104989&mfadid=adm&utm_source=admarketplace&utm_medium=cpc&utm_campaign=Privacy&utm_term=houzz&utm_content=319104989us1287${getSponsoredFxSuggestPlaceHolder()}",
             ),
             "Spanx" to listOf(
                 "SPANX® -  Official Site",
@@ -63,7 +63,7 @@ class FirefoxSuggestTest : TestSetup() {
             ),
             "Groupon" to listOf(
                 "groupon.com - Discover & Save!",
-                "groupon.com/?utm_source=google&utm_medium=cpc&utm_campaign=us_dt_sea_ggl_txt_smp_sr_cbp_ch1_nbr_k*{keyword}_m*{match-type}_d*ADMRKT_319093357us1279${getSponsoredFxSuggestPlaceHolder()}&mfadid=adm",
+                "groupon.com/?utm_source=google&utm_medium=cpc&utm_campaign=us_dt_sea_ggl_txt_smp_sr_cbp_ch1_nbr_k*groupon_m*broad_d*ADMRKT_319093357us1279${getSponsoredFxSuggestPlaceHolder()}&mfadid=adm",
             ),
         )
 

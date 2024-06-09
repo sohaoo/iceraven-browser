@@ -59,7 +59,7 @@ class SecretSettingsFragment : PreferenceFragmentCompat() {
         }
 
         requirePreference<SwitchPreference>(R.string.pref_key_toolbar_use_redesign_incomplete).apply {
-            isVisible = Config.channel.isDebug
+            isVisible = Config.channel.isNightlyOrDebug
             isChecked = context.settings().enableIncompleteToolbarRedesign
             onPreferenceChangeListener = SharedPreferenceUpdater()
         }
@@ -73,6 +73,12 @@ class SecretSettingsFragment : PreferenceFragmentCompat() {
         requirePreference<SwitchPreference>(R.string.pref_key_enable_compose_top_sites).apply {
             isVisible = Config.channel.isNightlyOrDebug
             isChecked = context.settings().enableComposeTopSites
+            onPreferenceChangeListener = SharedPreferenceUpdater()
+        }
+
+        requirePreference<SwitchPreference>(R.string.pref_key_enable_menu_redesign).apply {
+            isVisible = Config.channel.isNightlyOrDebug
+            isChecked = context.settings().enableMenuRedesign
             onPreferenceChangeListener = SharedPreferenceUpdater()
         }
 

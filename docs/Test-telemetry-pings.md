@@ -1,3 +1,5 @@
+# Test Telemetry Pings
+
 Watch a step by step [video](https://user-images.githubusercontent.com/6579541/170517089-7266b93e-7ff8-4ebb-ae01-4f2a7e558c66.mp4)
 
 1. To send data by default. apply this patch:
@@ -72,6 +74,3 @@ adb shell am start -n org.mozilla.fenix.debug/mozilla.telemetry.glean.debug.Glea
 4. See the results on  https://debug-ping-preview.firebaseapp.com/
 
 The parameters `sendPing` can be  `metrics` or `events` depending or your needs, additionally `debugViewTag` can be customize  to your preferred tag `debugViewTag your-metrics-ping`.
-
-
-

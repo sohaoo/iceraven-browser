@@ -42,7 +42,9 @@ import androidx.test.espresso.matcher.ViewMatchers
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.hamcrest.Matcher
 import org.mozilla.fenix.R
+import org.mozilla.fenix.helpers.AppAndSystemHelper.registerAndCleanupIdlingResources
 import org.mozilla.fenix.helpers.Constants
+import org.mozilla.fenix.helpers.Constants.RETRY_COUNT
 import org.mozilla.fenix.helpers.Constants.TAG
 import org.mozilla.fenix.helpers.DataGenerationHelper.getStringResource
 import org.mozilla.fenix.helpers.HomeActivityComposeTestRule
@@ -287,6 +289,9 @@ class ComposeTabDrawerRobot(private val composeTestRule: HomeActivityComposeTest
         Log.i(TAG, "swipeTabLeft: Trying to perform swipe left action on tab: $title")
         composeTestRule.tabItem(title).performTouchInput { swipeLeft() }
         Log.i(TAG, "swipeTabLeft: Performed swipe left action on tab: $title")
+        Log.i(TAG, "swipeTabLeft: Waiting for compose test rule to be idle")
+        composeTestRule.waitForIdle()
+        Log.i(TAG, "swipeTabLeft: Waited for compose test rule to be idle")
     }
 
     /**
@@ -296,6 +301,9 @@ class ComposeTabDrawerRobot(private val composeTestRule: HomeActivityComposeTest
         Log.i(TAG, "swipeTabRight: Trying to perform swipe right action on tab: $title")
         composeTestRule.tabItem(title).performTouchInput { swipeRight() }
         Log.i(TAG, "swipeTabRight: Performed swipe right action on tab: $title")
+        Log.i(TAG, "swipeTabRight: Waiting for compose test rule to be idle")
+        composeTestRule.waitForIdle()
+        Log.i(TAG, "swipeTabRight: Waited for compose test rule to be idle")
     }
 
     /**
@@ -314,7 +322,7 @@ class ComposeTabDrawerRobot(private val composeTestRule: HomeActivityComposeTest
         Log.i(TAG, "createCollection: Clicked the \"Select tabs\" menu button")
 
         for (tab in tabTitles) {
-            selectTab(tab)
+            selectTab(tab, numberOfSelectedTabs = tabTitles.indexOf(tab) + 1)
         }
 
         clickCollectionsButton(composeTestRule) {
@@ -329,13 +337,37 @@ class ComposeTabDrawerRobot(private val composeTestRule: HomeActivityComposeTest
      * Selects a tab with [title].
      */
     @OptIn(ExperimentalTestApi::class)
-    fun selectTab(title: String) {
+    fun selectTab(title: String, numberOfSelectedTabs: Int = 0) {
         Log.i(TAG, "selectTab: Waiting for $waitingTime ms until the tab with title: $title exists")
         composeTestRule.waitUntilExactlyOneExists(hasText(title), waitingTime)
         Log.i(TAG, "selectTab: Waited for $waitingTime ms until the tab with title: $title exists")
-        Log.i(TAG, "selectTab: Trying to click tab with title: $title")
-        composeTestRule.tabItem(title).performClick()
-        Log.i(TAG, "selectTab: Clicked tab with title: $title")
+        for (i in 1..RETRY_COUNT) {
+            try {
+                Log.i(TAG, "selectTab: Trying to click tab with title: $title")
+                composeTestRule.tabItem(title).performClick()
+                Log.i(TAG, "selectTab: Clicked tab with title: $title")
+                verifyTabsMultiSelectionCounter(numberOfSelectedTabs)
+
+                break
+            } catch (e: AssertionError) {
+                Log.i(TAG, "selectTab: AssertionError caught, executing fallback methods")
+                if (i == RETRY_COUNT) {
+                    throw e
+                } else {
+                    // Dismiss tab selection
+                    Log.i(TAG, "selectTab: Trying to click the device back button")
+                    mDevice.pressBack()
+                    Log.i(TAG, "selectTab: Clicked the device back button")
+                    // Reopen tab selection section
+                    Log.i(TAG, "selectTab: Trying to click the three dot button")
+                    composeTestRule.threeDotButton().performClick()
+                    Log.i(TAG, "selectTab: Clicked the three dot button")
+                    Log.i(TAG, "selectTab: Trying to click the \"Select tabs\" menu button")
+                    composeTestRule.dropdownMenuItemSelectTabs().performClick()
+                    Log.i(TAG, "selectTab: Clicked the \"Select tabs\" menu button")
+                }
+            }
+        }
     }
 
     /**
@@ -526,7 +558,9 @@ class ComposeTabDrawerRobot(private val composeTestRule: HomeActivityComposeTest
             )
 
             behavior?.let {
-                runWithIdleRes(BottomSheetBehaviorStateIdlingResource(it)) {
+                registerAndCleanupIdlingResources(
+                    BottomSheetBehaviorStateIdlingResource(it),
+                ) {
                     ComposeTabDrawerRobot(composeTestRule).interact()
                 }
             }

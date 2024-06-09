@@ -48,12 +48,20 @@
 
     <!-- Home - Recently saved bookmarks -->
     <!-- Title for the home screen section with recently saved bookmarks. -->
-    <string name="recently_saved_title">Cadwyd yn ddiweddar</string>
+    <string name="recently_saved_title" moz:removedIn="127" tools:ignore="UnusedResources">Cadwyd yn ddiweddar</string>
     <!-- Content description for the button which navigates the user to show all of their saved bookmarks. -->
-    <string name="recently_saved_show_all_content_description_2">Dangos pob nod tudalen wedi’u cadw</string>
+    <string name="recently_saved_show_all_content_description_2" moz:removedIn="127" tools:ignore="UnusedResources">Dangos pob nod tudalen wedi’u cadw</string>
 
     <!-- Text for the menu button to remove a recently saved bookmark from the user's home screen -->
-    <string name="recently_saved_menu_item_remove">Tynnu</string>
+    <string name="recently_saved_menu_item_remove" moz:removedIn="127" tools:ignore="UnusedResources">Tynnu</string>
+
+    <!-- Home - Bookmarks -->
+    <!-- Title for the home screen section with bookmarks. -->
+    <string name="home_bookmarks_title">Nodau Tudalen</string>
+    <!-- Content description for the button which navigates the user to show all of their bookmarks. -->
+    <string name="home_bookmarks_show_all_content_description">Dangos yr holl nodau tudalen</string>
+    <!-- Text for the menu button to remove a recently saved bookmark from the user's home screen -->
+    <string name="home_bookmarks_menu_item_remove">Tynnu</string>
 
     <!-- About content. The first parameter is the name of the application. (For example: Fenix) -->
     <string name="about_content">Mae %1$s yn cael ei greu gan Mozilla.</string>
@@ -143,8 +151,10 @@
     <!-- Shortcut action to open new private tab -->
     <string name="home_screen_shortcut_open_new_private_tab_2">Tab preifat newydd</string>
 
-    <!-- Shortcut action to open Passwords screens -->
-    <string name="home_screen_shortcut_open_password_screen">Llwybr byr cyfrineiriau</string>
+    <!-- Shortcut action to open Passwords screen -->
+    <string name="home_screen_shortcut_passwords">Cyfrineiriau</string>
+    <!-- Shortcut action to open Passwords screen -->
+    <string name="home_screen_shortcut_open_password_screen" moz:removedIn="126" tools:ignore="UnusedResources">Llwybr byr cyfrineiriau</string>
 
     <!-- Recent Tabs -->
     <!-- Header text for jumping back into the recent tab in the home screen -->
@@ -213,6 +223,8 @@
     <string name="resync_button_content_description">Ailgydweddu</string>
     <!-- Browser menu button that opens the find in page menu -->
     <string name="browser_menu_find_in_page">Canfod ar y dudalen</string>
+    <!-- Browser menu button that opens the find in page menu -->
+    <string name="browser_menu_find_in_page_2">Canfod ar dudalen…</string>
     <!-- Browser menu button that opens the translations dialog, which has options to translate the current browser page. -->
     <string name="browser_menu_translations">Cyfieithu\'r dudalen</string>
     <!-- Browser menu button that saves the current tab to a collection -->
@@ -246,9 +258,30 @@
     <string name="browser_menu_customize_home_1">Cyfaddasu’r dudalen cartref</string>
 
     <!-- Browser menu label to sign in to sync on the device using Mozilla accounts -->
-    <string name="browser_menu_sign_in" tools:ignore="UnusedResources">Mewngofnodi</string>
-    <!-- Browser menu caption label for the "Sign in" browser menu item described in browser_menu_sign_in -->
-    <string name="browser_menu_sign_in_caption" tools:ignore="UnusedResources">Cydweddu cyfrineiriau, tabiau, a mwy</string>
+    <string name="browser_menu_sign_in">Mewngofnodi</string>
+    <!-- Browser menu caption label for the "Sign in" browser menu item described in `browser_menu_sign_in` -->
+    <string name="browser_menu_sign_in_caption">Cydweddu cyfrineiriau, tabiau, a mwy</string>
+
+    <!-- Browser menu label to sign back in to sync on the device when the user's account needs to be reauthenticated -->
+    <string name="browser_menu_sign_back_in_to_sync">Ail fewngofnodi i gydweddu</string>
+    <!-- Browser menu caption label for the "Sign back in to sync" browser menu item described in `browser_menu_sign_back_in_to_sync` when there is an error in syncing -->
+    <string name="browser_menu_syncing_paused_caption">Cydweddu wedi\'i oedi</string>
+    <!-- Browser menu label that creates a private tab -->
+    <string name="browser_menu_new_private_tab">Tab preifat newydd</string>
+    <!-- Browser menu label that navigates to the Password screen -->
+    <string name="browser_menu_passwords">Cyfrineiriau</string>
+
+    <!-- Browser menu label that navigates to the SUMO page for the Firefox for Android release notes.
+         The first parameter is the name of the app defined in app_name (for example: Fenix)-->
+    <string name="browser_menu_new_in_firefox">Yn newydd yn %1$s</string>
+
+    <!-- Browser menu label that toggles the request for the desktop site of the currently visited page -->
+    <string name="browser_menu_switch_to_desktop_site">Newid i wefan bwrdd gwaith</string>
+    <!-- Browser menu label that navigates to the page tools sub-menu -->
+    <string name="browser_menu_tools">Offer</string>
+    <!-- Browser menu label that navigates to the save sub-menu, which contains various save related menu items such as
+         bookmarking a page, saving to collection, shortcut or as a PDF, and adding to home screen -->
+    <string name="browser_menu_save">Cadw</string>
 
     <!-- Extensions management fragment -->
     <!-- Text displayed when there are no extensions to be shown -->
@@ -555,6 +588,8 @@
     <string name="preferences_account_sync_error">Ailgysylltu i ailddechrau cydweddu</string>
     <!-- Preference for language -->
     <string name="preferences_language">Iaith</string>
+    <!-- Preference for translation -->
+    <string name="preferences_translation">Cyfieithu</string>
     <!-- Preference for data choices -->
     <string name="preferences_data_choices">Dewisiadau data</string>
     <!-- Preference for data collection -->
@@ -623,6 +658,20 @@
     <!-- Summary for notification preference indicating notifications are not allowed -->
     <string name="notifications_not_allowed_summary">Dim caniatáu</string>
 
+    <!-- Add-on Permissions -->
+    <!-- The title of the required permissions section from addon's permissions screen -->
+    <string name="addons_permissions_heading_required" tools:ignore="UnusedResources">Angenrheidiol</string>
+    <!-- The title of the optional permissions section from addon's permissions screen -->
+    <string name="addons_permissions_heading_optional" tools:ignore="UnusedResources">Dewisol</string>
+    <!-- The title of the section with websites that have permissions granted from addon's permissions screen -->
+    <string name="addons_permissions_heading_read_and_change_website_data" tools:ignore="UnusedResources">Darllen a newid data gwefan</string>
+    <!-- The description of the icon that can delete one of the websites displayed  -->
+    <string name="addons_permissions_icon_description_delete_website" tools:ignore="UnusedResources">Dileu gwefan</string>
+    <!-- The title of the origin permission option allowing a user to enable the extension to run on all sites -->
+    <string name="addons_permissions_allow_for_all_sites" tools:ignore="UnusedResources">Caniatáu ar gyfer pob gwefan</string>
+    <!-- The subtitle for the allow for all sites preference toggle -->
+    <string name="addons_permissions_allow_for_all_sites_subtitle" tools:ignore="UnusedResources">Os ydych yn ymddiried yn yr estyniad hwn, gallwch roi caniatâd iddo ar bob gwefan.</string>
+
     <!-- Add-on Preferences -->
     <!-- Preference to customize the configured AMO (addons.mozilla.org) collection -->
     <string name="preferences_customize_amo_collection" moz:removedIn="126" tools:ignore="UnusedResources">Casgliad Ychwanegion Cyfaddas</string>
@@ -646,7 +695,9 @@
     <!-- Header text for jumping back into the recent tab in customize the home screen -->
     <string name="customize_toggle_jump_back_in">Mynd nôl i</string>
     <!-- Title for the customize home screen section with recently saved bookmarks. -->
-    <string name="customize_toggle_recent_bookmarks">Nodau tudalen diweddar</string>
+    <string name="customize_toggle_recent_bookmarks" moz:removedIn="127" tools:ignore="UnusedResources">Nodau tudalen diweddar</string>
+    <!-- Title for the customize home screen section with bookmarks. -->
+    <string name="customize_toggle_bookmarks">Nodau Tudalen</string>
     <!-- Title for the customize home screen section with recently visited. Recently visited is
     a section where users see a list of tabs that they have visited in the past few days -->
     <string name="customize_toggle_recently_visited">Ymwelwyd yn ddiweddar</string>
@@ -746,7 +797,7 @@
     <!-- Preference for syncing passwords -->
     <string name="preferences_sync_logins_2">Cyfrineiriau</string>
     <!-- Preference for syncing tabs -->
-    <string name="preferences_sync_tabs_2">Tabiau agored</string>
+    <string name="preferences_sync_tabs_2">Agor tabiau</string>
     <!-- Preference for signing out -->
     <string name="preferences_sign_out">Allgofnodi</string>
     <!-- Preference displays and allows changing current FxA device name -->
@@ -978,7 +1029,7 @@
 
     <!-- Sessions -->
     <!-- Title for the list of tabs -->
-    <string name="tab_header_label">Tabiau agored</string>
+    <string name="tab_header_label">Agor tabiau</string>
     <!-- Title for the list of tabs in the current private session -->
     <string name="tabs_header_private_tabs_title">Tabiau preifat</string>
     <!-- Title for the list of tabs in the synced tabs -->
@@ -1455,7 +1506,7 @@
     <!-- Title for the Delete browsing data preference -->
     <string name="preferences_delete_browsing_data">Dileu data pori</string>
     <!-- Title for the tabs item in Delete browsing data -->
-    <string name="preferences_delete_browsing_data_tabs_title_2">Tabiau agored</string>
+    <string name="preferences_delete_browsing_data_tabs_title_2">Agor tabiau</string>
     <!-- Subtitle for the tabs item in Delete browsing data, parameter will be replaced with the number of open tabs -->
     <string name="preferences_delete_browsing_data_tabs_subtitle">%d tab</string>
     <!-- Title for the data and history items in Delete browsing data -->
@@ -2463,16 +2514,20 @@
     <string name="translations_bottom_sheet_translate_from">Cyfieithu o\'r</string>
     <!-- Label for the dropdown to select which language to translate to on the translations dialog. Usually the translate to language selected will be the user's preferred language. -->
     <string name="translations_bottom_sheet_translate_to">Cyfieithu i\'r</string>
+    <!-- Label for the dropdown to select which language to translate from on the translations dialog when the page language is not supported. This selection is to allow the user to select another language, in case we automatically detected the page language incorrectly. -->
+    <string name="translations_bottom_sheet_translate_from_unsupported_language">Rhowch gynnig ar iaith ffynhonnell arall</string>
     <!-- Button text on the translations dialog to dismiss the dialog and return to the browser. -->
     <string name="translations_bottom_sheet_negative_button">Nid nawr</string>
     <!-- Button text on the translations dialog to restore the translated website back to the original untranslated version. -->
     <string name="translations_bottom_sheet_negative_button_restore">Dangos y gwreiddiol</string>
+    <!-- Accessibility announcement (not visible, for screen readers etc.) for the translations dialog after restore button was pressed that indicates the original untranslated page was loaded. -->
+    <string name="translations_bottom_sheet_restore_accessibility_announcement">Tudalen wreiddiol heb ei chyfieithu wedi\'i llwytho</string>
     <!-- Button text on the translations dialog when a translation error appears, used to dismiss the dialog and return to the browser. -->
     <string name="translations_bottom_sheet_negative_button_error">Gorffen</string>
     <!-- Button text on the translations dialog to begin a translation of the website. -->
     <string name="translations_bottom_sheet_positive_button">Cyfieithu</string>
     <!-- Button text on the translations dialog when a translation error appears. -->
-    <string name="translations_bottom_sheet_positive_button_error">Ceisiwch Eto</string>
+    <string name="translations_bottom_sheet_positive_button_error">Ceisiwch eto</string>
     <!-- Inactive button text on the translations dialog that indicates a translation is currently in progress. This button will be accompanied by a loading icon. -->
     <string name="translations_bottom_sheet_translating_in_progress">Yn cyfieithu</string>
     <!-- Button content description (not visible, for screen readers etc.) for the translations dialog translate button that indicates a translation is currently in progress. -->
@@ -2488,7 +2543,7 @@
     <string name="translation_error_language_not_supported_warning_text">Ymddiheuriadau, nid ydym yn cefnogi %1$s eto.</string>
 
     <!-- Button text on the warning card when a language is not supported. The link will take the user to a page to a support page about translations. -->
-    <string name="translation_error_language_not_supported_learn_more">Darllen rhagor</string>
+    <string name="translation_error_language_not_supported_learn_more" moz:removedIn="126" tools:ignore="UnusedResources">Darllen rhagor</string>
 
     <!-- Snackbar title shown if the user closes the Translation Request dialogue and a translation is in progress. -->
     <string name="translation_in_progress_snackbar">Wrthi\'n cyfieithu…</string>
@@ -2502,7 +2557,9 @@
 
     <!-- Translations options dialog -->
     <!-- Title of the translation options dialog that allows a user to set their translation options for the site the user is currently on. -->
-    <string name="translation_option_bottom_sheet_title">Dewisiadau Cyfieithu</string>
+    <string name="translation_option_bottom_sheet_title" moz:removedIn="126" tools:ignore="UnusedResources">Dewisiadau Cyfieithu</string>
+    <!-- Title of the translation options dialog that allows a user to set their translation options for the site the user is currently on. -->
+    <string name="translation_option_bottom_sheet_title_heading">Dewisiadau cyfieithu</string>
     <!-- Toggle switch label that allows a user to set the setting if they would like the browser to always offer or suggest translations when available. -->
     <string name="translation_option_bottom_sheet_always_translate">Cynnig i gyfieithu bob tro</string>
     <!-- Toggle switch label that allows a user to set if they would like a given language to automatically translate or not. The first parameter is the language name, for example, "Spanish". -->
@@ -2519,6 +2576,9 @@
     <string name="translation_option_bottom_sheet_translation_settings">Gosodiadau cyfieithu</string>
     <!-- Button text for the button that will take the user to a website to learn more about how translations works in the given app. The first parameter is the name of the application, for example, "Fenix". -->
     <string name="translation_option_bottom_sheet_about_translations">Ynghylch cyfieithu yn %1$s</string>
+
+    <!-- Content description (not visible, for screen readers etc.) for closing the translations bottom sheet. -->
+    <string name="translation_option_bottom_sheet_close_content_description">Cau\'r ddalen Cyfieithiadau</string>
 
     <!-- Translation settings dialog -->
     <!-- Title of the translation settings dialog that allows a user to set their preferred translation settings. -->
@@ -2640,6 +2700,8 @@
     <string name="debug_drawer_title">Offer Dadfygio</string>
     <!-- Content description (not visible, for screen readers etc.): Navigate back within the debug drawer. -->
     <string name="debug_drawer_back_button_content_description">Symud nôl</string>
+
+    <!-- Debug drawer tabs tools -->
     <!-- The title of the Tab Tools feature in the Debug Drawer. -->
     <string name="debug_drawer_tab_tools_title">Offer Tab</string>
     <!-- The title of the tab count section in Tab Tools. -->
@@ -2662,4 +2724,39 @@
     <string name="debug_drawer_tab_tools_tab_creation_tool_button_text_inactive">Ychwanegu at dabiau anweithredol</string>
     <!-- The button text to add tabs to the private tab group in the tab creation tool. -->
     <string name="debug_drawer_tab_tools_tab_creation_tool_button_text_private">Ychwanegu at y tabiau preifat</string>
+
+    <!-- Micro survey -->
+
+    <!-- The continue button label -->
+    <string name="micro_survey_continue_button_label" tools:ignore="UnusedResources">Parhau</string>
+    <!-- The survey header -->
+    <string name="micro_survey_survey_header">Cwblhewch yr arolwg hwn</string>
+    <!-- The privacy notice link -->
+    <string name="micro_survey_privacy_notice">Hysbysiad Preifatrwydd</string>
+    <!-- The submit button label text -->
+    <string name="micro_survey_submit_button_label" tools:ignore="UnusedResources">Cyflwyno</string>
+    <!-- The close button label text -->
+    <string name="micro_survey_close_button_label">Cau</string>
+    <!-- The survey completion confirmation text -->
+    <string name="micro_survey_feedback_confirmation" tools:ignore="UnusedResources">Diolch am eich adborth!</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_1" tools:ignore="UnusedResources">Bodlon Iawn</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_2" tools:ignore="UnusedResources">Bodlon</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_3" tools:ignore="UnusedResources">Niwtral</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_4" tools:ignore="UnusedResources">Anfodlon</string>
+    <!-- Option for likert scale -->
+    <string name="likert_scale_option_5" tools:ignore="UnusedResources">Anfodlon Iawn</string>
+
+    <!-- Debug drawer logins -->
+    <!-- The title of the Logins feature in the Debug Drawer. -->
+    <string name="debug_drawer_logins_title">Mewngofnodion</string>
+    <!-- The title of the logins section in the Logins feature, where the parameter will be the site domain  -->
+    <string name="debug_drawer_logins_current_domain_label">Parth presennol: %s</string>
+    <!-- The label for a button to add a new fake login for the current domain in the Logins feature. -->
+    <string name="debug_drawer_logins_add_login_button">Ychwanegu mewngofnodi ffug ar gyfer y parth hwn</string>
+    <!-- Content description for delete button where parameter will be the username of the login -->
+    <string name="debug_drawer_logins_delete_login_button_content_description">Dileu mewngofnodi gydag enw defnyddiwr %s</string>
 </resources>
