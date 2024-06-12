@@ -273,6 +273,7 @@
     <string name="preferences_open_links_in_apps">Uddit jokke e nder jaaɓnirɗe</string>
     <!-- Preference for open download with an external download manager app -->
     <string name="preferences_external_download_manager">Toppitorde gaawte yaasiire</string>
+
     <!-- Preference for add_ons -->
     <string name="preferences_addons">Ɓeyditte</string>
 

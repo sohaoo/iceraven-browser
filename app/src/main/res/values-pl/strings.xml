@@ -1754,10 +1754,10 @@
     <string name="browser_toolbar_long_press_popup_paste_and_go">Wklej i przejdź</string>
     <!-- Paste the text in the clipboard -->
     <string name="browser_toolbar_long_press_popup_paste">Wklej</string>
-
+  
     <!-- Snackbar message shown after an URL has been copied to clipboard. -->
     <string name="browser_toolbar_url_copied_to_clipboard_snackbar">Skopiowano adres do schowka</string>
-
+  
     <!-- Title text for the Add To Homescreen dialog -->
     <string name="add_to_homescreen_title">Dodaj do ekranu głównego</string>
     <!-- Cancel button text for the Add to Homescreen dialog -->

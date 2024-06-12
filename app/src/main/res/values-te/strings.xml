@@ -59,6 +59,7 @@
     <!-- Text for the negative action button -->
     <string name="open_in_app_cfr_negative_button_text">విస్మరించు</string>
 
+
     <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
     <string name="camera_permissions_needed_positive_button_text">అమరికలకు వెళ్లు</string>
     <!-- Text for the negative action button to dismiss the dialog. -->
@@ -291,6 +292,7 @@
 
     <!-- Preference for open download with an external download manager app -->
     <string name="preferences_external_download_manager">బయటి దింపుకోలు నిర్వాహకి</string>
+
     <!-- Preference for add_ons -->
     <string name="preferences_addons">పొడగింతలు</string>
 

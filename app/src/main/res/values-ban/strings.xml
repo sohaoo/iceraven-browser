@@ -11,6 +11,7 @@
     <!-- Text for the negative button -->
     <string name="cfr_neg_button_text">Ten, suksma</string>
 
+
     <!-- Text for the positive action button to go to Settings for auto close tabs. -->
     <string name="tab_tray_close_tabs_banner_positive_button_text">Cingak opsi</string>
 

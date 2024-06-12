@@ -417,7 +417,7 @@
     <string name="juno_onboarding_default_browser_title_nimbus_4" tools:ignore="UnusedResources">Panyungsian aman jeung réa pilihan
 </string>
     <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
-    <string name="juno_onboarding_default_browser_description_nimbus_3">Browser anu dirojong kalawan nirlaba urang nulungan pikeun mahing pausahaan ngukuntit anjuen dina wéb.
+    <string name="juno_onboarding_default_browser_description_nimbus_3">Browser anu dirojong kalawan nirlaba urang nulungan pikeun mahing pausahaan ngukuntit anjuen dina wéb. 
 </string>
     <!-- Description for set firefox as default browser screen used by Nimbus experiments. -->
     <string name="juno_onboarding_default_browser_description_nimbus_4" tools:ignore="UnusedResources">Leuwih ti 100 juta jalma ngajaga privasina ku milih browser anu dirojong ku nirlaba.</string>

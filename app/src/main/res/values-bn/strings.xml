@@ -49,6 +49,7 @@
     <!-- Text for the negative action button -->
     <string name="open_in_app_cfr_negative_button_text">বাতিল</string>
 
+
     <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
     <string name="camera_permissions_needed_positive_button_text">সেটিং এ যাও</string>
     <!-- Text for the negative action button to dismiss the dialog. -->
@@ -118,6 +119,7 @@
     <string name="browser_menu_add">যোগ করুন</string>
     <!-- Browser menu label for editing a bookmark -->
     <string name="browser_menu_edit">সম্পাদনা করুন</string>
+
     <!-- Browser Toolbar -->
     <!-- Content description for the Home screen button on the browser toolbar -->
     <string name="browser_toolbar_home">হোম স্ক্রিন</string>
@@ -225,6 +227,7 @@
     <string name="preferences_account_settings">অ্যাকাউন্ট সেটিংস</string>
     <!-- Preference for open links in third party apps -->
     <string name="preferences_open_links_in_apps">অ্যাপ্সে লিংকগুলি খুলুন</string>
+
     <!-- Preference for add_ons -->
     <string name="preferences_addons">অ্যাড-অনগুলো</string>
 

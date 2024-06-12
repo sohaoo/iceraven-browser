@@ -75,6 +75,7 @@
     <!-- Text displayed that links to website containing documentation about the "Total cookie protection" feature. -->
     <string name="tcp_cfr_learn_more">Cookie файлларыннан тулысынча саклау турында мәгълүмат алу</string>
 
+
     <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
     <string name="camera_permissions_needed_message">Камера куллануга рөхсәт кирәк. Android көйләүләренә кереп, &quot;рөхсәтләр&quot; дигән битне ачып, &quot;рөхсәт итү&quot; дигәнгә басыгыз.</string>
     <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -199,6 +200,7 @@
 
     <!-- Button shown on the home page that opens the Customize home settings -->
     <string name="browser_menu_customize_home_1">Баш битне көйләү</string>
+
     <!-- Browser Toolbar -->
     <!-- Content description for the Home screen button on the browser toolbar -->
     <string name="browser_toolbar_home">Өй экран</string>
@@ -400,6 +402,7 @@
     <string name="preferences_open_links_in_apps">Сылтамаларны кушымталарда ачу</string>
     <!-- Preference for open download with an external download manager app -->
     <string name="preferences_external_download_manager">Тышкы йөкләп алу менеджеры</string>
+
     <!-- Preference for add_ons -->
     <string name="preferences_addons">Кушымчалар</string>
     <!-- Preference for notifications -->

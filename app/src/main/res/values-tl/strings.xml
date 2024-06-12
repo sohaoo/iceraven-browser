@@ -69,6 +69,7 @@
     <!-- Text for the negative action button -->
     <string name="open_in_app_cfr_negative_button_text">Alisin</string>
 
+
     <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
     <string name="camera_permissions_needed_message">Kailangan ng camera access. Pumunta sa Android settings, i-tap ang permiso, at i-tap ang payagan.</string>
     <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -183,6 +184,7 @@
 
     <!-- Button shown on the home page that opens the Customize home settings -->
     <string name="browser_menu_customize_home_1">i-Customize ang homepage</string>
+
     <!-- Browser Toolbar -->
     <!-- Content description for the Home screen button on the browser toolbar -->
     <string name="browser_toolbar_home">Home screen</string>
@@ -353,6 +355,7 @@
     <string name="preferences_open_links_in_apps">Buksan ang mga link sa mga app</string>
     <!-- Preference for open download with an external download manager app -->
     <string name="preferences_external_download_manager">Hiwalay na download manager</string>
+
     <!-- Preference for add_ons -->
     <string name="preferences_addons">Mga add-on</string>
 

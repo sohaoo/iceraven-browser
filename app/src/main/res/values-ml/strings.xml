@@ -5,6 +5,7 @@
     <string name="app_name_private_5">സ്വകാര്യം %s</string>
     <!-- App name for private browsing mode. The first parameter is the name of the app defined in app_name (for example: Fenix)-->
     <string name="app_name_private_4">%s(സ്വകാര്യം)</string>
+
     <!-- Home Fragment -->
     <!-- Content description (not visible, for screen readers etc.): "Three dot" menu button. -->
     <string name="content_description_menu">കൂടുതൽ ഐച്ഛികങ്ങൾ</string>
@@ -191,6 +192,7 @@
     <string name="preferences_account_settings">അക്കൗണ്ട് ക്രമീകരണങ്ങൾ</string>
     <!-- Preference for open links in third party apps -->
     <string name="preferences_open_links_in_apps">ആപ്പുകളിൽ കണ്ണികൾ തുറക്കുക</string>
+
     <!-- Preference for add_ons -->
     <string name="preferences_addons">ആഡ്-ഓണുകള്‍</string>
 
@@ -255,6 +257,7 @@
     <string name="preferences_usage_data_description">പ്രകടനം, ഉപയോഗം, ഹാർഡ്‌വെയർ തുടങ്ങിയ വിവരങ്ങൾ മോഡില്ലയുമായിമായി പങ്കു വെച്ച്  %1$s മെച്ചപ്പെടുത്തുവാൻ സഹായിക്കുക</string>
     <!-- Preference switch for marketing data collection -->
     <string name="preferences_marketing_data">വിപണനത്തിനായുള്ള ഡാറ്റ</string>
+
     <!-- Preference for reconnecting to FxA sync -->
     <string name="preferences_sync_sign_in_to_reconnect">വീണ്ടും ബന്ധിപ്പിക്കുന്നതിന് പ്രവേശിക്കുക</string>
     <!-- Preference for removing FxA account -->

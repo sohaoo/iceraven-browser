@@ -89,6 +89,7 @@
     <!-- Text displayed that links to website containing documentation about the "Total cookie protection" feature. -->
     <string name="tcp_cfr_learn_more">Cookieden tolıq qorǵanıw haqqında biliń</string>
 
+
     <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
     <string name="camera_permissions_needed_message">Kameraǵa kiriw kerek. Bunıń ushın Android sazlawların ashıń, ruqsatnamalar bólimin tańlań, hám ruqsat etiw túymesin basıń.</string>
     <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -215,6 +216,7 @@
 
     <!-- Button shown on the home page that opens the Customize home settings -->
     <string name="browser_menu_customize_home_1">Bas betti ózgertiw</string>
+
     <!-- Browser Toolbar -->
     <!-- Content description for the Home screen button on the browser toolbar -->
     <string name="browser_toolbar_home">Tiykarǵı ekran</string>
@@ -449,6 +451,7 @@
     <string name="preferences_open_links_in_apps_never">Heshqashan</string>
     <!-- Preference for open download with an external download manager app -->
     <string name="preferences_external_download_manager">Sırtqı júklep alıw menedjeri</string>
+
     <!-- Preference for add_ons -->
     <string name="preferences_addons">Qosımshalar</string>
 
@@ -1141,6 +1144,7 @@
     <!-- Notifications -->
     <!-- Text shown in the notification that pops up to remind the user that a private browsing session is active. -->
     <string name="notification_pbm_delete_text_2">Jeke betlerdı jabıw</string>
+
     <!-- Name of the marketing notification channel. Displayed in the "App notifications" system settings for the app -->
     <string name="notification_marketing_channel_name">Marketing</string>
 

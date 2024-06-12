@@ -287,6 +287,7 @@
 
     <!-- Text shown in the notification that pops up to remind the user that a private browsing session is active. -->
     <string name="notification_pbm_delete_text_2">Mdel iseksal usligen</string>
+
     <!-- QR code scanner prompt which appears after scanning a code, but before navigating to it
         First parameter is the name of the app, second parameter is the URL or text scanned-->
     <string name="qr_scanner_confirmation_dialog_message">Ssureg %1$s ad irẓem %2$s</string>
@@ -333,6 +334,7 @@
 
     <!-- Preference option for adding a credit card -->
     <string name="preferences_credit_cards_add_credit_card">Rnu takarḍa n usmad</string>
+
     <!-- Title of the "Add card" screen -->
     <string name="credit_cards_add_card">Rnu takarḍa</string>
     <!-- Title of the "Edit card" screen -->

@@ -12,6 +12,7 @@
     <!-- Label of editable text in create collection dialog for naming a new collection  -->
     <string name="tab_tray_add_new_collection_name">Ngalan</string>
 
+
     <!-- Content description (not visible, for screen readers etc.): Navigate backward (browsing history) -->
     <string name="browser_menu_back">Balikan</string>
 
@@ -37,6 +38,7 @@
     <string name="preferences_about">Tuhoy sa %1$s</string>
     <!-- Preference category for advanced settings -->
     <string name="preferences_category_advanced">Abanse</string>
+
     <!-- Preference for accessibility -->
     <string name="preferences_accessibility">Kasayuran</string>
     <!-- Preference for changing where the toolbar is positioned -->

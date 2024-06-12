@@ -192,6 +192,7 @@
     <string name="preferences_account_settings">Detalli do conto</string>
     <!-- Preference for open links in third party apps -->
     <string name="preferences_open_links_in_apps">Arvi colegamenti inte app</string>
+
     <!-- Preference for add_ons -->
     <string name="preferences_addons">Conponenti azonti</string>
 

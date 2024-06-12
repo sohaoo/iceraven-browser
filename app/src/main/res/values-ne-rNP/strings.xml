@@ -54,6 +54,7 @@
     <!-- Text for the negative action button -->
     <string name="open_in_app_cfr_negative_button_text">खारेज गर्नुहोस्</string>
 
+
     <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
     <string name="camera_permissions_needed_message">क्यामरा पहुँच आवश्यक छ। एन्ड्रोइड सेटिङ्गहरूमा जानुहोस्, अनुमतिमा ट्याप गर्नुहोस्, र अनुमति दिन ट्याप गर्नुहोस्।</string>
     <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -127,6 +128,7 @@
     <string name="browser_menu_edit">सम्पादन गर्नुहोस्</string>
     <!-- Button shown on the home page that opens the Customize home settings -->
     <string name="browser_menu_customize_home_1">गृहपृष्ठलाई अनुकुलन गर्नुहोस्</string>
+
     <!-- Browser Toolbar -->
     <!-- Content description for the Home screen button on the browser toolbar -->
     <string name="browser_toolbar_home">गृह स्क्रिन</string>
@@ -253,6 +255,7 @@
     <string name="preferences_open_links_in_apps">एपहरुमा लिङ्कहरु खोल्नुहोस्</string>
     <!-- Preference for open download with an external download manager app -->
     <string name="preferences_external_download_manager">बाहिरी डाउनलोड प्रबन्धक</string>
+
     <!-- Preference for add_ons -->
     <string name="preferences_addons">एड-अनहरु</string>
     <!-- Preference for notifications -->

@@ -4,6 +4,7 @@
     <string name="app_name_private_5">खाजगी %s</string>
     <!-- App name for private browsing mode. The first parameter is the name of the app defined in app_name (for example: Fenix)-->
     <string name="app_name_private_4">%s (खाजगी)</string>
+
     <!-- Home Fragment -->
     <!-- Content description (not visible, for screen readers etc.): "Three dot" menu button. -->
     <string name="content_description_menu">अधिक पर्याय</string>
@@ -45,6 +46,7 @@
     <string name="browser_menu_refresh">रीफ्रेश करा</string>
     <!-- Content description (not visible, for screen readers etc.): Stop loading current website -->
     <string name="browser_menu_stop">थांबा</string>
+
     <!-- Browser menu button that opens the addon manager -->
     <string name="browser_menu_add_ons">ॲड-ऑन</string>
     <!-- Text displayed when there are no add-ons to be shown -->
@@ -192,6 +194,7 @@
     <string name="preferences_account_settings">खाते सेटिंग</string>
     <!-- Preference for open links in third party apps -->
     <string name="preferences_open_links_in_apps">अ‍ॅपमध्ये दुवे उघडा</string>
+
     <!-- Preference for add_ons -->
     <string name="preferences_addons">ॲड-ऑन</string>
 
@@ -257,6 +260,7 @@
     <string name="preferences_usage_data_description">आम्ही %1$s उत्तमोत्तम बनवण्यासाठी ब्राऊझरची कार्यक्षमता, वापर, हार्डवेअर आणि सानुकूलन माहिती Mozilla सोबत शेअर करते</string>
     <!-- Preference switch for marketing data collection -->
     <string name="preferences_marketing_data">विपणनाची माहिती</string>
+
     <!-- Preference for reconnecting to FxA sync -->
     <string name="preferences_sync_sign_in_to_reconnect">पुन्हा जोडण्यासाठी साइन इन करा</string>
     <!-- Preference for removing FxA account -->
@@ -819,6 +823,7 @@
     <string name="preferences_passwords_saved_logins_username">वापरकर्तानाव</string>
     <!-- The header for the password for a login -->
     <string name="preferences_passwords_saved_logins_password">पासवर्ड</string>
+
     <!-- Shown in snackbar to tell user that the password has been copied -->
     <string name="logins_password_copied">पासवर्डची क्लिपबोर्डवर प्रत बनवली</string>
     <!-- Shown in snackbar to tell user that the username has been copied -->

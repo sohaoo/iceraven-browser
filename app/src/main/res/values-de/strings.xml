@@ -73,8 +73,8 @@
         The first parameter is the name of the app defined in app_name (for example: Fenix) -->
     <string name="private_browsing_placeholder_description_2">%1$s leert die eingegebenen Suchbegriffe und besuchten Webseiten aller privaten Tabs wenn Sie diese schließen oder die App beenden. Das macht Sie gegenüber Website-Betreibern und Internetanbietern nicht anonym, aber erleichtert es Ihnen, dass andere Nutzer dieses Geräts Ihre Aktivitäten nicht einsehen können.</string>
     <string name="private_browsing_common_myths">
-
-
+       
+       
     Häufige Missverständnisse über das Surfen im Privaten Modus</string>
 
     <!-- True Private Browsing Mode -->
@@ -1806,10 +1806,10 @@
     <string name="browser_toolbar_long_press_popup_paste_and_go">Einfügen &amp; Los</string>
     <!-- Paste the text in the clipboard -->
     <string name="browser_toolbar_long_press_popup_paste">Einfügen</string>
-
+  
     <!-- Snackbar message shown after an URL has been copied to clipboard. -->
     <string name="browser_toolbar_url_copied_to_clipboard_snackbar">URL in Zwischenablage kopiert</string>
-
+  
     <!-- Title text for the Add To Homescreen dialog -->
     <string name="add_to_homescreen_title">Zum Startbildschirm hinzufügen</string>
     <!-- Cancel button text for the Add to Homescreen dialog -->

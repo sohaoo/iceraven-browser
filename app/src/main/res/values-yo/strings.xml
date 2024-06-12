@@ -75,6 +75,7 @@
     <!-- Text displayed that links to website containing documentation about the "Total cookie protection" feature. -->
     <string name="tcp_cfr_learn_more">Kọ́ nípa Ìdáábòbò Kúkì Lápapọ̀ </string>
 
+
     <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
     <string name="camera_permissions_needed_message">A nílò àti lo ẹ̀rọ ayàwòrán. Lọ sí àwọn ètò Ańdíróídì, tẹ àwọn ìgbaniláàyè, kí o sì tẹ ìgbàláàyè.</string>
     <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -199,6 +200,7 @@
     <string name="browser_menu_edit">Ṣàtúnṣe</string>
     <!-- Button shown on the home page that opens the Customize home settings -->
     <string name="browser_menu_customize_home_1">Ṣètò àkanṣe ojúùwé-àkọ́ọ́kàn</string>
+
     <!-- Browser Toolbar -->
     <!-- Content description for the Home screen button on the browser toolbar -->
     <string name="browser_toolbar_home">Síkíríìnì àkọ́ọ́kàn</string>
@@ -371,6 +373,7 @@
     <string name="preferences_open_links_in_apps">Ṣí àwọn ọ̀nà àsopọ̀ nínú awọn áápù</string>
     <!-- Preference for open download with an external download manager app -->
     <string name="preferences_external_download_manager">Alákòóso ìgbàsílẹ̀ ìta</string>
+
     <!-- Preference for add_ons -->
     <string name="preferences_addons">Àwọn àfikún</string>
     <!-- Preference for notifications -->

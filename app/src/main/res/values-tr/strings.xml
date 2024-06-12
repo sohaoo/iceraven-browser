@@ -1779,10 +1779,10 @@
     <string name="browser_toolbar_long_press_popup_paste_and_go">Yapıştır ve git</string>
     <!-- Paste the text in the clipboard -->
     <string name="browser_toolbar_long_press_popup_paste">Yapıştır</string>
-
+  
     <!-- Snackbar message shown after an URL has been copied to clipboard. -->
     <string name="browser_toolbar_url_copied_to_clipboard_snackbar">Adres panoya kopyalandı</string>
-
+  
     <!-- Title text for the Add To Homescreen dialog -->
     <string name="add_to_homescreen_title">Ana ekrana ekle</string>
     <!-- Cancel button text for the Add to Homescreen dialog -->

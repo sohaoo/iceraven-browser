@@ -58,6 +58,7 @@
     <!-- Text for the negative action button -->
     <string name="open_in_app_cfr_negative_button_text">أهمِل</string>
 
+
     <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
     <string name="camera_permissions_needed_message">الوصول إلى الكمرة مطلوب. افتح إعدادات أندرويد، وانقر ”الأذونات“ ثم انقر ”سماح“.</string>
     <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -171,6 +172,7 @@
 
     <!-- Button shown on the home page that opens the Customize home settings -->
     <string name="browser_menu_customize_home_1">خصّص صفحة البداية</string>
+
     <!-- Browser Toolbar -->
     <!-- Content description for the Home screen button on the browser toolbar -->
     <string name="browser_toolbar_home">الشاشة الرئيسية</string>

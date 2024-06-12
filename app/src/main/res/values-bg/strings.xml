@@ -1650,7 +1650,7 @@
     <string name="etp_settings">Настройки на защитата</string>
     <!-- Preference title for enhanced tracking protection settings -->
     <string name="preference_enhanced_tracking_protection">Подобрена защита от проследяване</string>
-
+  
     <!-- Preference summary for enhanced tracking protection settings on/off switch -->
     <string name="preference_enhanced_tracking_protection_summary">Вече включва цялостна защита на бисквитките, най-мощната ни бариера срещу проследяване в различни сайтове.</string>
     <!-- Description of enhanced tracking protection. The parameter is the name of the application (For example: Firefox Fenix) -->

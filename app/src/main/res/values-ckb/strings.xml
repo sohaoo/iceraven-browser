@@ -50,6 +50,7 @@
     <!-- Text for the negative action button -->
     <string name="open_in_app_cfr_negative_button_text">پشتگوێخستن</string>
 
+
     <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
     <string name="camera_permissions_needed_message">داواکاری کامێرا چالاک کرا. بڕۆ بۆ ڕێکخستنەکانی ئاندرۆید، پەنجەبنێ بە دەسەڵاتەکان و ئینجا ڕێگەپێدان هەڵبژێرە.</string>
     <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -248,6 +249,7 @@
     <string name="preferences_open_links_in_apps">کردنەوەی بەستەر لە بەرنامەکان</string>
     <!-- Preference for open download with an external download manager app -->
     <string name="preferences_external_download_manager">بەڕێوەبردنی داگرتنی دەرەکی</string>
+
     <!-- Preference for add_ons -->
     <string name="preferences_addons">پێوەکراوەکان</string>
     <!-- Preference for notifications -->
@@ -1075,6 +1077,7 @@
     <string name="preferences_credit_cards_sync_cards">هاوکاتگەری کارتەکان</string>
     <!-- Preference option for adding a credit card -->
     <string name="preferences_credit_cards_add_credit_card">کارتی پڕکردنەوەی بانکی زیادبکە</string>
+
     <!-- The title for the "Save" menu item for saving a credit card -->
     <string name="credit_cards_menu_save">پاشەکەوتکردن</string>
     <!-- The text for the "Save" button for saving a credit card -->

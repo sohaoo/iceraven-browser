@@ -90,6 +90,7 @@
     <!-- Text displayed that links to website containing documentation about the "Total cookie protection" feature. -->
     <string name="tcp_cfr_learn_more">Przewiydz sie wiyncyj ô totalnyj ôchrōnie przed cookies</string>
 
+
     <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
     <string name="camera_permissions_needed_message">Trza dostympu do kamery. Idź do sztalōnkōw Androida, tyknij &quot;dozwolyństwa&quot; i tyknij &quot;zgoda&quot;.</string>
     <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -221,6 +222,7 @@
 
     <!-- Button shown on the home page that opens the Customize home settings -->
     <string name="browser_menu_customize_home_1">Przipasuj dōmowo strōna</string>
+
     <!-- Browser Toolbar -->
     <!-- Content description for the Home screen button on the browser toolbar -->
     <string name="browser_toolbar_home">Dōmowy ekran</string>
@@ -307,6 +309,7 @@
     <string name="juno_onboarding_sign_in_positive_button" tools:ignore="UnusedResources">Wloguj sie</string>
     <!-- Text for the button dismiss the screen and move on with the flow -->
     <string name="juno_onboarding_sign_in_negative_button" tools:ignore="UnusedResources">Niy teroz</string>
+
     <!-- Text for the button to request notification permission on the device -->
     <string name="juno_onboarding_enable_notifications_positive_button" tools:ignore="UnusedResources">Załōncz powiadōmiynia</string>
     <!-- Text for the button dismiss the screen and move on with the flow -->
@@ -1158,6 +1161,7 @@
     <!-- Notifications -->
     <!-- Text shown in the notification that pops up to remind the user that a private browsing session is active. -->
     <string name="notification_pbm_delete_text_2">Zawrzij prywatne karty</string>
+
     <!-- Name of the marketing notification channel. Displayed in the "App notifications" system settings for the app -->
     <string name="notification_marketing_channel_name">Marketing</string>
 

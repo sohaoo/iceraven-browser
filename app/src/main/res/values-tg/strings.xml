@@ -1898,9 +1898,6 @@
     <!-- Content description (not visible, for screen readers etc.) -->
     <string name="saved_logins_menu_dropdown_chevron_icon_content_description_2">Менюи мураттабсозии ниҳонвожаҳо</string>
 
-    <!-- Content description (not visible, for screen readers etc.) -->
-    <string name="saved_logins_menu_dropdown_chevron_icon_content_description_2">Менюи мураттабсозии ниҳонвожаҳо</string>
-
     <!-- Autofill -->
     <!-- Preference and title for managing the autofill settings -->
     <string name="preferences_autofill">Пуркунии худкор</string>
@@ -1927,9 +1924,6 @@
     <string name="preferences_addresses_manage_addresses">Идоракунии нишониҳо</string>
     <!-- Preference for saving and filling addresses -->
     <string name="preferences_addresses_save_and_autofill_addresses_2">Нигоҳ доштан ва пур кардани нишониҳо</string>
-
-    <!-- Preference summary for saving and filling address data -->
-    <string name="preferences_addresses_save_and_autofill_addresses_summary_2">Рақамҳои телефон ва нишониҳои почтаи электрониро дар бар мегирад</string>
 
     <!-- Preference summary for saving and filling address data -->
     <string name="preferences_addresses_save_and_autofill_addresses_summary_2">Рақамҳои телефон ва нишониҳои почтаи электрониро дар бар мегирад</string>

@@ -127,6 +127,7 @@
     <string name="preferences_open_links_in_a_private_tab">Oscail nascanna i gcluaisín príobháideach</string>
     <!-- Preference for adding private browsing shortcut -->
     <string name="preferences_add_private_browsing_shortcut">Cuir aicearra brabhsála príobháidí leis</string>
+
     <!-- Preference for accessibility -->
     <string name="preferences_accessibility">Inrochtaineacht</string>
     <!-- Preference category for account information -->

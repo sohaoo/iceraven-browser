@@ -85,6 +85,7 @@
     <!-- Text displayed that links to website containing documentation about the "Total cookie protection" feature. -->
     <string name="tcp_cfr_learn_more">ຮຽນຮູ້ກ່ຽວກັບການປົກປ້ອງຄຸກກີທັງໝົດ</string>
 
+
     <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
     <string name="camera_permissions_needed_message">ຕ້ອງການເຂົ້ານຳໃຊ້ກ້ອງ. ໄປທີ່ການຕັ້ງຄ່າ Android ແຕະໃສ່ ສິດ ແລະ ແຕະໃສ່ ອະນຸຍາດ</string>
     <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -218,6 +219,7 @@
 
     <!-- Button shown on the home page that opens the Customize home settings -->
     <string name="browser_menu_customize_home_1">ປັບແຕ່ງຫນ້າທຳອິດ</string>
+
     <!-- Browser Toolbar -->
     <!-- Content description for the Home screen button on the browser toolbar -->
     <string name="browser_toolbar_home">ໜ້າທຳອິດ</string>
@@ -536,6 +538,7 @@
 
     <!-- Text for classic wallpapers title. The first parameter is the Firefox name. -->
     <string name="wallpaper_classic_title">ຄລາດສິກ %s</string>
+
     <!-- Wallpaper onboarding dialog header text. -->
     <string name="wallpapers_onboarding_dialog_title_text">ລອງເລືອກສີສັນທີທ່ານມັກ</string>
     <!-- Wallpaper onboarding dialog body text. -->
@@ -1753,6 +1756,7 @@
     <string name="search_engine_add_custom_search_engine_button_content_description">ເພີ່ມເຄື່ອງມືຊອກຫາໃຫມ່</string>
     <!-- Title of the Edit search engine screen -->
     <string name="search_engine_edit_custom_search_engine_title">ແກ້ໄຂເຄື່ອງມືການຄົ້ນຫາ</string>
+
     <!-- Text for the menu button to edit a search engine -->
     <string name="search_engine_edit">ແກ້ໄຂ</string>
     <!-- Text for the menu button to delete a search engine -->

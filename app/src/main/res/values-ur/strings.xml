@@ -53,6 +53,7 @@
     <!-- Text for the negative action button -->
     <string name="open_in_app_cfr_negative_button_text">برخاست کریں</string>
 
+
     <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
     <string name="camera_permissions_needed_message">کیمرے تک رسائی کی ضرورت ہے۔ Android کی ترتیبات پر جائیں ، اجازتیں ٹیپ کریں ، اور اجازت پر ٹیپ کریں۔</string>
     <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -285,6 +286,7 @@
 
     <!-- Preference for open download with an external download manager app -->
     <string name="preferences_external_download_manager">بیرونی ڈاؤن لوڈ مینیجر</string>
+
     <!-- Preference for add_ons -->
     <string name="preferences_addons">ایڈ اون</string>
 

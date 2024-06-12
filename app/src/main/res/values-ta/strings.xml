@@ -55,6 +55,7 @@
     <!-- Text for the negative action button -->
     <string name="open_in_app_cfr_negative_button_text">நிராகரி</string>
 
+
     <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
     <string name="camera_permissions_needed_message">படகருவிக்கு அணுகல் தேவை. ஆண்ட்ராய்டு அமைவுகளுக்குச் சென்று, அனுமதிகளைத் தட்டி, அனுமதி என்பதைத் தட்டவும்.</string>
     <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -241,6 +242,7 @@
 
     <!-- Preference for open download with an external download manager app -->
     <string name="preferences_external_download_manager">வெளிப்புற பதிவிறக்க மேலாளர்</string>
+
     <!-- Preference for add_ons -->
     <string name="preferences_addons">துணை நிரல்கள்</string>
 

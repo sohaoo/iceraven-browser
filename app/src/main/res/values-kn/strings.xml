@@ -37,6 +37,7 @@
     <string name="home_screen_shortcut_open_new_tab_2">ಹೊಸ ಟ್ಯಾಬ್</string>
     <!-- Shortcut action to open new private tab -->
     <string name="home_screen_shortcut_open_new_private_tab_2">ಹೊಸ ಖಾಸಗಿ ಟ್ಯಾಬ್</string>
+
     <!-- Content description (not visible, for screen readers etc.): Navigate backward (browsing history) -->
     <string name="browser_menu_back">ಹಿಂದಕ್ಕೆ</string>
     <!-- Content description (not visible, for screen readers etc.): Navigate forward (browsing history) -->
@@ -188,6 +189,7 @@
     <string name="preferences_account_settings">ಖಾತೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</string>
     <!-- Preference for open links in third party apps -->
     <string name="preferences_open_links_in_apps">ಅಪ್ಲಿಕೇಶನ್‌ಗಳಲ್ಲಿ ಲಿಂಕ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</string>
+
     <!-- Preference for add_ons -->
     <string name="preferences_addons">ಆಡ್-ಆನ್‌ಗಳು</string>
 
@@ -250,6 +252,7 @@
     <string name="preferences_usage_data_description">%1$s ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ನಮಗೆ ಸಹಾಯ ಮಾಡಲು ನಿಮ್ಮ ಬ್ರೌಸರ್‌ನ ಕಾರ್ಯಕ್ಷಮತೆ, ಬಳಕೆ, ಯಂತ್ರಾಂಶ ಮತ್ತು ಗ್ರಾಹಕೀಕರಣ ಡೇಟಾವನ್ನು ಮೊಜಿಲ್ಲಾದೊಂದಿಗೆ ಹಂಚಿಕೊಳ್ಳುತ್ತದೆ</string>
     <!-- Preference switch for marketing data collection -->
     <string name="preferences_marketing_data">ಮಾರುಕಟ್ಟೆ ದತ್ತಾಂಶ</string>
+
     <!-- Preference for reconnecting to FxA sync -->
     <string name="preferences_sync_sign_in_to_reconnect">ಮರುಸಂಪರ್ಕಿಸಲು ಸೈನ್ ಇನ್ ಮಾಡಿ</string>
     <!-- Preference for removing FxA account -->

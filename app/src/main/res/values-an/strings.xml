@@ -52,6 +52,7 @@
     <!-- Text for the negative action button -->
     <string name="open_in_app_cfr_negative_button_text">Descartar</string>
 
+
     <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
     <string name="camera_permissions_needed_message">La camara precisa acceso. Ves ta los achustes d\'Android, toca &quot;permisos&quot; y toca &quot;permitir&quot;.</string>
     <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -66,11 +67,13 @@
     <!-- Text for the negative action button to dismiss the Close Tabs Banner. -->
     <string name="tab_tray_close_tabs_banner_negative_button_text">Descartar</string>
 
+
     <!-- Home screen icons - Long press shortcuts -->
     <!-- Shortcut action to open new tab -->
     <string name="home_screen_shortcut_open_new_tab_2">Nueva pestanya</string>
     <!-- Shortcut action to open new private tab -->
     <string name="home_screen_shortcut_open_new_private_tab_2">Nueva pestanya privada</string>
+
     <!-- Content description (not visible, for screen readers etc.): Navigate backward (browsing history) -->
     <string name="browser_menu_back">Dezaga</string>
     <!-- Content description (not visible, for screen readers etc.): Navigate forward (browsing history) -->
@@ -233,6 +236,7 @@
     <string name="preferences_open_links_in_apps">Ubrir vinclos en aplicacions</string>
     <!-- Preference for open download with an external download manager app -->
     <string name="preferences_external_download_manager">Chestor de descargas externo</string>
+
     <!-- Preference for add_ons -->
     <string name="preferences_addons">Complementos</string>
 
@@ -298,6 +302,7 @@
     <string name="preferences_usage_data_description">Comparte datos de rendimiento, uso, hardware y personalizacions sobre lo tuyo navegador con Mozilla pa aduyar a amillorar %1$s</string>
     <!-- Preference switch for marketing data collection -->
     <string name="preferences_marketing_data">Datos de marketing</string>
+
     <!-- Preference for reconnecting to FxA sync -->
     <string name="preferences_sync_sign_in_to_reconnect">Inicia sesión pa reconnectar</string>
     <!-- Preference for removing FxA account -->

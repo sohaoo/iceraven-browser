@@ -1788,7 +1788,7 @@
         The first parameter is number of long clicks left to enable the menu -->
     <string name="about_debug_menu_toast_progress">Menú de depuración: %1$d clic(s) para habilitarlo</string>
     <string name="about_debug_menu_toast_done">Menú de depuración habilitado</string>
-
+  
     <!-- Browser long press popup menu -->
     <!-- Copy the current url -->
     <string name="browser_toolbar_long_press_popup_copy">Copiar</string>
@@ -1796,10 +1796,10 @@
     <string name="browser_toolbar_long_press_popup_paste_and_go">Pegar e ir</string>
     <!-- Paste the text in the clipboard -->
     <string name="browser_toolbar_long_press_popup_paste">Pegar</string>
-
+  
     <!-- Snackbar message shown after an URL has been copied to clipboard. -->
     <string name="browser_toolbar_url_copied_to_clipboard_snackbar">URL copiada al portapapeles</string>
-
+  
     <!-- Title text for the Add To Homescreen dialog -->
     <string name="add_to_homescreen_title">Agregar a pantalla de inicio</string>
     <!-- Cancel button text for the Add to Homescreen dialog -->

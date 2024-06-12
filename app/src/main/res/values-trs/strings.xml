@@ -224,6 +224,7 @@
 
     <!-- Button shown on the home page that opens the Customize home settings -->
     <string name="browser_menu_customize_home_1">Nāgi’hiaj dà garan’ ruhuât riña paginâ ayi’ìt</string>
+
     <!-- Browser Toolbar -->
     <!-- Content description for the Home screen button on the browser toolbar -->
     <string name="browser_toolbar_home">Raga\' ayi\'ìt</string>
@@ -1793,6 +1794,7 @@
     <string name="search_engine_add_custom_search_engine_button_content_description">Nūtà’ a’ngô sa rūgûñu’ūnj nānà’huì’t</string>
     <!-- Title of the Edit search engine screen -->
     <string name="search_engine_edit_custom_search_engine_title">Nāgi\'iaj riña sa riñā nānà\'uì\'t</string>
+
     <!-- Text for the menu button to edit a search engine -->
     <string name="search_engine_edit">Nāgi\'iaj riñaj</string>
     <!-- Text for the menu button to delete a search engine -->

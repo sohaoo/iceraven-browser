@@ -55,6 +55,7 @@
     <!-- Text for the negative action button -->
     <string name="open_in_app_cfr_negative_button_text">ပိတ်ပါ</string>
 
+
     <!-- Text for the info dialog when camera permissions have been denied but user tries to access a camera feature. -->
     <string name="camera_permissions_needed_message">ကင်မရာ သုံးခွင့် လိုအပ်သည်။ Android ဆက်တင် များသို့ သွားပါ၊ ခွင့်ပြုချက် များကို နှိပ်ပါ၊ ခွင့်ပြုပါ ကိုနှိပ်ပါ။</string>
     <!-- Text for the positive action button to go to Android Settings to grant permissions. -->
@@ -285,6 +286,7 @@
     <string name="preferences_open_links_in_apps">အက်ပ်များမှလင့်များကိုဖွင့်ပါ</string>
     <!-- Preference for open download with an external download manager app -->
     <string name="preferences_external_download_manager">ပြင်ပ ဒေါင်းလုတ် မန်နေဂျာ</string>
+
     <!-- Preference for add_ons -->
     <string name="preferences_addons">အတ်အွန်များ</string>
 

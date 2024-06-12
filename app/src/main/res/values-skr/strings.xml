@@ -1858,9 +1858,6 @@
     <!-- Content description (not visible, for screen readers etc.) -->
     <string name="saved_logins_menu_dropdown_chevron_icon_content_description_2">پاس ورڈز مینیو کوں مُرتّب کرو</string>
 
-    <!-- Content description (not visible, for screen readers etc.) -->
-    <string name="saved_logins_menu_dropdown_chevron_icon_content_description_2">پاس ورڈز مینیو کوں مُرتّب کرو</string>
-
     <!-- Autofill -->
     <!-- Preference and title for managing the autofill settings -->
     <string name="preferences_autofill">خودبخود بھرݨ</string>
@@ -1886,9 +1883,6 @@
     <string name="preferences_addresses_manage_addresses">پتے منیج کرو</string>
     <!-- Preference for saving and filling addresses -->
     <string name="preferences_addresses_save_and_autofill_addresses_2">محفوظ کرو تے پتے پُر کرو</string>
-
-    <!-- Preference summary for saving and filling address data -->
-    <string name="preferences_addresses_save_and_autofill_addresses_summary_2">فون لمبرز اَتے ای میل پتے شامل ہِن</string>
 
     <!-- Preference summary for saving and filling address data -->
     <string name="preferences_addresses_save_and_autofill_addresses_summary_2">فون لمبرز اَتے ای میل پتے شامل ہِن</string>
