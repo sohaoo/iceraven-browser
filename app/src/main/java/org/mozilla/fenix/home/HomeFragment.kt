@@ -643,6 +643,7 @@ class HomeFragment : Fragment() {
                     }
                 },
             ),
+            showTopRecentSites = settings.showTopRecentSites,
         )
     }
 

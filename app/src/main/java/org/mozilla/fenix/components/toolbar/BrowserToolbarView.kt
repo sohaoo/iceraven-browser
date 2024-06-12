@@ -157,16 +157,13 @@ class BrowserToolbarView(
                 )
 
                 display.urlFormatter =
-                    if (settings.shouldStripUrl && isNavBarEnabled) {
+                    if (!settings.shouldStripUrl) {
+                        url -> url
+                    } else {
                         if (isNavBarEnabled) {
                             {url -> Uri.parse(url.toString()).host ?: url}
                         } else {
                             {url -> URLStringUtils.toDisplayUrl(url)}
-                        }
-                    } else {
-                        {
-                                url ->
-                            url
                         }
                     }
                 display.urlFormatter = { url ->
