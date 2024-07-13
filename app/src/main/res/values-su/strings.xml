@@ -787,9 +787,6 @@
     <!-- Button text on the extension crash dialog to prompt the user to continue with all extensions disabled. -->
     <string name="extension_process_crash_dialog_disable_extensions_button_text">Tuluykeun bari add-on tumpur</string>
 
-    <!-- Button text on the extension crash dialog to prompt the user to continue with all extensions disabled. -->
-    <string name="extension_process_crash_dialog_disable_extensions_button_text">Tuluykeun bari add-on tumpur</string>
-
     <!-- Account Preferences -->
     <!-- Preference for managing your account via accounts.firefox.com -->
     <string name="preferences_manage_account">Kokolakeun akun</string>
