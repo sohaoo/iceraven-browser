@@ -166,13 +166,6 @@ class BrowserToolbarView(
                             {url -> URLStringUtils.toDisplayUrl(url)}
                         }
                     }
-                display.urlFormatter = { url ->
-                    if (isNavBarEnabled) {
-                        Uri.parse(url.toString()).host ?: url
-                    } else {
-                        URLStringUtils.toDisplayUrl(url)
-                    }
-                }
 
                 display.colors = display.colors.copy(
                     text = primaryTextColor,
