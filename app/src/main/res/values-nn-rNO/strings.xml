@@ -709,9 +709,6 @@
     <!-- Toast shown after confirming the custom extension collection configuration -->
     <string name="toast_customize_extension_collection_done">Utvidingssamling endra. Avsluttar applikasjonen for å leggje til endringar…</string>
 
-    <!-- Toast shown after confirming the custom extension collection configuration -->
-    <string name="toast_customize_extension_collection_done">Utvidingssamling endra. Avsluttar applikasjonen for å leggje til endringar…</string>
-
     <!-- Customize Home -->
     <!-- Header text for jumping back into the recent tab in customize the home screen -->
     <string name="customize_toggle_jump_back_in">Hopp inn igjen</string>
