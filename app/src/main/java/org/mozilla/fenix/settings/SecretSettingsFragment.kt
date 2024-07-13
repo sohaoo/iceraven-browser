@@ -16,7 +16,6 @@ import kotlinx.coroutines.launch
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.Config
 import org.mozilla.fenix.R
-import org.mozilla.fenix.browser.tabstrip.isTabStripEligible
 import org.mozilla.fenix.debugsettings.data.DefaultDebugSettingsRepository
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.nav
@@ -31,6 +30,7 @@ class SecretSettingsFragment : PreferenceFragmentCompat() {
         showToolbar(getString(R.string.preferences_debug_settings))
     }
 
+    @Suppress("LongMethod")
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         val debugSettingsRepository = DefaultDebugSettingsRepository(
             context = requireContext(),
@@ -100,8 +100,6 @@ class SecretSettingsFragment : PreferenceFragmentCompat() {
             }
         }
 
-        setupTabStripPreference()
-
         // for performance reasons, this is only available in Nightly or Debug builds
         requirePreference<EditTextPreference>(R.string.pref_key_custom_glean_server_url).apply {
             isVisible = Config.channel.isNightlyOrDebug && BuildConfig.GLEAN_CUSTOM_URL.isNullOrEmpty()
@@ -114,14 +112,6 @@ class SecretSettingsFragment : PreferenceFragmentCompat() {
         requirePreference<SwitchPreference>(R.string.pref_key_remote_server_prod).apply {
             isVisible = true
             isChecked = context.settings().useProductionRemoteSettingsServer
-            onPreferenceChangeListener = SharedPreferenceUpdater()
-        }
-    }
-
-    private fun setupTabStripPreference() {
-        requirePreference<SwitchPreference>(R.string.pref_key_enable_tab_strip).apply {
-            isVisible = context.isTabStripEligible()
-            isChecked = context.settings().isTabStripEnabled
             onPreferenceChangeListener = SharedPreferenceUpdater()
         }
     }
