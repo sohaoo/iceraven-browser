@@ -1,6 +1,23 @@
 import com.android.build.api.variant.FilterConfiguration
 import org.apache.tools.ant.util.StringUtils
 
+buildscript {
+    repositories {
+        gradle.mozconfig.substs.GRADLE_MAVEN_REPOSITORIES.each { repository ->
+            maven {
+                url repository
+                if (gradle.mozconfig.substs.ALLOW_INSECURE_GRADLE_REPOSITORIES) {
+                    allowInsecureProtocol = true
+                }
+            }
+        }
+    }
+
+    dependencies {
+        classpath ComponentsDependencies.plugin_serialization
+    }
+}
+
 plugins {
     id "com.jetbrains.python.envs" version "$python_envs_plugin"
     id "com.google.protobuf" version "$protobuf_plugin"
