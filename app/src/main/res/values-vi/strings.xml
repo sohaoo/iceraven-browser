@@ -2623,15 +2623,6 @@
           The first parameter is the language name, for example, "Spanish". -->
     <string name="download_languages_delete_error_warning_text"><![CDATA[Không thể xóa <b>%1$s</b>. Vui lòng thử lại sau.]]></string>
 
-    <!-- The title of the warning card informs the user that an error has occurred when fetching the list of languages. -->
-    <string name="download_languages_fetch_error_warning_text">Không thể tải ngôn ngữ. Vui lòng kiểm tra lại sau.</string>
-    <!-- The title of the warning card informs the user that an error has occurred at downloading a language.
-      The first parameter is the language name, for example, "Spanish". -->
-    <string name="download_languages_error_warning_text"><![CDATA[Không thể tải xuống <b>%1$s</b>. Vui lòng thử lại sau.]]></string>
-    <!-- The title of the warning card informs the user that an error has occurred at deleting a language.
-          The first parameter is the language name, for example, "Spanish". -->
-    <string name="download_languages_delete_error_warning_text"><![CDATA[Không thể xóa <b>%1$s</b>. Vui lòng thử lại sau.]]></string>
-
     <!-- Title for the dialog used by the translations feature to confirm deleting a language.
     The dialog will be presented when the user requests deletion of a language.
     The first parameter is the name of the language, for example, "Spanish" and the second parameter is the size in kilobytes or megabytes of the language file. -->
