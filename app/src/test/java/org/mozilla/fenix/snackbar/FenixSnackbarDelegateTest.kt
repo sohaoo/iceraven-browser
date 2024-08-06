@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.fenix.browser
+package org.mozilla.fenix.snackbar
 
 import android.view.View
 import io.mockk.MockKAnnotations
@@ -18,12 +18,12 @@ import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.FenixSnackbar
-import org.mozilla.fenix.components.FenixSnackbar.Companion.LENGTH_SHORT
 import org.mozilla.fenix.helpers.MockkRetryTestRule
 
 class FenixSnackbarDelegateTest {
 
-    @MockK private lateinit var view: View
+    @MockK
+    private lateinit var view: View
 
     @MockK(relaxed = true)
     private lateinit var snackbar: FenixSnackbar
@@ -39,7 +39,7 @@ class FenixSnackbarDelegateTest {
 
         delegate = FenixSnackbarDelegate(view)
         every {
-            FenixSnackbar.make(view, LENGTH_SHORT, isDisplayedWithBrowserToolbar = true)
+            FenixSnackbar.make(view, any(), isDisplayedWithBrowserToolbar = true)
         } returns snackbar
         every { snackbar.setText(any()) } returns snackbar
         every { snackbar.setAction(any(), any()) } returns snackbar
@@ -53,9 +53,8 @@ class FenixSnackbarDelegateTest {
     }
 
     @Test
-    fun `show with no listener nor action`() {
+    fun `GIVEN no listener nor action WHEN show is called THEN show snackbar with no action`() {
         delegate.show(
-            snackBarParentView = mockk(),
             text = R.string.app_name,
             duration = 0,
             action = 0,
@@ -68,9 +67,8 @@ class FenixSnackbarDelegateTest {
     }
 
     @Test
-    fun `show with listener but no action`() {
+    fun `GIVEN no listener WHEN show is called THEN show snackbar with no action`() {
         delegate.show(
-            snackBarParentView = mockk(),
             text = R.string.app_name,
             duration = 0,
             action = 0,
@@ -83,9 +81,8 @@ class FenixSnackbarDelegateTest {
     }
 
     @Test
-    fun `show with action but no listener`() {
+    fun `GIVEN no action WHEN show is called THEN show snackbar with no action`() {
         delegate.show(
-            snackBarParentView = mockk(),
             text = R.string.app_name,
             duration = 0,
             action = R.string.edit_2,
@@ -98,10 +95,9 @@ class FenixSnackbarDelegateTest {
     }
 
     @Test
-    fun `show with listener and action`() {
+    fun `GIVEN action and listener WHEN show is called THEN show snackbar with action`() {
         val listener = mockk<(View) -> Unit>(relaxed = true)
         delegate.show(
-            snackBarParentView = mockk(),
             text = R.string.app_name,
             duration = 0,
             action = R.string.edit_2,
@@ -120,5 +116,33 @@ class FenixSnackbarDelegateTest {
             )
         }
         verify { snackbar.show() }
+    }
+
+    @Test
+    fun `GIVEN a snackbar is shown for indefinite duration WHEN dismiss is called THEN dismiss the snackbar`() {
+        delegate.show(
+            text = R.string.app_name,
+            duration = FenixSnackbar.LENGTH_INDEFINITE,
+            action = R.string.edit_2,
+            listener = null,
+        )
+
+        delegate.dismiss()
+
+        verify { snackbar.dismiss() }
+    }
+
+    @Test
+    fun `GIVEN a snackbar is shown with a short duration WHEN dismiss is called THEN dismiss the snackbar`() {
+        delegate.show(
+            text = R.string.app_name,
+            duration = 0,
+            action = R.string.edit_2,
+            listener = null,
+        )
+
+        delegate.dismiss()
+
+        verify(exactly = 0) { snackbar.dismiss() }
     }
 }

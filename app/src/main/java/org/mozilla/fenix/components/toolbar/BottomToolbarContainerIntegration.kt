@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-package org.mozilla.fenix.components.toolbar.navbar
+package org.mozilla.fenix.components.toolbar
 
 import androidx.annotation.VisibleForTesting
 import androidx.core.view.isVisible
@@ -15,6 +15,7 @@ import mozilla.components.feature.toolbar.ToolbarBehaviorController
 import mozilla.components.lib.state.ext.flowScoped
 import mozilla.components.support.base.feature.LifecycleAwareFeature
 import org.mozilla.fenix.components.AppStore
+import org.mozilla.fenix.ext.isToolbarAtBottom
 
 /**
  * The feature responsible for scrolling behaviour of the bottom toolbar container.
@@ -38,7 +39,15 @@ class BottomToolbarContainerIntegration(
         scope = appStore.flowScoped { flow ->
             flow.distinctUntilChangedBy { it.isSearchDialogVisible }
                 .collect { state ->
-                    bottomToolbarContainerView.composeView.isVisible = !state.isSearchDialogVisible
+                    with(bottomToolbarContainerView.toolbarContainerView) {
+                        // When the address bar is positioned at the bottom, we never want bottom container to be
+                        // visible if the search dialog is visible. It's different if the address bar is at the top: in
+                        // that case we want the navbar be visible whenever the keyboard is hidden, even if the search
+                        // dialog is present.
+                        if (context.isToolbarAtBottom()) {
+                            isVisible = !state.isSearchDialogVisible
+                        }
+                    }
                 }
         }
     }

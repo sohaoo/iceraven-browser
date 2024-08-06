@@ -82,6 +82,7 @@ class Components(private val context: Context) {
             core.topSitesStorage,
             core.bookmarksStorage,
             core.historyStorage,
+            backgroundServices.syncedTabsCommands,
             appStore,
             core.client,
             strictMode,
@@ -202,6 +203,7 @@ class Components(private val context: Context) {
                 ),
                 MessagingMiddleware(
                     controller = nimbus.messaging,
+                    settings = settings,
                 ),
                 MetricsMiddleware(metrics = analytics.metrics),
             ),
