@@ -2069,15 +2069,6 @@ class Settings(private val appContext: Context) : PreferencesHolder {
     )
 
     /**
-     * Indicates if the user is shown new redesigned Toolbar UI.
-     */
-    var enableRedesignToolbar by lazyFeatureFlagPreference(
-        key = appContext.getPreferenceKey(R.string.pref_key_toolbar_use_redesign),
-        default = { FeatureFlags.completeToolbarRedesignEnabled },
-        featureFlag = FeatureFlags.completeToolbarRedesignEnabled,
-    )
-
-    /**
      * Indicates if the feature to close synced tabs is enabled.
      */
     val enableCloseSyncedTabs: Boolean

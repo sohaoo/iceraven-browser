@@ -228,7 +228,7 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
         logger.info("Resumed AddonsManagementFragment")
 
         super.onResume()
-        showToolbar(getString(R.string.preferences_addons))
+        showToolbar(getString(R.string.preferences_extensions))
         view?.hideKeyboard()
     }
 
