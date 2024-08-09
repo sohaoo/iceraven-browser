@@ -6,23 +6,30 @@ import mozilla.components.concept.engine.webextension.WebExtension
 import mozilla.components.concept.engine.webextension.WebExtensionRuntime
 import mozilla.components.feature.intent.processing.IntentProcessor
 import mozilla.components.support.ktx.android.net.getFileName
+import mozilla.components.support.utils.toSafeIntent
 import java.io.File
 import java.io.FileOutputStream
 
 
 class AddonInstallIntentProcessor(private val context: Context, private val runtime: WebExtensionRuntime) : IntentProcessor {
+    private fun matches(intent: Intent) =
+        intent.data != null
+                && intent.scheme.equals("content")
+                && intent.type in arrayOf("application/x-xpinstall", "application/zip")
+
     override fun process(intent: Intent): Boolean {
-        if(intent.data == null) {
-            return false
+        val safeIntent = intent.toSafeIntent()
+        val url = safeIntent.dataString
+
+        return if (!url.isNullOrEmpty() && matches(intent)) {
+            val uriData = intent.data as Uri
+            val file = fromUri(uriData)
+            val extURI = parseExtension(file)
+            installExtension(extURI) {}
+            true
+        } else {
+            false
         }
-        val iuri = intent.data as Uri
-        if(!iuri.scheme.equals("content")) {
-            return false
-        }
-        val file = fromUri(iuri)
-        val extURI = parseExtension(file)
-        installExtension(extURI) {}
-        return true
     }
 
     fun installExtension(b64: String, onSuccess: ((WebExtension) -> Unit)) {
