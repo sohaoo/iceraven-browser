@@ -45,6 +45,7 @@ class BrowserToolbarViewTest {
             context = testContext,
             settings = settings,
             container = CoordinatorLayout(testContext),
+            snackbarParent = mockk(),
             interactor = mockk(),
             customTabSession = mockk(relaxed = true),
             lifecycleOwner = mockk(),

@@ -555,6 +555,7 @@ android.applicationVariants.configureEach { variant ->
 }
 
 // Generate Kotlin code for the Fenix Glean metrics.
+ext.gleanNamespace = "mozilla.telemetry.glean"
 apply plugin: "org.mozilla.telemetry.glean-gradle-plugin"
 apply plugin: "org.mozilla.appservices.nimbus-gradle-plugin"
 
@@ -683,6 +684,7 @@ dependencies {
     implementation project(':service-sync-logins')
     implementation project(':service-firefox-accounts')
     implementation project(':service-glean')
+    implementation ComponentsDependencies.mozilla_glean
     implementation project(':service-location')
     implementation project(':service-nimbus')
 
@@ -711,8 +713,8 @@ dependencies {
     forkDebugImplementation ComponentsDependencies.leakcanary
     debugImplementation ComponentsDependencies.androidx_compose_ui_tooling
 
-    implementation ComponentsDependencies.androidx_activity_compose
-    implementation FenixDependencies.androidx_activity_ktx
+    implementation ComponentsDependencies.androidx_activity
+    implementation ComponentsDependencies.androidx_activity_ktx
     implementation ComponentsDependencies.androidx_annotation
     implementation ComponentsDependencies.androidx_compose_ui
     implementation ComponentsDependencies.androidx_compose_ui_tooling_preview
@@ -739,7 +741,7 @@ dependencies {
     implementation ComponentsDependencies.androidx_core
     implementation ComponentsDependencies.androidx_core_ktx
     implementation FenixDependencies.androidx_core_splashscreen
-    implementation FenixDependencies.androidx_transition
+    implementation ComponentsDependencies.androidx_transition
     implementation FenixDependencies.androidx_viewpager2
     implementation ComponentsDependencies.androidx_work_runtime
     implementation ComponentsDependencies.androidx_datastore
@@ -792,7 +794,7 @@ dependencies {
     // depend on a separate library for unit tests. This will be removed in future releases.
     testImplementation "org.mozilla.telemetry:glean-native-forUnitTests:${project.ext.glean_version}"
 
-    lintPublish project(":mozilla-lint-rules")
+    lintChecks project(":mozilla-lint-rules")
     lintChecks project(':tooling-lint')
 }
 
