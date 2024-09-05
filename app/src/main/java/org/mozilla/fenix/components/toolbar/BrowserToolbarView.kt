@@ -126,11 +126,7 @@ class BrowserToolbarView(
                     if (!settings.shouldStripUrl) {
                         {url -> url}
                     } else {
-                        if (isNavBarEnabled) {
-                            {url -> Uri.parse(url.toString()).host ?: url}
-                        } else {
-                            {url -> URLStringUtils.toDisplayUrl(url)}
-                        }
+                        {url -> URLStringUtils.toDisplayUrl(url)}
                     }
 
                 display.hint = context.getString(R.string.search_hint)
