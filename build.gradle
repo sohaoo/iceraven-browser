@@ -67,10 +67,6 @@ allprojects {
                 "-opt-in=kotlin.RequiresOptIn", "-Xjvm-default=all-compatibility"
         ]
     }
-
-    ext {
-        gleanParserOverride = "14.4.0"
-    }
 }
 
 subprojects {
