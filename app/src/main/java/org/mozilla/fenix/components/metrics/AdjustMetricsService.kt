@@ -14,6 +14,7 @@ import com.adjust.sdk.LogLevel
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.Config
 import org.mozilla.fenix.GleanMetrics.FirstSession
+import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.settings
 
 class AdjustMetricsService(private val application: Application) : MetricsService {
@@ -37,7 +38,7 @@ class AdjustMetricsService(private val application: Application) : MetricsServic
             true,
         )
 
-        val installationPing = FirstSessionPing(application)
+        val installationPing = FirstSessionPing(application, application.components.core.store)
 
         FirstSession.adjustAttributionTimespan.start()
         val timerId = FirstSession.adjustAttributionTime.start()

@@ -15,6 +15,8 @@ import mozilla.components.feature.addons.AddonManager
 import mozilla.components.feature.addons.migration.DefaultSupportedAddonsChecker
 import mozilla.components.feature.addons.update.DefaultAddonUpdater
 import mozilla.components.feature.autofill.AutofillConfiguration
+import mozilla.components.lib.crash.store.CrashAction
+import mozilla.components.lib.crash.store.CrashMiddleware
 import mozilla.components.lib.publicsuffixlist.PublicSuffixList
 import mozilla.components.support.base.android.NotificationsDelegate
 import mozilla.components.support.base.worker.Frequency
@@ -24,8 +26,11 @@ import org.mozilla.fenix.R
 import org.mozilla.fenix.autofill.AutofillConfirmActivity
 import org.mozilla.fenix.autofill.AutofillSearchActivity
 import org.mozilla.fenix.autofill.AutofillUnlockActivity
+import org.mozilla.fenix.components.appstate.AppAction
 import org.mozilla.fenix.components.appstate.AppState
 import org.mozilla.fenix.components.metrics.MetricsMiddleware
+import org.mozilla.fenix.crashes.CrashReportingAppMiddleware
+import org.mozilla.fenix.crashes.SettingsCrashReportCache
 import org.mozilla.fenix.datastore.pocketStoriesSelectedCategoriesDataStore
 import org.mozilla.fenix.ext.asRecentTabs
 import org.mozilla.fenix.ext.components
@@ -206,8 +211,19 @@ class Components(private val context: Context) {
                     settings = settings,
                 ),
                 MetricsMiddleware(metrics = analytics.metrics),
+                CrashReportingAppMiddleware(
+                    CrashMiddleware(
+                        cache = SettingsCrashReportCache(settings),
+                        crashReporter = analytics.crashReporter,
+                        currentTimeInMillis = { System.currentTimeMillis() },
+                    ),
+                ),
             ),
-        )
+        ).also {
+            if (context.settings().useNewCrashReporter) {
+                it.dispatch(AppAction.CrashActionWrapper(CrashAction.Initialize))
+            }
+        }
     }
 
     val fxSuggest by lazyMonitored { FxSuggest(context) }

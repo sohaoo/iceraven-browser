@@ -8,12 +8,14 @@ import android.content.Context
 import android.text.method.ScrollingMovementMethod
 import android.view.View
 import android.webkit.MimeTypeMap
+import androidx.annotation.VisibleForTesting
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import mozilla.components.browser.state.state.content.DownloadState
 import mozilla.components.feature.downloads.AbstractFetchDownloadService
 import mozilla.components.feature.downloads.toMegabyteOrKilobyteString
 import org.mozilla.fenix.R
 import org.mozilla.fenix.databinding.DownloadDialogLayoutBinding
+import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.settings
 
 /**
@@ -29,7 +31,6 @@ class DynamicDownloadDialog(
     private val tryAgain: (String) -> Unit,
     private val onCannotOpenFile: (DownloadState) -> Unit,
     private val binding: DownloadDialogLayoutBinding,
-    private val bottomToolbarHeight: Int,
     private val onDismiss: () -> Unit,
 ) {
 
@@ -41,18 +42,6 @@ class DynamicDownloadDialog(
 
     private fun setupDownloadDialog() {
         if (downloadState == null) return
-        binding.root.apply {
-            if (layoutParams is CoordinatorLayout.LayoutParams) {
-                (layoutParams as CoordinatorLayout.LayoutParams).apply {
-                    behavior =
-                        DynamicDownloadDialogBehavior<View>(
-                            context,
-                            null,
-                            bottomToolbarHeight.toFloat(),
-                        )
-                }
-            }
-        }
 
         if (didFail) {
             binding.downloadDialogTitle.text =
@@ -110,19 +99,26 @@ class DynamicDownloadDialog(
     }
 
     fun show() {
-        binding.root.visibility = View.VISIBLE
-
         (binding.root.layoutParams as CoordinatorLayout.LayoutParams).apply {
+            if (behavior == null) {
+                behavior = DynamicDownloadDialogBehavior<View>(
+                    binding.root,
+                    context.settings(),
+                )
+            }
             (behavior as DynamicDownloadDialogBehavior).forceExpand(binding.root)
         }
 
         if(!settings.shouldShowSuccessDownloadDialog && !didFail) {
             dismiss()
         }
+        binding.root.visibility = View.VISIBLE
     }
 
-    private fun dismiss() {
+    @VisibleForTesting
+    internal fun dismiss() {
         binding.root.visibility = View.GONE
+        (binding.root.layoutParams as CoordinatorLayout.LayoutParams).behavior = null
         onDismiss()
     }
 
