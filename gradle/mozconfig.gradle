@@ -14,3 +14,5 @@ gradle.ext.mozconfig.substs.ALLOW_INSECURE_GRADLE_REPOSITORIES = true
 gradle.ext.mozconfig.topobjdir = System.getProperty("user.dir")
 
 gradle.ext.vcsHashFileContent = false
+
+gradle.startParameter.offline = false
