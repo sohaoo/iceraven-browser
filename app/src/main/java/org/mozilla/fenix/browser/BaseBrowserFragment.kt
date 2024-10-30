@@ -2386,7 +2386,7 @@ abstract class BaseBrowserFragment :
             if (webAppToolbarShouldBeVisible) {
                 browserToolbarView.visible()
                 _bottomToolbarContainerView?.toolbarContainerView?.isVisible = true
-                reinitializeEngineView(inFullScreen)
+                reinitializeEngineView()
                 browserToolbarView.expand()
                 _bottomToolbarContainerView?.toolbarContainerView?.expand()
             }

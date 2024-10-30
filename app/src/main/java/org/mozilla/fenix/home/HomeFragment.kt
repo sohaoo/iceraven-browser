@@ -1618,14 +1618,6 @@ class HomeFragment : Fragment() {
         activity?.openSetDefaultBrowserOption()
     }
 
-    @VisibleForTesting
-    internal fun showSetAsDefaultBrowserPrompt() {
-        val settings = requireContext().settings()
-        settings.setAsDefaultPromptCalled()
-
-        activity?.openSetDefaultBrowserOption()
-    }
-
     companion object {
         // Used to set homeViewModel.sessionToDelete when all tabs of a browsing mode are closed
         const val ALL_NORMAL_TABS = "all_normal"
