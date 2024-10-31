@@ -2594,7 +2594,7 @@
     <!-- Preference category for system behavior customization -->
     <string name="preferences_system_behavior">設定系統行為</string>
     <!-- Title for relinquish memory preference in customization settings -->
-    <string name="preferences_relinquish_memory_title">掛起標籤頁以避免因記憶體不足而程序被殺死</string>
+    <string name="preferences_relinquish_memory_title">系統記憶體不足時掛起標籤頁</string>
     <!-- Description for relinquish memory preference in customization settings -->
     <string name="preferences_relinquish_memory_description">開啟後，當系統記憶體不足時，標籤頁會被掛起，同時頁面狀態會丟失</string>
     <!-- Preference for Top Sites show most recent sites or not -->

@@ -2621,7 +2621,7 @@
     <!-- Preference category for system behavior customization -->
     <string name="preferences_system_behavior">设置系统行为</string>
     <!-- Title for relinquish memory preference in customization settings -->
-    <string name="preferences_relinquish_memory_title">挂起标签页以避免因内存不足而进程被杀死</string>
+    <string name="preferences_relinquish_memory_title">内存不足时挂起标签页</string>
     <!-- Description for relinquish memory preference in customization settings -->
     <string name="preferences_relinquish_memory_description">开启后，当系统内存不足时，标签页会被挂起，同时页面状态会丢失</string>
     <!-- Preference for Top Sites show most recent sites or not -->
