@@ -98,6 +98,11 @@
         <SwitchPreference
             app:iconSpaceReserved="false"
             android:defaultValue="true"
+            android:key="@string/pref_key_show_reader_mode_btn"
+            android:title="@string/preferences_show_reader_mode_btn" />
+        <SwitchPreference
+            app:iconSpaceReserved="false"
+            android:defaultValue="true"
             android:key="@string/pref_key_show_qr_scan_search"
             android:title="@string/preferences_show_qr_scan_search" />
         <SwitchPreference

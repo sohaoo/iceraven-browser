@@ -2476,6 +2476,7 @@
     <string name="preferences_search_opened_tabs" >Search opened tabs</string>
     <string name="preferences_show_success_download_dialog">Completion dialog box</string>
     <string name="preferences_show_qr_scan_search">Show QR scan search</string>
+    <string name="preferences_show_reader_mode_btn">Show Reader Mode Button</string>
 
     <!-- Content description for headings announced by accessibility service. The first parameter is the text of the heading. Talkback will announce the first parameter and then speak the word "Heading" indicating to the user that this text is a heading for a section. -->
     <string name="a11y_heading">%s, Heading</string>

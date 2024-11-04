@@ -2639,6 +2639,7 @@
     <string name="preferences_search_opened_tabs" >搜索已打开的标签页</string>
     <string name="preferences_show_success_download_dialog">完成时的对话框</string>
     <string name="preferences_show_qr_scan_search">显示二维码扫描搜索</string>
+    <string name="preferences_show_reader_mode_btn">显示阅读模式按钮</string>
 
     <!-- Content description for headings announced by accessibility service. The first parameter is the text of the heading. Talkback will announce the first parameter and then speak the word "Heading" indicating to the user that this text is a heading for a section. -->
     <string name="a11y_heading">%s，标题</string>

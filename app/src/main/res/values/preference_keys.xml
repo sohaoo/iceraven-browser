@@ -409,6 +409,7 @@
     <!-- success download notification settings -->
     <string name="pref_key_success_download_dialog" translatable="false">pref_key_success_download_dialog</string>
     <string name="pref_key_show_qr_scan_search" translatable="false">pref_key_show_qr_scan_search</string>
+    <string name="pref_key_show_reader_mode_btn" translatable="false">pref_key_show_reader_mode_btn</string>
 
     <!--Shopping -->
     <string name="pref_key_is_review_quality_check_enabled">pref_key_is_review_quality_check_enabled</string>

@@ -103,6 +103,11 @@ class SearchEngineFragment : PreferenceFragmentCompat() {
                 isChecked = context.settings().shouldShowVoiceSearch
             }
 
+        val showReaderModeBtnPreference =
+            requirePreference<SwitchPreference>(R.string.pref_key_show_reader_mode_btn).apply {
+                isChecked = context.settings().shouldShowReaderModeBtn
+            }
+
         val showQRScanSearchPreference =
             requirePreference<SwitchPreference>(R.string.pref_key_show_qr_scan_search).apply {
                 isChecked = context.settings().shouldShowQRScanSearch
@@ -143,6 +148,7 @@ class SearchEngineFragment : PreferenceFragmentCompat() {
                 return true
             }
         }
+        showReaderModeBtnPreference.onPreferenceChangeListener = SharedPreferenceUpdater()
         showQRScanSearchPreference.onPreferenceChangeListener = SharedPreferenceUpdater()
         autocompleteURLsPreference.onPreferenceChangeListener = SharedPreferenceUpdater()
 

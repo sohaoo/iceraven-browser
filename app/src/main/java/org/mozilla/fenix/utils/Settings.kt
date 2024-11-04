@@ -1221,6 +1221,11 @@ class Settings(private val appContext: Context) : PreferencesHolder {
         default = true,
     )
 
+    var shouldShowReaderModeBtn by booleanPreference(
+        appContext.getPreferenceKey(R.string.pref_key_show_reader_mode_btn),
+        default = true,
+    )
+
     var shouldShowQRScanSearch by booleanPreference(
         appContext.getPreferenceKey(R.string.pref_key_show_qr_scan_search),
         default = true,
