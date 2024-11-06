@@ -298,7 +298,7 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler {
             contentDescription = context.getString(R.string.browser_menu_read),
             contentDescriptionSelected = context.getString(R.string.browser_menu_read_close),
             visible = {
-                requireContext().settings().shouldShowReaderModeBtn && readerModeAvailable && !reviewQualityCheckAvailable
+                context.settings().shouldShowReaderModeBtn && readerModeAvailable && !reviewQualityCheckAvailable
             },
             weight = { READER_MODE_WEIGHT },
             selected = getSafeCurrentTab()?.let {
