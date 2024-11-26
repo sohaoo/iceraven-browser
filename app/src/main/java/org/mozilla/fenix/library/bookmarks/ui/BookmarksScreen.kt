@@ -92,6 +92,7 @@ internal fun BookmarksScreen(
 ) {
     val navController = rememberNavController()
     val store = buildStore(navController)
+
     DisposableEffect(LocalLifecycleOwner.current) {
         onDispose {
             store.dispatch(ViewDisposed)
@@ -524,7 +525,6 @@ private fun AlertDialogDeletionWarning(
     onCancelTapped: () -> Unit,
     onDeleteTapped: () -> Unit,
 ) {
-    val appName = stringResource(R.string.app_name)
     AlertDialog(
         title = {
             Text(
@@ -614,7 +614,7 @@ private fun SelectFolderScreen(
             if (showNewFolderButton) {
                 item {
                     IconListItem(
-                        label = stringResource(R.string.bookmark_add_folder),
+                        label = stringResource(R.string.bookmark_select_folder_new_folder_button_title),
                         labelTextColor = FirefoxTheme.colors.textAccent,
                         beforeIconPainter = painterResource(R.drawable.mozac_ic_folder_add_24),
                         beforeIconTint = FirefoxTheme.colors.textAccent,
