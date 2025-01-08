@@ -892,6 +892,7 @@ class TabsTrayFragment : AppCompatDialogFragment() {
 
     private fun showBookmarkSnackbar(
         tabSize: Int,
+        parentFolderTitle: String?,
     ) {
         val displayFolderTitle = parentFolderTitle ?: getString(R.string.library_bookmarks)
         val displayResId = when {
