@@ -14,7 +14,6 @@ import androidx.core.content.pm.PackageInfoCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
-import mozilla.components.service.glean.private.NoExtras
 import mozilla.components.support.utils.ext.getPackageInfoCompat
 import org.mozilla.fenix.BrowserDirection
 import org.mozilla.fenix.BuildConfig
@@ -31,7 +30,6 @@ import org.mozilla.fenix.settings.about.AboutItemType.PRIVACY_NOTICE
 import org.mozilla.fenix.settings.about.AboutItemType.RIGHTS
 import org.mozilla.fenix.settings.about.AboutItemType.SUPPORT
 import org.mozilla.fenix.settings.about.AboutItemType.WHATS_NEW
-import org.mozilla.fenix.utils.Do
 import org.mozilla.fenix.whatsnew.WhatsNew
 import org.mozilla.geckoview.BuildConfig as GeckoViewBuildConfig
 
@@ -99,7 +97,7 @@ class AboutFragment : Fragment(), AboutPageListener {
             val packageInfo =
                 requireContext().packageManager.getPackageInfoCompat(requireContext().packageName, 0)
             val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo).toString()
-            val maybeFenixGitHash = if (BuildConfig.GIT_HASH.isNotBlank()) ", ${BuildConfig.GIT_HASH}" else ""
+            val maybeFenixVcsHash = if (BuildConfig.VCS_HASH.isNotBlank()) ", ${BuildConfig.VCS_HASH}" else ""
             val maybeGecko = getString(R.string.gecko_view_abbreviation)
             val geckoVersion =
                 GeckoViewBuildConfig.MOZ_APP_VERSION + "-" + GeckoViewBuildConfig.MOZ_APP_BUILDID
@@ -110,7 +108,7 @@ class AboutFragment : Fragment(), AboutPageListener {
                 "%s (Build #%s)%s\n%s: %s\n%s: %s",
                 packageInfo.versionName,
                 versionCode,
-                maybeFenixGitHash,
+                maybeFenixVcsHash,
                 maybeGecko,
                 geckoVersion,
                 appServicesAbbreviation,
@@ -137,7 +135,8 @@ class AboutFragment : Fragment(), AboutPageListener {
                     WHATS_NEW,
                     SupportUtils.WHATS_NEW_URL,
                 ),
-                getString(R.string.about_whats_new, getString(R.string.app_name)),
+                // Note: Fenix only has release notes for 'Release' versions, NOT 'Beta' & 'Nightly'.
+                getString(R.string.about_whats_new, getString(R.string.firefox)),
             ),
             AboutPageItem(
                 AboutItem.ExternalLink(
@@ -189,12 +188,12 @@ class AboutFragment : Fragment(), AboutPageListener {
     }
 
     override fun onAboutItemClicked(item: AboutItem) {
-        Do exhaustive when (item) {
+        when (item) {
             is AboutItem.ExternalLink -> {
                 when (item.type) {
                     WHATS_NEW -> {
                         WhatsNew.userViewedWhatsNew(requireContext())
-                        Events.whatsNewTapped.record(NoExtras())
+                        Events.whatsNewTapped.record(Events.WhatsNewTappedExtra(source = "ABOUT"))
                     }
                     SUPPORT, PRIVACY_NOTICE, LICENSING_INFO, RIGHTS -> {} // no telemetry needed
                 }

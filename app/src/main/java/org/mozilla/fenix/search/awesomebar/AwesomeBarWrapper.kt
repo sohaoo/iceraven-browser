@@ -10,16 +10,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.AbstractComposeView
+import mozilla.components.browser.state.action.AwesomeBarAction
 import mozilla.components.compose.browser.awesomebar.AwesomeBar
 import mozilla.components.compose.browser.awesomebar.AwesomeBarDefaults
 import mozilla.components.compose.browser.awesomebar.AwesomeBarOrientation
 import mozilla.components.concept.awesomebar.AwesomeBar
 import mozilla.components.support.ktx.android.view.hideKeyboard
-import org.mozilla.fenix.R
+import mozilla.telemetry.glean.private.NoExtras
+import org.mozilla.fenix.GleanMetrics.BookmarksManagement
+import org.mozilla.fenix.GleanMetrics.History
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.theme.FirefoxTheme
-import org.mozilla.fenix.theme.ThemeManager
 
 /**
  * This wrapper wraps the `AwesomeBar()` composable and exposes it as a `View` and `concept-awesomebar`
@@ -55,17 +57,29 @@ class AwesomeBarWrapper @JvmOverloads constructor(
                 orientation = orientation,
                 colors = AwesomeBarDefaults.colors(
                     background = Color.Transparent,
-                    title = ThemeManager.resolveAttributeColor(R.attr.textPrimary),
-                    description = ThemeManager.resolveAttributeColor(R.attr.textSecondary),
-                    autocompleteIcon = ThemeManager.resolveAttributeColor(R.attr.textSecondary),
-                    groupTitle = ThemeManager.resolveAttributeColor(R.attr.textSecondary),
+                    title = FirefoxTheme.colors.textPrimary,
+                    description = FirefoxTheme.colors.textSecondary,
+                    autocompleteIcon = FirefoxTheme.colors.textSecondary,
+                    groupTitle = FirefoxTheme.colors.textSecondary,
                 ),
                 onSuggestionClicked = { suggestion ->
+                    context.components.core.store.dispatch(AwesomeBarAction.SuggestionClicked(suggestion))
                     suggestion.onSuggestionClicked?.invoke()
+                    when {
+                        suggestion.flags.contains(AwesomeBar.Suggestion.Flag.HISTORY) -> {
+                            History.searchResultTapped.record(NoExtras())
+                        }
+                        suggestion.flags.contains(AwesomeBar.Suggestion.Flag.BOOKMARK) -> {
+                            BookmarksManagement.searchResultTapped.record(NoExtras())
+                        }
+                    }
                     onStopListener?.invoke()
                 },
                 onAutoComplete = { suggestion ->
                     onEditSuggestionListener?.invoke(suggestion.editSuggestion!!)
+                },
+                onVisibilityStateUpdated = {
+                    context.components.core.store.dispatch(AwesomeBarAction.VisibilityStateUpdated(it))
                 },
                 onScroll = { hideKeyboard() },
                 profiler = context.components.core.engine.profiler,

@@ -4,6 +4,7 @@
 
 package org.mozilla.fenix.home.intent
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -12,20 +13,24 @@ import android.os.Build.VERSION.SDK_INT
 import android.provider.Settings
 import androidx.navigation.NavController
 import mozilla.components.concept.engine.EngineSession
+import mozilla.components.concept.engine.prompt.ShareData
 import mozilla.components.support.base.log.logger.Logger
 import org.mozilla.fenix.BrowserDirection
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.GlobalDirections
 import org.mozilla.fenix.HomeActivity
+import org.mozilla.fenix.NavGraphDirections
 import org.mozilla.fenix.browser.browsingmode.BrowsingMode
 import org.mozilla.fenix.ext.alreadyOnDestination
 import org.mozilla.fenix.ext.openSetDefaultBrowserOption
+import org.mozilla.fenix.utils.showAddSearchWidgetPrompt
 
 /**
  * Deep links in the form of `fenix://host` open different parts of the app.
  */
 class HomeDeepLinkIntentProcessor(
     private val activity: HomeActivity,
+    private val showAddSearchWidgetPrompt: (Activity) -> Unit = ::showAddSearchWidgetPrompt,
 ) : HomeIntentProcessor {
     private val logger = Logger("DeepLinkIntentProcessor")
 
@@ -41,7 +46,7 @@ class HomeDeepLinkIntentProcessor(
 
     @Suppress("ComplexMethod")
     private fun handleDeepLink(deepLink: Uri, navController: NavController) {
-        handleDeepLinkSideEffects(deepLink)
+        handleDeepLinkSideEffects(deepLink, navController)
 
         val globalDirections = when (deepLink.host) {
             "home", "enable_private_browsing" -> GlobalDirections.Home
@@ -73,7 +78,7 @@ class HomeDeepLinkIntentProcessor(
     /**
      * Handle links that require more than just simple navigation.
      */
-    private fun handleDeepLinkSideEffects(deepLink: Uri) {
+    private fun handleDeepLinkSideEffects(deepLink: Uri, navController: NavController) {
         when (deepLink.host) {
             "enable_private_browsing" -> {
                 activity.browsingModeManager.mode = BrowsingMode.Private
@@ -102,6 +107,11 @@ class HomeDeepLinkIntentProcessor(
                 val intent = notificationSettings(activity)
                 activity.startActivity(intent)
             }
+            "install_search_widget" -> {
+                showAddSearchWidgetPrompt(activity)
+                return
+            }
+            "share_sheet" -> showShareSheet(deepLink, navController)
         }
     }
 
@@ -122,4 +132,23 @@ class HomeDeepLinkIntentProcessor(
                 }
             }
         }
+
+    private fun showShareSheet(deepLink: Uri, navController: NavController) {
+        val url = deepLink.getQueryParameter("url")
+        val title = deepLink.getQueryParameter("title").orEmpty()
+        val text = deepLink.getQueryParameter("text").orEmpty()
+        val subject = deepLink.getQueryParameter("subject").orEmpty()
+        if (!url.isNullOrEmpty() && url.startsWith("https://")) {
+            val shareData = arrayOf(ShareData(url = url, title = title, text = text))
+            val direction = NavGraphDirections.actionGlobalShareFragment(
+                data = shareData,
+                shareSubject = subject,
+                showPage = false,
+                sessionId = null,
+            )
+            navController.navigate(direction)
+        } else {
+            logger.error("Invalid or missing URL for share_sheet deep link")
+        }
+    }
 }

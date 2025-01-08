@@ -16,7 +16,7 @@ import java.io.File
 /**
  * Manages various functions related to the locally-stored wallpaper assets.
  *
- * @property storageRootDirectory The top level app-local storage directory.
+ * @param storageRootDirectory The top level app-local storage directory.
  * @param coroutineDispatcher Dispatcher used to execute suspending functions. Default parameter
  * should be likely be used except for when under test.
  */
@@ -50,7 +50,7 @@ class WallpaperFileManager(
     }
 
     private fun allAssetsExist(name: String): Boolean =
-        Wallpaper.ImageType.values().all { type ->
+        Wallpaper.ImageType.entries.toTypedArray().all { type ->
             File(storageRootDirectory, getLocalPath(name, type)).exists()
         }
 

@@ -11,6 +11,9 @@ import mozilla.components.browser.state.action.EngineAction
 import mozilla.components.browser.state.action.RecentlyClosedAction
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.concept.engine.Engine
+import mozilla.components.concept.engine.translate.ModelManagementOptions
+import mozilla.components.concept.engine.translate.ModelOperation
+import mozilla.components.concept.engine.translate.OperationLevel
 import mozilla.components.concept.storage.HistoryStorage
 import mozilla.components.feature.downloads.DownloadsUseCases
 import mozilla.components.feature.tabs.TabsUseCases
@@ -19,8 +22,8 @@ import kotlin.coroutines.CoroutineContext
 
 interface DeleteBrowsingDataController {
     suspend fun deleteTabs()
-    suspend fun deleteBrowsingData()
-    suspend fun deleteCookies()
+    suspend fun deleteBrowsingHistory()
+    suspend fun deleteCookiesAndSiteData()
     suspend fun deleteCachedFiles()
     suspend fun deleteSitePermissions()
     suspend fun deleteDownloads()
@@ -44,9 +47,8 @@ class DefaultDeleteBrowsingDataController(
         }
     }
 
-    override suspend fun deleteBrowsingData() {
+    override suspend fun deleteBrowsingHistory() {
         withContext(coroutineContext) {
-            engine.clearData(Engine.BrowsingData.select(Engine.BrowsingData.DOM_STORAGES))
             historyStorage.deleteEverything()
             store.dispatch(EngineAction.PurgeHistoryAction)
             iconsStorage.clear()
@@ -54,7 +56,7 @@ class DefaultDeleteBrowsingDataController(
         }
     }
 
-    override suspend fun deleteCookies() {
+    override suspend fun deleteCookiesAndSiteData() {
         withContext(coroutineContext) {
             engine.clearData(
                 Engine.BrowsingData.select(
@@ -62,11 +64,20 @@ class DefaultDeleteBrowsingDataController(
                     Engine.BrowsingData.AUTH_SESSIONS,
                 ),
             )
+            engine.clearData(Engine.BrowsingData.select(Engine.BrowsingData.DOM_STORAGES))
         }
     }
 
     override suspend fun deleteCachedFiles() {
         withContext(coroutineContext) {
+            engine.manageTranslationsLanguageModel(
+                options = ModelManagementOptions(
+                    operation = ModelOperation.DELETE,
+                    operationLevel = OperationLevel.CACHE,
+                ),
+                onSuccess = { },
+                onError = { },
+            )
             engine.clearData(
                 Engine.BrowsingData.select(Engine.BrowsingData.ALL_CACHES),
             )

@@ -5,12 +5,17 @@
 package org.mozilla.fenix.ext
 
 import android.app.Activity
+import android.content.Intent
 import android.view.View
 import android.view.WindowManager
+import io.mockk.mockk
+import mozilla.components.support.utils.EXTRA_ACTIVITY_REFERRER_PACKAGE
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mozilla.fenix.BrowserDirection
 import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
 import org.robolectric.Robolectric
 import org.robolectric.Shadows.shadowOf
@@ -40,5 +45,54 @@ class ActivityTest {
         // Test
         for (f in flags) assertEquals(f, window.decorView.systemUiVisibility and f)
         assertTrue(shadowOf(window).getFlag(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON))
+    }
+
+    @Test
+    fun `WHEN Activity is not supported THEN getNavDirections throws IllegalArgument exception`() {
+        val activity = mockk<Activity>()
+
+        assertThrows(IllegalArgumentException::class.java) {
+            activity.getNavDirections(
+                BrowserDirection.FromGlobal,
+            )
+        }
+    }
+
+    @Test
+    fun `WHEN Activity is not supported THEN getIntentSource throws IllegalArgument exception`() {
+        val activity = mockk<Activity>()
+
+        assertThrows(IllegalArgumentException::class.java) { activity.getIntentSource(mockk()) }
+    }
+
+    @Test
+    fun `WHEN Activity is not supported THEN getIntentSessionId throws IllegalArgument exception`() {
+        val activity = mockk<Activity>()
+
+        assertThrows(IllegalArgumentException::class.java) { activity.getIntentSessionId(mockk()) }
+    }
+
+    @Test
+    fun `WHEN Activity is not supported THEN getBreadcrumbMessage throws IllegalArgument exception`() {
+        val activity = mockk<Activity>()
+
+        assertThrows(IllegalArgumentException::class.java) { activity.getBreadcrumbMessage(mockk()) }
+    }
+
+    @Test
+    fun `WHEN an intent is from within the app THEN return true`() {
+        // We need to create a dummy activity so that we can get the right packageName in the
+        // test environment so that we can put it into a new activity to verify the extra is set.
+        // We don't hardcode a packageName in here because the value changes based on the variant
+        // that we run these from (e.g. debug, beta)
+        val dummyActivity = Robolectric.buildActivity(Activity::class.java).create().get()
+        val intent = Intent().apply {
+            putExtra(EXTRA_ACTIVITY_REFERRER_PACKAGE, dummyActivity.packageName)
+        }
+        val activity = Robolectric.buildActivity(Activity::class.java, intent)
+            .create()
+            .get()
+
+        assertTrue(activity.isIntentInternal())
     }
 }

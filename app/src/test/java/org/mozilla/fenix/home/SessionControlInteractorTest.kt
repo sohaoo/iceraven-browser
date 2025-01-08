@@ -9,16 +9,17 @@ import io.mockk.mockk
 import io.mockk.verify
 import mozilla.components.feature.tab.collections.Tab
 import mozilla.components.feature.tab.collections.TabCollection
+import mozilla.components.feature.top.sites.TopSite
 import mozilla.components.service.pocket.PocketStory
 import org.junit.Before
 import org.junit.Test
 import org.mozilla.fenix.browser.browsingmode.BrowsingMode
 import org.mozilla.fenix.components.appstate.AppState
+import org.mozilla.fenix.home.bookmarks.Bookmark
+import org.mozilla.fenix.home.bookmarks.controller.BookmarksController
 import org.mozilla.fenix.home.pocket.PocketRecommendedStoriesCategory
-import org.mozilla.fenix.home.pocket.PocketStoriesController
+import org.mozilla.fenix.home.pocket.controller.PocketStoriesController
 import org.mozilla.fenix.home.privatebrowsing.controller.PrivateBrowsingController
-import org.mozilla.fenix.home.recentbookmarks.RecentBookmark
-import org.mozilla.fenix.home.recentbookmarks.controller.RecentBookmarksController
 import org.mozilla.fenix.home.recentsyncedtabs.RecentSyncedTab
 import org.mozilla.fenix.home.recentsyncedtabs.controller.RecentSyncedTabController
 import org.mozilla.fenix.home.recenttabs.controller.RecentTabController
@@ -26,7 +27,6 @@ import org.mozilla.fenix.home.recentvisits.controller.RecentVisitsController
 import org.mozilla.fenix.home.sessioncontrol.DefaultSessionControlController
 import org.mozilla.fenix.home.sessioncontrol.SessionControlInteractor
 import org.mozilla.fenix.home.toolbar.ToolbarController
-import org.mozilla.fenix.onboarding.controller.OnboardingController
 import org.mozilla.fenix.search.toolbar.SearchSelectorController
 
 class SessionControlInteractorTest {
@@ -34,10 +34,9 @@ class SessionControlInteractorTest {
     private val controller: DefaultSessionControlController = mockk(relaxed = true)
     private val recentTabController: RecentTabController = mockk(relaxed = true)
     private val recentSyncedTabController: RecentSyncedTabController = mockk(relaxed = true)
-    private val recentBookmarksController: RecentBookmarksController = mockk(relaxed = true)
+    private val bookmarksController: BookmarksController = mockk(relaxed = true)
     private val pocketStoriesController: PocketStoriesController = mockk(relaxed = true)
     private val privateBrowsingController: PrivateBrowsingController = mockk(relaxed = true)
-    private val onboardingController: OnboardingController = mockk(relaxed = true)
     private val searchSelectorController: SearchSelectorController = mockk(relaxed = true)
     private val toolbarController: ToolbarController = mockk(relaxed = true)
 
@@ -52,11 +51,10 @@ class SessionControlInteractorTest {
             controller,
             recentTabController,
             recentSyncedTabController,
-            recentBookmarksController,
+            bookmarksController,
             recentVisitsController,
             pocketStoriesController,
             privateBrowsingController,
-            onboardingController,
             searchSelectorController,
             toolbarController,
         )
@@ -87,8 +85,8 @@ class SessionControlInteractorTest {
     fun onCollectionRemoveTab() {
         val collection: TabCollection = mockk(relaxed = true)
         val tab: Tab = mockk(relaxed = true)
-        interactor.onCollectionRemoveTab(collection, tab, false)
-        verify { controller.handleCollectionRemoveTab(collection, tab, false) }
+        interactor.onCollectionRemoveTab(collection, tab)
+        verify { controller.handleCollectionRemoveTab(collection, tab) }
     }
 
     @Test
@@ -116,18 +114,6 @@ class SessionControlInteractorTest {
         val collection: TabCollection = mockk(relaxed = true)
         interactor.onRenameCollectionTapped(collection)
         verify { controller.handleRenameCollectionTapped(collection) }
-    }
-
-    @Test
-    fun onStartBrowsingClicked() {
-        interactor.onStartBrowsingClicked()
-        verify { onboardingController.handleStartBrowsingClicked() }
-    }
-
-    @Test
-    fun onReadPrivacyNoticeClicked() {
-        interactor.onReadPrivacyNoticeClicked()
-        verify { onboardingController.handleReadPrivacyNoticeClicked() }
     }
 
     @Test
@@ -196,11 +182,11 @@ class SessionControlInteractorTest {
     }
 
     @Test
-    fun `WHEN a recently saved bookmark is clicked THEN the selected bookmark is handled`() {
-        val bookmark = RecentBookmark()
+    fun `WHEN a bookmark is clicked THEN the selected bookmark is handled`() {
+        val bookmark = Bookmark()
 
-        interactor.onRecentBookmarkClicked(bookmark)
-        verify { recentBookmarksController.handleBookmarkClicked(bookmark) }
+        interactor.onBookmarkClicked(bookmark)
+        verify { bookmarksController.handleBookmarkClicked(bookmark) }
     }
 
     @Test
@@ -210,18 +196,17 @@ class SessionControlInteractorTest {
     }
 
     @Test
-    fun `WHEN Show All recently saved bookmarks button is clicked THEN the click is handled`() {
+    fun `WHEN Show All bookmarks button is clicked THEN the click is handled`() {
         interactor.onShowAllBookmarksClicked()
-        verify { recentBookmarksController.handleShowAllBookmarksClicked() }
+        verify { bookmarksController.handleShowAllBookmarksClicked() }
     }
 
     @Test
     fun `WHEN private mode button is clicked THEN the click is handled`() {
         val newMode = BrowsingMode.Private
-        val hasBeenOnboarded = true
 
-        interactor.onPrivateModeButtonClicked(newMode, hasBeenOnboarded)
-        verify { privateBrowsingController.handlePrivateModeButtonClicked(newMode, hasBeenOnboarded) }
+        interactor.onPrivateModeButtonClicked(newMode)
+        verify { privateBrowsingController.handlePrivateModeButtonClicked(newMode) }
     }
 
     @Test
@@ -234,6 +219,13 @@ class SessionControlInteractorTest {
     fun `WHEN onSponsorPrivacyClicked is called THEN handleSponsorPrivacyClicked is called`() {
         interactor.onSponsorPrivacyClicked()
         verify { controller.handleSponsorPrivacyClicked() }
+    }
+
+    @Test
+    fun `WHEN a top site is long clicked THEN the click is handled`() {
+        val topSite: TopSite = mockk()
+        interactor.onTopSiteLongClicked(topSite)
+        verify { controller.handleTopSiteLongClicked(topSite) }
     }
 
     @Test
@@ -295,7 +287,7 @@ class SessionControlInteractorTest {
     @Test
     fun reportSessionMetrics() {
         val appState: AppState = mockk(relaxed = true)
-        every { appState.recentBookmarks } returns emptyList()
+        every { appState.bookmarks } returns emptyList()
         interactor.reportSessionMetrics(appState)
         verify { controller.handleReportSessionMetrics(appState) }
     }

@@ -66,7 +66,7 @@ interface WebsitePermissionInteractor {
  */
 class WebsitePermissionsView(
     containerView: ViewGroup,
-    val interactor: WebsitePermissionInteractor,
+    private val interactor: WebsitePermissionInteractor,
 ) {
     private val context = containerView.context
 
@@ -151,8 +151,8 @@ class WebsitePermissionsView(
                 }
             }
             is SpinnerPermission -> {
-                if (permissionState !is WebsitePermission.Autoplay) {
-                    throw IllegalArgumentException("${permissionState.phoneFeature} is not supported")
+                require(permissionState is WebsitePermission.Autoplay) {
+                    "${permissionState.phoneFeature} is not supported"
                 }
 
                 val selectedIndex = permissionState.options.indexOf(permissionState.autoplayValue)

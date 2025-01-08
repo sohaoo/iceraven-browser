@@ -27,7 +27,7 @@
             android:contentDescription="@string/etp_back_button_content_description"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/mozac_ic_back"
+            app:srcCompat="@drawable/mozac_ic_back_24"
             app:tint="?attr/textPrimary" />
 
         <TextView
@@ -70,7 +70,7 @@
             style="@style/QuickSettingsLargeText.Icon"
             android:layout_width="match_parent"
             android:layout_height="@dimen/tracking_protection_item_height"
-            android:text="@string/etp_fingerprinters_title"
+            android:text="@string/etp_known_fingerprinters_title"
             android:visibility="gone"
             app:layout_constraintTop_toBottomOf="@id/cross_site_tracking" />
 
@@ -111,6 +111,15 @@
             app:layout_constraintTop_toBottomOf="@id/tracking_content" />
 
         <TextView
+            android:id="@+id/suspected_fingerprinters"
+            style="@style/QuickSettingsLargeText.Icon"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/tracking_protection_item_height"
+            android:text="@string/etp_suspected_fingerprinters_title"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/redirect_trackers" />
+
+        <TextView
             android:id="@+id/not_blocking_header"
             style="@style/QuickSettingsText"
             android:layout_width="wrap_content"
@@ -137,7 +146,7 @@
             style="@style/QuickSettingsLargeText.Icon"
             android:layout_width="match_parent"
             android:layout_height="@dimen/tracking_protection_item_height"
-            android:text="@string/etp_fingerprinters_title"
+            android:text="@string/etp_known_fingerprinters_title"
             android:visibility="gone"
             app:layout_constraintTop_toBottomOf="@id/cross_site_tracking_loaded" />
 
@@ -177,6 +186,15 @@
             android:visibility="gone"
             app:layout_constraintTop_toBottomOf="@id/tracking_content_loaded" />
 
+        <TextView
+            android:id="@+id/suspected_fingerprinters_loaded"
+            style="@style/QuickSettingsLargeText.Icon"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/tracking_protection_item_height"
+            android:text="@string/etp_suspected_fingerprinters_title"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/redirect_trackers_loaded" />
+
         <View
             android:id="@+id/line_divider"
             android:layout_width="match_parent"
@@ -190,7 +208,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/tracking_protection_item_height"
             android:text="@string/etp_settings"
-            app:drawableStartCompat="@drawable/mozac_ic_settings"
+            app:drawableStartCompat="@drawable/mozac_ic_settings_24"
             app:drawableTint="?attr/textPrimary"
             app:layout_constraintTop_toBottomOf="@id/line_divider" />
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -214,7 +232,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@id/category_title"
             app:layout_constraintVertical_bias="0.0"
-            app:srcCompat="@drawable/mozac_ic_back" />
+            app:srcCompat="@drawable/mozac_ic_back_24" />
 
         <TextView
             android:id="@+id/category_title"

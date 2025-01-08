@@ -7,8 +7,8 @@ package org.mozilla.fenix.settings.logins
 import androidx.navigation.NavController
 import io.mockk.mockk
 import io.mockk.verifyAll
-import mozilla.components.service.glean.testing.GleanTestRule
 import mozilla.components.support.test.robolectric.testContext
+import mozilla.telemetry.glean.testing.GleanTestRule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -33,12 +33,14 @@ class LoginsListControllerTest {
     private val sortingStrategy: SortingStrategy = SortingStrategy.Alphabetically
     private val navController: NavController = mockk(relaxed = true)
     private val browserNavigator: (String, Boolean, BrowserDirection) -> Unit = mockk(relaxed = true)
+    private val addLoginCallback: () -> Unit = mockk(relaxed = true)
     private val controller =
         LoginsListController(
             loginsFragmentStore = store,
             navController = navController,
             browserNavigator = browserNavigator,
             settings = settings,
+            addLoginCallback = addLoginCallback,
         )
 
     @Test

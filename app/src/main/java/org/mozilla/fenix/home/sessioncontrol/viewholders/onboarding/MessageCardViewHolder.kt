@@ -27,7 +27,9 @@ import org.mozilla.fenix.wallpapers.WallpaperState
 /**
  * View holder for the Nimbus Message Card.
  *
- * @property interactor [SessionControlInteractor] which will have delegated to all user
+ * @param composeView [ComposeView] which will be populated with Jetpack Compose UI content.
+ * @param viewLifecycleOwner [LifecycleOwner] to which this Composable will be tied to.
+ * @param interactor [SessionControlInteractor] which will have delegated to all user
  * interactions.
  */
 class MessageCardViewHolder(
@@ -69,15 +71,15 @@ class MessageCardViewHolder(
         }
 
         val messageCardColors = MessageCardColors.buildMessageCardColors(
-            backgroundColor = wallpaperState.wallpaperCardColor,
+            backgroundColor = wallpaperState.cardBackgroundColor,
             buttonColor = buttonColor,
             buttonTextColor = buttonTextColor,
         )
 
         MessageCard(
-            messageText = message.data.text,
-            titleText = message.data.title,
-            buttonText = message.data.buttonLabel,
+            messageText = message.text,
+            titleText = message.title,
+            buttonText = message.buttonLabel,
             messageColors = messageCardColors,
             onClick = { interactor.onMessageClicked(message) },
             onCloseButtonClick = { interactor.onMessageClosedClicked(message) },

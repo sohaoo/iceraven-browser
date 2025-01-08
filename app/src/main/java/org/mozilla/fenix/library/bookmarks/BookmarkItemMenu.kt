@@ -36,7 +36,7 @@ class BookmarkItemMenu(
     @VisibleForTesting
     @SuppressWarnings("LongMethod")
     internal suspend fun menuItems(itemType: BookmarkNodeType, itemId: String): List<TextMenuCandidate> {
-        val hasAtLeastOneChild = !context.bookmarkStorage.getTree(itemId)?.children.isNullOrEmpty()
+        val hasAtLeastOneChild = !context.bookmarkStorage.getTree(itemId, false)?.children.isNullOrEmpty()
 
         return listOfNotNull(
             if (itemType != BookmarkNodeType.SEPARATOR) {
@@ -104,7 +104,7 @@ class BookmarkItemMenu(
             },
             TextMenuCandidate(
                 text = context.getString(R.string.bookmark_menu_delete_button),
-                textStyle = TextStyle(color = context.getColorFromAttr(R.attr.textWarning)),
+                textStyle = TextStyle(color = context.getColorFromAttr(R.attr.textCritical)),
             ) {
                 onItemTapped.invoke(Item.Delete)
             },

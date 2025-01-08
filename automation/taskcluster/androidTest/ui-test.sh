@@ -103,9 +103,8 @@ function failure_check() {
     if [[ $exitcode -ne 0 ]]; then
         echo "FAILURE: UI test run failed, please check above URL"
     else
-	      echo "All UI test(s) have passed!"
+	    echo "All UI test(s) have passed!"
     fi
-
     echo
     echo "RESULTS"
     echo
@@ -118,6 +117,10 @@ function failure_check() {
         --results "${RESULTS_DIR}" \
         --output-md "${ARTIFACT_DIR}/github/customCheckRunText.md" \
 	--device-type "${device_type}"
+
+    chmod +x $PATH_TEST/parse-ui-test-fromfile.py
+    $PATH_TEST/parse-ui-test-fromfile.py \
+        --results "${RESULTS_DIR}"
 }
 
 echo

@@ -11,9 +11,9 @@ import mozilla.components.concept.storage.HistoryMetadata
 import mozilla.components.concept.storage.HistoryMetadataKey
 import org.junit.Before
 import org.junit.Test
-import org.mozilla.fenix.home.pocket.PocketStoriesController
+import org.mozilla.fenix.home.bookmarks.controller.BookmarksController
+import org.mozilla.fenix.home.pocket.controller.PocketStoriesController
 import org.mozilla.fenix.home.privatebrowsing.controller.PrivateBrowsingController
-import org.mozilla.fenix.home.recentbookmarks.controller.RecentBookmarksController
 import org.mozilla.fenix.home.recentsyncedtabs.controller.RecentSyncedTabController
 import org.mozilla.fenix.home.recenttabs.controller.RecentTabController
 import org.mozilla.fenix.home.recentvisits.RecentlyVisitedItem.RecentHistoryGroup
@@ -22,7 +22,6 @@ import org.mozilla.fenix.home.recentvisits.controller.RecentVisitsController
 import org.mozilla.fenix.home.sessioncontrol.DefaultSessionControlController
 import org.mozilla.fenix.home.sessioncontrol.SessionControlInteractor
 import org.mozilla.fenix.home.toolbar.ToolbarController
-import org.mozilla.fenix.onboarding.controller.OnboardingController
 import org.mozilla.fenix.search.toolbar.SearchSelectorController
 
 class RecentVisitsInteractorTest {
@@ -30,11 +29,10 @@ class RecentVisitsInteractorTest {
         mockk(relaxed = true)
     private val recentTabController: RecentTabController = mockk(relaxed = true)
     private val recentSyncedTabController: RecentSyncedTabController = mockk(relaxed = true)
-    private val recentBookmarksController: RecentBookmarksController = mockk(relaxed = true)
+    private val bookmarksController: BookmarksController = mockk(relaxed = true)
     private val recentVisitsController: RecentVisitsController = mockk(relaxed = true)
     private val pocketStoriesController: PocketStoriesController = mockk(relaxed = true)
     private val privateBrowsingController: PrivateBrowsingController = mockk(relaxed = true)
-    private val onboardingController: OnboardingController = mockk(relaxed = true)
     private val searchSelectorController: SearchSelectorController = mockk(relaxed = true)
     private val toolbarController: ToolbarController = mockk(relaxed = true)
 
@@ -46,11 +44,10 @@ class RecentVisitsInteractorTest {
             defaultSessionControlController,
             recentTabController,
             recentSyncedTabController,
-            recentBookmarksController,
+            bookmarksController,
             recentVisitsController,
             pocketStoriesController,
             privateBrowsingController,
-            onboardingController,
             searchSelectorController,
             toolbarController,
         )

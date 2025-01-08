@@ -22,10 +22,10 @@ import io.mockk.verify
 import mozilla.components.browser.state.search.SearchEngine
 import mozilla.components.browser.state.search.SearchEngine.Type.BUNDLED
 import mozilla.components.concept.menu.Orientation
-import mozilla.components.service.glean.testing.GleanTestRule
 import mozilla.components.support.test.libstate.ext.waitUntilIdle
 import mozilla.components.support.test.robolectric.testContext
 import mozilla.components.support.test.rule.MainCoroutineRule
+import mozilla.telemetry.glean.testing.GleanTestRule
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -124,7 +124,10 @@ class SearchSelectorToolbarActionTest {
             verify {
                 view.setIcon(
                     icon = searchEngineIcon,
-                    contentDescription = testSearchEngine.name,
+                    contentDescription = testContext.getString(
+                        R.string.search_engine_icon_content_description_1,
+                        testSearchEngine.name,
+                    ),
                 )
             }
         }
@@ -155,7 +158,10 @@ class SearchSelectorToolbarActionTest {
             verify(exactly = 1) {
                 view.setIcon(
                     icon = searchEngineIcon,
-                    contentDescription = testSearchEngine.name,
+                    contentDescription = testContext.getString(
+                        R.string.search_engine_icon_content_description_1,
+                        testSearchEngine.name,
+                    ),
                 )
             }
         }
@@ -183,7 +189,10 @@ class SearchSelectorToolbarActionTest {
             verify(exactly = 1) {
                 view.setIcon(
                     icon = searchEngineIcon,
-                    contentDescription = testSearchEngine.name,
+                    contentDescription = testContext.getString(
+                        R.string.search_engine_icon_content_description_1,
+                        testSearchEngine.name,
+                    ),
                 )
             }
 
@@ -200,7 +209,10 @@ class SearchSelectorToolbarActionTest {
             verify(exactly = 1) {
                 view.setIcon(
                     icon = searchEngineIcon,
-                    contentDescription = testSearchEngine.name,
+                    contentDescription = testContext.getString(
+                        R.string.search_engine_icon_content_description_1,
+                        testSearchEngine.name,
+                    ),
                 )
             }
 
@@ -219,13 +231,19 @@ class SearchSelectorToolbarActionTest {
             verify(exactly = 1) {
                 view.setIcon(
                     icon = searchEngineIcon,
-                    contentDescription = testSearchEngine.name,
+                    contentDescription = testContext.getString(
+                        R.string.search_engine_icon_content_description_1,
+                        testSearchEngine.name,
+                    ),
                 )
             }
             verify(exactly = 1) {
                 view.setIcon(
                     icon = searchEngineIcon,
-                    contentDescription = newSearchEngine.name,
+                    contentDescription = testContext.getString(
+                        R.string.search_engine_icon_content_description_1,
+                        newSearchEngine.name,
+                    ),
                 )
             }
         }
@@ -275,6 +293,8 @@ private val testSearchFragmentState = SearchFragmentState(
     showAllSyncedTabsSuggestions = false,
     showSessionSuggestionsForCurrentEngine = false,
     showAllSessionSuggestions = true,
+    showSponsoredSuggestions = true,
+    showNonSponsoredSuggestions = true,
     tabId = "tabId",
     pastedText = "",
     searchAccessPoint = MetricsUtils.Source.SHORTCUT,

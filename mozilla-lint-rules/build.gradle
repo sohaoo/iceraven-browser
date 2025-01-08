@@ -5,9 +5,6 @@
 apply plugin: 'java-library'
 apply plugin: 'kotlin'
 
-targetCompatibility = JavaVersion.VERSION_11
-sourceCompatibility = JavaVersion.VERSION_11
-
 repositories {
     if (project.hasProperty("centralRepo")) {
         maven {
@@ -21,12 +18,12 @@ repositories {
 }
 
 dependencies {
-    compileOnly "com.android.tools.lint:lint-api:${FenixVersions.android_lint_api}"
-    compileOnly "com.android.tools.lint:lint-checks:${FenixVersions.android_lint_api}"
+    compileOnly ComponentsDependencies.tools_lintapi
+    compileOnly ComponentsDependencies.tools_lintchecks
 
-    testImplementation "junit:junit:4.13.2"
-    testImplementation "com.android.tools.lint:lint:${FenixVersions.android_lint_api}"
-    testImplementation "com.android.tools.lint:lint-tests:${FenixVersions.android_lint_api}"
+    testImplementation ComponentsDependencies.junit_vintage
+    testImplementation ComponentsDependencies.tools_lint
+    testImplementation ComponentsDependencies.tools_linttests
 }
 
 jar {

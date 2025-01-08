@@ -1,0 +1,57 @@
+diff --git a/components/feature/top-sites/src/main/java/mozilla/components/feature/top/sites/DefaultTopSitesStorage.kt b/components/feature/top-sites/src/main/java/mozilla/components/feature/top/sites/DefaultTopSitesStorage.kt
+index 960215abef..f0af027cbf 100644
+--- a/components/feature/top-sites/src/main/java/mozilla/components/feature/top/sites/DefaultTopSitesStorage.kt
++++ b/components/feature/top-sites/src/main/java/mozilla/components/feature/top/sites/DefaultTopSitesStorage.kt
+@@ -88,6 +88,7 @@ class DefaultTopSitesStorage(
+         totalSites: Int,
+         frecencyConfig: TopSitesFrecencyConfig?,
+         providerConfig: TopSitesProviderConfig?,
++        showTopRecentSites: Boolean,
+     ): List<TopSite> {
+         val topSites = ArrayList<TopSite>()
+         val pinnedSites = pinnedSitesStorage.getPinnedSites().take(totalSites)
+@@ -114,7 +115,7 @@ class DefaultTopSitesStorage(
+ 
+         topSites.addAll(pinnedSites)
+ 
+-        if (frecencyConfig?.frecencyTresholdOption != null && numSitesRequired > 0) {
++        if (showTopRecentSites && frecencyConfig?.frecencyTresholdOption != null && numSitesRequired > 0) {
+             // Get 'totalSites' sites for duplicate entries with
+             // existing pinned sites
+             val frecentSites = historyStorage
+diff --git a/components/feature/top-sites/src/main/java/mozilla/components/feature/top/sites/TopSitesConfig.kt b/components/feature/top-sites/src/main/java/mozilla/components/feature/top/sites/TopSitesConfig.kt
+index d9a95bf138..3b36def68e 100644
+--- a/components/feature/top-sites/src/main/java/mozilla/components/feature/top/sites/TopSitesConfig.kt
++++ b/components/feature/top-sites/src/main/java/mozilla/components/feature/top/sites/TopSitesConfig.kt
+@@ -20,6 +20,7 @@ data class TopSitesConfig(
+     val totalSites: Int,
+     val frecencyConfig: TopSitesFrecencyConfig? = null,
+     val providerConfig: TopSitesProviderConfig? = null,
++    val showTopRecentSites: Boolean = false,
+ )
+ 
+ /**
+diff --git a/components/feature/top-sites/src/main/java/mozilla/components/feature/top/sites/TopSitesStorage.kt b/components/feature/top-sites/src/main/java/mozilla/components/feature/top/sites/TopSitesStorage.kt
+index b27f8a3ae0..c4dd8bf9b5 100644
+--- a/components/feature/top-sites/src/main/java/mozilla/components/feature/top/sites/TopSitesStorage.kt
++++ b/components/feature/top-sites/src/main/java/mozilla/components/feature/top/sites/TopSitesStorage.kt
+@@ -51,6 +51,7 @@ interface TopSitesStorage : Observable<TopSitesStorage.Observer> {
+         totalSites: Int,
+         frecencyConfig: TopSitesFrecencyConfig? = null,
+         providerConfig: TopSitesProviderConfig? = null,
++        showTopRecentSites: Boolean = false,
+     ): List<TopSite>
+ 
+     /**
+diff --git a/components/feature/top-sites/src/main/java/mozilla/components/feature/top/sites/presenter/DefaultTopSitesPresenter.kt b/components/feature/top-sites/src/main/java/mozilla/components/feature/top/sites/presenter/DefaultTopSitesPresenter.kt
+index f1d9adb7fc..eb5e1eb165 100644
+--- a/components/feature/top-sites/src/main/java/mozilla/components/feature/top/sites/presenter/DefaultTopSitesPresenter.kt
++++ b/components/feature/top-sites/src/main/java/mozilla/components/feature/top/sites/presenter/DefaultTopSitesPresenter.kt
+@@ -48,6 +48,7 @@ internal class DefaultTopSitesPresenter(
+                 totalSites = innerConfig.totalSites,
+                 frecencyConfig = innerConfig.frecencyConfig,
+                 providerConfig = innerConfig.providerConfig,
++                showTopRecentSites = innerConfig.showTopRecentSites,
+             )
+ 
+             scope.launch(Dispatchers.Main) {

@@ -12,7 +12,17 @@ interface ToolbarMenu {
     sealed class Item {
         object Settings : Item()
         data class RequestDesktop(val isChecked: Boolean) : Item()
+
+        /**
+         * Opens the current private tabs in a regular tab.
+         */
+        object OpenInRegularTab : Item()
         object FindInPage : Item()
+
+        /**
+         * Opens the translations flow.
+         */
+        object Translate : Item()
         object Share : Item()
         data class Back(val viewHistory: Boolean) : Item()
         data class Forward(val viewHistory: Boolean) : Item()
@@ -20,6 +30,11 @@ interface ToolbarMenu {
         object Stop : Item()
         object OpenInFenix : Item()
         object SaveToCollection : Item()
+
+        /**
+         * Prints the currently displayed page content.
+         */
+        object PrintContent : Item()
         object AddToTopSites : Item()
         object RemoveFromTopSites : Item()
         object InstallPwaToHomeScreen : Item()
@@ -33,6 +48,11 @@ interface ToolbarMenu {
         object CustomizeReaderView : Item()
         object Bookmarks : Item()
         object History : Item()
+
+        /**
+         * The Passwords menu item
+         */
+        object Passwords : Item()
         object Downloads : Item()
         object NewTab : Item()
     }

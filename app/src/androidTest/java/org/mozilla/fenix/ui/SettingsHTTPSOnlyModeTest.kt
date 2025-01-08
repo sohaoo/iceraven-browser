@@ -4,18 +4,21 @@
 
 package org.mozilla.fenix.ui
 
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.core.net.toUri
-import androidx.test.espresso.Espresso.pressBack
 import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.customannotations.SmokeTest
 import org.mozilla.fenix.helpers.HomeActivityIntentTestRule
+import org.mozilla.fenix.helpers.MatcherHelper.itemContainingText
+import org.mozilla.fenix.helpers.TestAssetHelper.waitingTimeLong
 import org.mozilla.fenix.helpers.TestHelper.exitMenu
-import org.mozilla.fenix.ui.robots.browserScreen
+import org.mozilla.fenix.helpers.TestSetup
+import org.mozilla.fenix.ui.robots.clickPageObject
 import org.mozilla.fenix.ui.robots.homeScreen
 import org.mozilla.fenix.ui.robots.navigationToolbar
 
-class SettingsHTTPSOnlyModeTest {
+class SettingsHTTPSOnlyModeTest : TestSetup() {
     private val httpPageUrl = "http://example.com/"
     private val httpsPageUrl = "https://example.com/"
     private val insecureHttpPage = "http.badssl.com"
@@ -28,8 +31,12 @@ class SettingsHTTPSOnlyModeTest {
     private val httpsOnlyBackButton = "Go Back (Recommended)"
 
     @get:Rule
-    val activityTestRule = HomeActivityIntentTestRule.withDefaultSettingsOverrides(skipOnboarding = true)
+    val activityTestRule =
+        AndroidComposeTestRule(
+            HomeActivityIntentTestRule.withDefaultSettingsOverrides(),
+        ) { it.activity }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1724825
     @Test
     fun httpsOnlyModeMenuItemsTest() {
         homeScreen {
@@ -56,6 +63,7 @@ class SettingsHTTPSOnlyModeTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1724827
     @SmokeTest
     @Test
     fun httpsOnlyModeEnabledInNormalBrowsingTest() {
@@ -74,7 +82,7 @@ class SettingsHTTPSOnlyModeTest {
         }
         navigationToolbar {
         }.enterURLAndEnterToBrowser(httpPageUrl.toUri()) {
-            waitForPageToLoad()
+            waitForPageToLoad(pageLoadWaitingTime = waitingTimeLong)
         }.openNavigationToolbar {
             verifyUrl(httpsPageUrl)
         }.enterURLAndEnterToBrowser(insecureHttpPage.toUri()) {
@@ -82,17 +90,18 @@ class SettingsHTTPSOnlyModeTest {
             verifyPageContent(httpsOnlyErrorMessage)
             verifyPageContent(httpsOnlyErrorMessage2)
             verifyPageContent(httpsOnlyBackButton)
-            clickLinkMatchingText(httpsOnlyBackButton)
+            clickPageObject(itemContainingText(httpsOnlyBackButton))
             verifyPageContent("Example Domain")
         }.openNavigationToolbar {
         }.enterURLAndEnterToBrowser(insecureHttpPage.toUri()) {
-            clickLinkMatchingText(httpsOnlyContinueButton)
+            clickPageObject(itemContainingText(httpsOnlyContinueButton))
             verifyPageContent("http.badssl.com")
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2091057
     @Test
-    fun httpsOnlyModeExceptionPersistsForCurrentSession() {
+    fun httpsOnlyModeExceptionPersistsForCurrentSessionTest() {
         homeScreen {
         }.openThreeDotMenu {
         }.openSettings {
@@ -107,9 +116,9 @@ class SettingsHTTPSOnlyModeTest {
         navigationToolbar {
         }.enterURLAndEnterToBrowser(insecureHttpPage.toUri()) {
             verifyPageContent(httpsOnlyErrorTitle)
-            clickLinkMatchingText(httpsOnlyContinueButton)
+            clickPageObject(itemContainingText(httpsOnlyContinueButton))
             verifyPageContent("http.badssl.com")
-        }.openTabDrawer {
+        }.openTabDrawer(activityTestRule) {
             closeTab()
         }
         navigationToolbar {
@@ -118,6 +127,7 @@ class SettingsHTTPSOnlyModeTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1724828
     @Test
     fun httpsOnlyModeEnabledOnlyInPrivateBrowsingTest() {
         homeScreen {
@@ -140,7 +150,7 @@ class SettingsHTTPSOnlyModeTest {
         }.togglePrivateBrowsingMode()
         navigationToolbar {
         }.enterURLAndEnterToBrowser(httpPageUrl.toUri()) {
-            waitForPageToLoad()
+            verifyPageContent("Example Domain")
         }.openNavigationToolbar {
             verifyUrl(httpsPageUrl)
         }.enterURLAndEnterToBrowser(insecureHttpPage.toUri()) {
@@ -148,15 +158,12 @@ class SettingsHTTPSOnlyModeTest {
             verifyPageContent(httpsOnlyErrorMessage)
             verifyPageContent(httpsOnlyErrorMessage2)
             verifyPageContent(httpsOnlyBackButton)
-            clickLinkMatchingText(httpsOnlyBackButton)
+            clickPageObject(itemContainingText(httpsOnlyBackButton))
             verifyPageContent("Example Domain")
-        }.openNavigationToolbar {
-        }.enterURLAndEnterToBrowser(insecureHttpPage.toUri()) {
-            clickLinkMatchingText(httpsOnlyContinueButton)
-            verifyPageContent("http.badssl.com")
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2091058
     @Test
     fun turnOffHttpsOnlyModeTest() {
         homeScreen {
@@ -172,16 +179,18 @@ class SettingsHTTPSOnlyModeTest {
         }
         navigationToolbar {
         }.enterURLAndEnterToBrowser(httpPageUrl.toUri()) {
-            waitForPageToLoad()
+            waitForPageToLoad(pageLoadWaitingTime = waitingTimeLong)
         }.openNavigationToolbar {
             verifyUrl(httpsPageUrl)
-            pressBack()
-        }
-        browserScreen {
-        }.openTabDrawer {
-            closeTab()
-        }
-        homeScreen {
+        }.enterURLAndEnterToBrowser(insecureHttpPage.toUri()) {
+            verifyPageContent(httpsOnlyErrorTitle)
+            verifyPageContent(httpsOnlyErrorMessage)
+            verifyPageContent(httpsOnlyErrorMessage2)
+            verifyPageContent(httpsOnlyBackButton)
+            clickPageObject(itemContainingText(httpsOnlyBackButton))
+            verifyPageContent("Example Domain")
+        }.openNavigationToolbar {
+        }.goBackToBrowserScreen {
         }.openThreeDotMenu {
         }.openSettings {
         }.openHttpsOnlyModeMenu {
@@ -192,11 +201,8 @@ class SettingsHTTPSOnlyModeTest {
             exitMenu()
         }
         navigationToolbar {
-        }.enterURLAndEnterToBrowser(httpPageUrl.toUri()) {
-            waitForPageToLoad()
-        }.openNavigationToolbar {
-            verifyUrl(httpPageUrl)
-            pressBack()
+        }.enterURLAndEnterToBrowser(insecureHttpPage.toUri()) {
+            verifyPageContent("http.badssl.com")
         }
     }
 }

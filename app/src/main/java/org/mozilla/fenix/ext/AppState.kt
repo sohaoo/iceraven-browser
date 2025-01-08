@@ -14,7 +14,7 @@ import org.mozilla.fenix.components.appstate.AppState
 import org.mozilla.fenix.home.blocklist.BlocklistHandler
 import org.mozilla.fenix.home.pocket.POCKET_STORIES_DEFAULT_CATEGORY_NAME
 import org.mozilla.fenix.home.pocket.PocketRecommendedStoriesCategory
-import org.mozilla.fenix.home.pocket.PocketStory
+import org.mozilla.fenix.home.pocket.ui.PocketStory
 import org.mozilla.fenix.home.recentsyncedtabs.RecentSyncedTabState
 import org.mozilla.fenix.utils.Settings
 
@@ -38,19 +38,19 @@ internal const val POCKET_SPONSORED_STORIES_TO_SHOW_COUNT = 2
  * @return a list of [PocketStory]es from the currently selected categories.
  */
 fun AppState.getFilteredStories(): List<PocketStory> {
-    val recommendedStories = when (pocketStoriesCategoriesSelections.isEmpty()) {
+    val recommendedStories = when (recommendationState.pocketStoriesCategoriesSelections.isEmpty()) {
         true -> {
-            pocketStoriesCategories
+            recommendationState.pocketStoriesCategories
                 .find { it.name == POCKET_STORIES_DEFAULT_CATEGORY_NAME }
                 ?.stories
                 ?.sortedBy { it.timesShown }
                 ?.take(POCKET_STORIES_TO_SHOW_COUNT) ?: emptyList()
         }
         false -> {
-            val oldestSortedCategories = pocketStoriesCategoriesSelections
+            val oldestSortedCategories = recommendationState.pocketStoriesCategoriesSelections
                 .sortedByDescending { it.selectionTimestamp }
                 .mapNotNull { selectedCategory ->
-                    pocketStoriesCategories.find {
+                    recommendationState.pocketStoriesCategories.find {
                         it.name == selectedCategory.name
                     }
                 }
@@ -70,7 +70,7 @@ fun AppState.getFilteredStories(): List<PocketStory> {
     }
 
     val sponsoredStories = getFilteredSponsoredStories(
-        stories = pocketSponsoredStories,
+        stories = recommendationState.pocketSponsoredStories,
         limit = POCKET_SPONSORED_STORIES_TO_SHOW_COUNT,
     )
 
@@ -170,7 +170,7 @@ internal fun getFilteredSponsoredStories(
 fun AppState.filterState(blocklistHandler: BlocklistHandler): AppState =
     with(blocklistHandler) {
         copy(
-            recentBookmarks = recentBookmarks.filteredByBlocklist(),
+            bookmarks = bookmarks.filteredByBlocklist(),
             recentTabs = recentTabs.filteredByBlocklist().filterContile(),
             recentHistory = recentHistory.filteredByBlocklist().filterContile(),
             recentSyncedTabState = recentSyncedTabState.filteredByBlocklist().filterContile(),
@@ -187,9 +187,8 @@ fun AppState.shouldShowRecentTabs(settings: Settings): Boolean {
 }
 
 /**
- * Determines whether a recent synced tab section should be shown, based on user preference
- * and the availability of Synced tabs.
+ * Determines whether a recent synced tab section should be shown, based on the availability of Synced tabs.
  */
-fun AppState.shouldShowRecentSyncedTabs(settings: Settings): Boolean {
-    return (settings.enableTaskContinuityEnhancements && recentSyncedTabState is RecentSyncedTabState.Success)
+fun AppState.shouldShowRecentSyncedTabs(): Boolean {
+    return recentSyncedTabState is RecentSyncedTabState.Success
 }

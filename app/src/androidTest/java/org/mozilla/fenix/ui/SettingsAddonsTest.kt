@@ -4,52 +4,34 @@
 
 package org.mozilla.fenix.ui
 
-import android.view.View
-import okhttp3.mockwebserver.MockWebServer
-import org.junit.After
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.R
 import org.mozilla.fenix.customannotations.SmokeTest
 import org.mozilla.fenix.ext.settings
-import org.mozilla.fenix.helpers.AndroidAssetDispatcher
+import org.mozilla.fenix.helpers.AppAndSystemHelper.registerAndCleanupIdlingResources
 import org.mozilla.fenix.helpers.HomeActivityIntentTestRule
 import org.mozilla.fenix.helpers.RecyclerViewIdlingResource
 import org.mozilla.fenix.helpers.TestAssetHelper.getEnhancedTrackingProtectionAsset
-import org.mozilla.fenix.helpers.TestAssetHelper.getGenericAsset
-import org.mozilla.fenix.helpers.TestHelper.registerAndCleanupIdlingResources
-import org.mozilla.fenix.helpers.ViewVisibilityIdlingResource
+import org.mozilla.fenix.helpers.TestHelper
+import org.mozilla.fenix.helpers.TestHelper.verifySnackBarText
+import org.mozilla.fenix.helpers.TestHelper.waitUntilSnackbarGone
+import org.mozilla.fenix.helpers.TestSetup
 import org.mozilla.fenix.ui.robots.addonsMenu
 import org.mozilla.fenix.ui.robots.homeScreen
-import org.mozilla.fenix.ui.robots.navigationToolbar
 
 /**
  *  Tests for verifying the functionality of installing or removing addons
  *
  */
-class SettingsAddonsTest {
-    private lateinit var mockWebServer: MockWebServer
-
+class SettingsAddonsTest : TestSetup() {
     @get:Rule
     val activityTestRule = HomeActivityIntentTestRule.withDefaultSettingsOverrides()
 
-    @Before
-    fun setUp() {
-        mockWebServer = MockWebServer().apply {
-            dispatcher = AndroidAssetDispatcher()
-            start()
-        }
-    }
-
-    @After
-    fun tearDown() {
-        mockWebServer.shutdown()
-    }
-
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/875780
     // Walks through settings add-ons menu to ensure all items are present
     @Test
-    fun settingsAddonsItemsTest() {
+    fun verifyAddonsListItemsTest() {
         homeScreen {
         }.openThreeDotMenu {
         }.openSettings {
@@ -64,9 +46,10 @@ class SettingsAddonsTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/875781
     // Installs an add-on from the Add-ons menu and verifies the prompts
     @Test
-    fun installAddonTest() {
+    fun installAddonFromMainMenuTest() {
         val addonName = "uBlock Origin"
 
         homeScreen {}
@@ -78,8 +61,10 @@ class SettingsAddonsTest {
                         1,
                     ),
                 ) {
+                    waitForAddonsListProgressBarToBeGone()
                     clickInstallAddon(addonName)
                 }
+                verifyAddonDownloadOverlay()
                 verifyAddonPermissionPrompt(addonName)
                 cancelInstallAddon()
                 clickInstallAddon(addonName)
@@ -92,67 +77,92 @@ class SettingsAddonsTest {
             }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/561597
     // Installs an addon, then uninstalls it
     @Test
-    fun verifyAddonsCanBeUninstalled() {
+    fun verifyAddonsCanBeUninstalledTest() {
         val addonName = "uBlock Origin"
 
         addonsMenu {
-            installAddon(addonName)
-            verifyAddonInstallCompleted(addonName, activityTestRule)
+            installAddon(addonName, activityTestRule)
             closeAddonInstallCompletePrompt()
         }.openDetailedMenuForAddon(addonName) {
-            registerAndCleanupIdlingResources(
-                ViewVisibilityIdlingResource(
-                    activityTestRule.activity.findViewById(R.id.addon_container),
-                    View.VISIBLE,
-                ),
-            ) {}
-        }.removeAddon {
+        }.removeAddon(activityTestRule) {
+            verifySnackBarText("Successfully uninstalled $addonName")
+            waitUntilSnackbarGone()
+        }.goBack {
+        }.openThreeDotMenu {
+        }.openAddonsManagerMenu {
             verifyAddonCanBeInstalled(addonName)
         }
     }
 
-    // Installs uBlock add-on and checks that the app doesn't crash while loading pages with trackers
+    // TODO: Harden to dynamically install addons from position
+    //   in list of detected addons on screen instead of hard-coded values.
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/561600
+    // Installs 2 add-on and checks that the app doesn't crash while navigating the app
     @SmokeTest
     @Test
     fun noCrashWithAddonInstalledTest() {
         // setting ETP to Strict mode to test it works with add-ons
         activityTestRule.activity.settings().setStrictETP()
 
-        val addonName = "uBlock Origin"
+        val uBlockAddon = "uBlock Origin"
+        val darkReaderAddon = "Dark Reader"
         val trackingProtectionPage = getEnhancedTrackingProtectionAsset(mockWebServer)
 
         addonsMenu {
-            installAddon(addonName)
-            verifyAddonInstallCompleted(addonName, activityTestRule)
+            installAddon(uBlockAddon, activityTestRule)
+            closeAddonInstallCompletePrompt()
+            installAddon(darkReaderAddon, activityTestRule)
             closeAddonInstallCompletePrompt()
         }.goBack {
         }.openNavigationToolbar {
         }.enterURLAndEnterToBrowser(trackingProtectionPage.url) {
             verifyUrl(trackingProtectionPage.url.toString())
+        }.goToHomescreen {
+        }.openTopSiteTabWithTitle("Top Articles") {
+        }.openThreeDotMenu {
+        }.openSettings {
+            verifySettingsView()
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/561594
     @SmokeTest
     @Test
-    fun useAddonsInPrivateModeTest() {
+    fun verifyUBlockWorksInPrivateModeTest() {
+        TestHelper.appContext.settings().shouldShowCookieBannersCFR = false
         val addonName = "uBlock Origin"
-        val genericPage = getGenericAsset(mockWebServer, 1)
 
         addonsMenu {
-            installAddon(addonName)
-            verifyAddonInstallCompleted(addonName, activityTestRule)
-            selectAllowInPrivateBrowsing()
+            installAddonInPrivateMode(addonName, activityTestRule)
             closeAddonInstallCompletePrompt()
         }.goBack {
-        }.togglePrivateBrowsingMode()
-        navigationToolbar {
-        }.enterURLAndEnterToBrowser(genericPage.url) {
-            verifyPageContent(genericPage.content)
+        }.openContextMenuOnSponsoredShortcut("Top Articles") {
+        }.openTopSiteInPrivateTab {
+            verifyPocketPageContent()
         }.openThreeDotMenu {
             openAddonsSubList()
             verifyAddonAvailableInMainMenu(addonName)
+            verifyTrackersBlockedByUblock()
+        }
+    }
+
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/875785
+    @Test
+    fun verifyUBlockWorksInNormalModeTest() {
+        val addonName = "uBlock Origin"
+
+        addonsMenu {
+            installAddon(addonName, activityTestRule)
+            closeAddonInstallCompletePrompt()
+        }.goBack {
+        }.openTopSiteTabWithTitle("Top Articles") {
+            verifyUrl("getpocket.com/explore")
+        }.openThreeDotMenu {
+            openAddonsSubList()
+            verifyTrackersBlockedByUblock()
         }
     }
 }

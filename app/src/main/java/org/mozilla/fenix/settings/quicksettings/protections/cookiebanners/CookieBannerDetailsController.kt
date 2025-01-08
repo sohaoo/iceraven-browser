@@ -6,6 +6,7 @@ package org.mozilla.fenix.settings.quicksettings.protections.cookiebanners
 
 import android.content.Context
 import androidx.annotation.VisibleForTesting
+import androidx.compose.material.SnackbarDuration
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
@@ -21,13 +22,12 @@ import mozilla.components.concept.engine.cookiehandling.CookieBannersStorage
 import mozilla.components.concept.engine.permission.SitePermissions
 import mozilla.components.feature.session.SessionUseCases
 import mozilla.components.lib.publicsuffixlist.PublicSuffixList
-import mozilla.components.service.glean.private.NoExtras
+import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.fenix.GleanMetrics.CookieBanners
 import org.mozilla.fenix.GleanMetrics.Pings
 import org.mozilla.fenix.R
 import org.mozilla.fenix.addons.showSnackBar
 import org.mozilla.fenix.browser.BrowserFragmentDirections
-import org.mozilla.fenix.components.FenixSnackbar
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.getRootView
 import org.mozilla.fenix.ext.runIfFragmentIsAttached
@@ -164,9 +164,12 @@ class DefaultCookieBannerDetailsController(
                     fragment.activity?.getRootView()?.let { view ->
                         showSnackBar(
                             view,
-                            context.getString(R.string.cookie_banner_handling_report_site_snack_bar_text),
-                            FenixSnackbar.LENGTH_LONG,
+                            context.getString(R.string.cookie_banner_handling_report_site_snack_bar_text_2),
+                            SnackbarDuration.Long,
                         )
+                    }
+                    withContext(Dispatchers.IO) {
+                        cookieBannersStorage.saveSiteDomain(domain)
                     }
                 }
             }

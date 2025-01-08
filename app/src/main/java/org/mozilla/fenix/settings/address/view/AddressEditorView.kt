@@ -16,6 +16,7 @@ import mozilla.components.concept.storage.Address
 import mozilla.components.concept.storage.UpdatableAddressFields
 import mozilla.components.support.ktx.android.view.hideKeyboard
 import mozilla.components.support.ktx.android.view.showKeyboard
+import mozilla.components.ui.widgets.withCenterAlignedButtons
 import org.mozilla.fenix.GleanMetrics.Addresses
 import org.mozilla.fenix.R
 import org.mozilla.fenix.databinding.FragmentAddressEditorBinding
@@ -46,7 +47,7 @@ class AddressEditorView(
      * Binds the view in the [AddressEditorFragment], using the current [Address] if available.
      */
     fun bind() {
-        binding.firstNameInput.apply {
+        binding.nameInput.apply {
             requestFocus()
             placeCursorAtEnd()
             showKeyboard()
@@ -63,11 +64,7 @@ class AddressEditorView(
         address?.let { address ->
             binding.emailInput.setText(address.email)
             binding.phoneInput.setText(address.tel)
-
-            binding.firstNameInput.setText(address.givenName)
-            binding.middleNameInput.setText(address.additionalName)
-            binding.lastNameInput.setText(address.familyName)
-
+            binding.nameInput.setText(address.name)
             binding.streetAddressInput.setText(address.streetAddress)
             binding.cityInput.setText(address.addressLevel2)
             binding.zipInput.setText(address.postalCode)
@@ -87,9 +84,7 @@ class AddressEditorView(
         binding.root.hideKeyboard()
 
         val addressFields = UpdatableAddressFields(
-            givenName = binding.firstNameInput.text.toString(),
-            additionalName = binding.middleNameInput.text.toString(),
-            familyName = binding.lastNameInput.text.toString(),
+            name = binding.nameInput.text.toString(),
             organization = "",
             streetAddress = binding.streetAddressInput.text.toString(),
             addressLevel3 = "",
@@ -112,7 +107,7 @@ class AddressEditorView(
 
     internal fun showConfirmDeleteAddressDialog(context: Context, guid: String) {
         AlertDialog.Builder(context).apply {
-            setMessage(R.string.addressess_confirm_dialog_message)
+            setMessage(R.string.addressess_confirm_dialog_message_2)
             setNegativeButton(R.string.addressess_confirm_dialog_cancel_button) { dialog: DialogInterface, _ ->
                 dialog.cancel()
             }
@@ -120,7 +115,7 @@ class AddressEditorView(
                 interactor.onDeleteAddress(guid)
                 Addresses.deleted.add()
             }
-            create()
+            create().withCenterAlignedButtons()
         }.show()
     }
 

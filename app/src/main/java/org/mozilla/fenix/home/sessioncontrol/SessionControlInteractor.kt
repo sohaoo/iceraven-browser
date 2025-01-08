@@ -11,30 +11,21 @@ import mozilla.components.service.nimbus.messaging.Message
 import mozilla.components.service.pocket.PocketStory
 import org.mozilla.fenix.browser.browsingmode.BrowsingMode
 import org.mozilla.fenix.components.appstate.AppState
+import org.mozilla.fenix.home.bookmarks.Bookmark
+import org.mozilla.fenix.home.bookmarks.controller.BookmarksController
+import org.mozilla.fenix.home.interactor.HomepageInteractor
 import org.mozilla.fenix.home.pocket.PocketRecommendedStoriesCategory
-import org.mozilla.fenix.home.pocket.PocketStoriesController
-import org.mozilla.fenix.home.pocket.PocketStoriesInteractor
+import org.mozilla.fenix.home.pocket.controller.PocketStoriesController
 import org.mozilla.fenix.home.privatebrowsing.controller.PrivateBrowsingController
-import org.mozilla.fenix.home.privatebrowsing.interactor.PrivateBrowsingInteractor
-import org.mozilla.fenix.home.recentbookmarks.RecentBookmark
-import org.mozilla.fenix.home.recentbookmarks.controller.RecentBookmarksController
-import org.mozilla.fenix.home.recentbookmarks.interactor.RecentBookmarksInteractor
 import org.mozilla.fenix.home.recentsyncedtabs.RecentSyncedTab
 import org.mozilla.fenix.home.recentsyncedtabs.controller.RecentSyncedTabController
-import org.mozilla.fenix.home.recentsyncedtabs.interactor.RecentSyncedTabInteractor
 import org.mozilla.fenix.home.recenttabs.RecentTab
 import org.mozilla.fenix.home.recenttabs.controller.RecentTabController
-import org.mozilla.fenix.home.recenttabs.interactor.RecentTabInteractor
 import org.mozilla.fenix.home.recentvisits.RecentlyVisitedItem.RecentHistoryGroup
 import org.mozilla.fenix.home.recentvisits.RecentlyVisitedItem.RecentHistoryHighlight
 import org.mozilla.fenix.home.recentvisits.controller.RecentVisitsController
-import org.mozilla.fenix.home.recentvisits.interactor.RecentVisitsInteractor
 import org.mozilla.fenix.home.toolbar.ToolbarController
-import org.mozilla.fenix.home.toolbar.ToolbarInteractor
-import org.mozilla.fenix.onboarding.controller.OnboardingController
-import org.mozilla.fenix.onboarding.interactor.OnboardingInteractor
 import org.mozilla.fenix.search.toolbar.SearchSelectorController
-import org.mozilla.fenix.search.toolbar.SearchSelectorInteractor
 import org.mozilla.fenix.search.toolbar.SearchSelectorMenu
 import org.mozilla.fenix.wallpapers.WallpaperState
 
@@ -85,7 +76,7 @@ interface CollectionInteractor {
      * @param collection The collection of tabs that will be modified.
      * @param tab The tab to remove from the tab collection.
      */
-    fun onCollectionRemoveTab(collection: TabCollection, tab: Tab, wasSwiped: Boolean)
+    fun onCollectionRemoveTab(collection: TabCollection, tab: Tab)
 
     /**
      * Shares the tabs in the given tab collection. Called when a user clicks on the Collection
@@ -151,11 +142,11 @@ interface TopSiteInteractor {
     fun onOpenInPrivateTabClicked(topSite: TopSite)
 
     /**
-     * Opens a dialog to rename the given top site. Called when an user clicks on the "Rename" top site menu item.
+     * Opens a dialog to edit the given top site. Called when an user clicks on the "Edit" top site menu item.
      *
-     * @param topSite The top site that will be renamed.
+     * @param topSite The top site that will be edited.
      */
-    fun onRenameTopSiteClicked(topSite: TopSite)
+    fun onEditTopSiteClicked(topSite: TopSite)
 
     /**
      * Removes the given top site. Called when an user clicks on the "Remove" top site menu item.
@@ -183,6 +174,14 @@ interface TopSiteInteractor {
      * "Our sponsors & your privacy" top site menu item.
      */
     fun onSponsorPrivacyClicked()
+
+    /**
+     * Handles long click event for the given top site. Called when an user long clicks on a top
+     * site.
+     *
+     * @param topSite The top site that was long clicked.
+     */
+    fun onTopSiteLongClicked(topSite: TopSite)
 }
 
 interface MessageCardInteractor {
@@ -222,28 +221,13 @@ class SessionControlInteractor(
     private val controller: SessionControlController,
     private val recentTabController: RecentTabController,
     private val recentSyncedTabController: RecentSyncedTabController,
-    private val recentBookmarksController: RecentBookmarksController,
+    private val bookmarksController: BookmarksController,
     private val recentVisitsController: RecentVisitsController,
     private val pocketStoriesController: PocketStoriesController,
     private val privateBrowsingController: PrivateBrowsingController,
-    private val onboardingController: OnboardingController,
     private val searchSelectorController: SearchSelectorController,
     private val toolbarController: ToolbarController,
-) : CollectionInteractor,
-    OnboardingInteractor,
-    TopSiteInteractor,
-    TabSessionInteractor,
-    ToolbarInteractor,
-    MessageCardInteractor,
-    RecentTabInteractor,
-    RecentSyncedTabInteractor,
-    RecentBookmarksInteractor,
-    RecentVisitsInteractor,
-    CustomizeHomeIteractor,
-    PocketStoriesInteractor,
-    PrivateBrowsingInteractor,
-    SearchSelectorInteractor,
-    WallpaperInteractor {
+) : HomepageInteractor {
 
     override fun onCollectionAddTabTapped(collection: TabCollection) {
         controller.handleCollectionAddTabTapped(collection)
@@ -257,8 +241,8 @@ class SessionControlInteractor(
         controller.handleCollectionOpenTabsTapped(collection)
     }
 
-    override fun onCollectionRemoveTab(collection: TabCollection, tab: Tab, wasSwiped: Boolean) {
-        controller.handleCollectionRemoveTab(collection, tab, wasSwiped)
+    override fun onCollectionRemoveTab(collection: TabCollection, tab: Tab) {
+        controller.handleCollectionRemoveTab(collection, tab)
     }
 
     override fun onCollectionShareTabsClicked(collection: TabCollection) {
@@ -273,8 +257,8 @@ class SessionControlInteractor(
         controller.handleOpenInPrivateTabClicked(topSite)
     }
 
-    override fun onRenameTopSiteClicked(topSite: TopSite) {
-        controller.handleRenameTopSiteClicked(topSite)
+    override fun onEditTopSiteClicked(topSite: TopSite) {
+        controller.handleEditTopSiteClicked(topSite)
     }
 
     override fun onRemoveTopSiteClicked(topSite: TopSite) {
@@ -297,12 +281,8 @@ class SessionControlInteractor(
         controller.handleSponsorPrivacyClicked()
     }
 
-    override fun onStartBrowsingClicked() {
-        onboardingController.handleStartBrowsingClicked()
-    }
-
-    override fun onReadPrivacyNoticeClicked() {
-        onboardingController.handleReadPrivacyNoticeClicked()
+    override fun onTopSiteLongClicked(topSite: TopSite) {
+        controller.handleTopSiteLongClicked(topSite)
     }
 
     override fun showWallpapersOnboardingDialog(state: WallpaperState): Boolean {
@@ -321,8 +301,8 @@ class SessionControlInteractor(
         privateBrowsingController.handleLearnMoreClicked()
     }
 
-    override fun onPrivateModeButtonClicked(newMode: BrowsingMode, userHasBeenOnboarded: Boolean) {
-        privateBrowsingController.handlePrivateModeButtonClicked(newMode, userHasBeenOnboarded)
+    override fun onPrivateModeButtonClicked(newMode: BrowsingMode) {
+        privateBrowsingController.handlePrivateModeButtonClicked(newMode)
     }
 
     override fun onPasteAndGo(clipboardText: String) {
@@ -365,16 +345,16 @@ class SessionControlInteractor(
         recentSyncedTabController.handleRecentSyncedTabRemoved(tab)
     }
 
-    override fun onRecentBookmarkClicked(bookmark: RecentBookmark) {
-        recentBookmarksController.handleBookmarkClicked(bookmark)
+    override fun onBookmarkClicked(bookmark: Bookmark) {
+        bookmarksController.handleBookmarkClicked(bookmark)
     }
 
     override fun onShowAllBookmarksClicked() {
-        recentBookmarksController.handleShowAllBookmarksClicked()
+        bookmarksController.handleShowAllBookmarksClicked()
     }
 
-    override fun onRecentBookmarkRemoved(bookmark: RecentBookmark) {
-        recentBookmarksController.handleBookmarkRemoved(bookmark)
+    override fun onBookmarkRemoved(bookmark: Bookmark) {
+        bookmarksController.handleBookmarkRemoved(bookmark)
     }
 
     override fun onHistoryShowAllClicked() {

@@ -82,7 +82,7 @@ class AbstractBrowserTabViewHolderTest {
 
         holder.itemView.performClick()
 
-        verify { interactor.onMultiSelectClicked(tab, holder.featureName) }
+        verify { interactor.onTabSelected(tab, holder.featureName) }
     }
 
     @Test
@@ -159,7 +159,6 @@ class AbstractBrowserTabViewHolderTest {
         verify { mediaSessionController.pause() }
     }
 
-    @Suppress("LongParameterList")
     class TestTabTrayViewHolder(
         itemView: View,
         imageLoader: ImageLoader,

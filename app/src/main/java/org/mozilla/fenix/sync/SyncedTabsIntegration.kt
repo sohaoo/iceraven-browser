@@ -14,6 +14,7 @@ import org.mozilla.fenix.ext.components
 
 /**
  * Starts and stops SyncedTabsStorage based on the authentication state.
+ *
  * @param context Used to get synced tabs storage, due to cyclic dependency.
  * @param accountManager Used to check and observe account authentication state.
  */
@@ -27,7 +28,7 @@ class SyncedTabsIntegration(
         accountManager.register(
             accountObserver,
             owner = ProcessLifecycleOwner.get(),
-            autoPause = true,
+            autoPause = false, // races with lifecycle, bug 1917989
         )
     }
 }

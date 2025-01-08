@@ -5,6 +5,7 @@
 package org.mozilla.fenix.tabstray.browser
 
 import android.view.View
+import androidx.compose.material.SnackbarDuration
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,10 +16,11 @@ import androidx.lifecycle.LifecycleOwner
 import mozilla.components.lib.state.ext.observeAsComposableState
 import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.fenix.R
-import org.mozilla.fenix.components.FenixSnackbar
 import org.mozilla.fenix.components.components
 import org.mozilla.fenix.compose.ComposeViewHolder
-import org.mozilla.fenix.tabstray.TabsTrayFragment
+import org.mozilla.fenix.compose.snackbar.Snackbar
+import org.mozilla.fenix.compose.snackbar.SnackbarState
+import org.mozilla.fenix.tabstray.TabsTrayFragment.Companion.ELEVATION
 import org.mozilla.fenix.tabstray.TabsTrayState
 import org.mozilla.fenix.tabstray.TabsTrayStore
 import org.mozilla.fenix.tabstray.TrayPagerAdapter
@@ -34,7 +36,6 @@ import org.mozilla.fenix.GleanMetrics.TabsTray as TabsTrayMetrics
  * @param interactor [InactiveTabsInteractor] used to respond to interactions with the inactive tabs header
  * and the auto close dialog.
  */
-@Suppress("LongParameterList")
 class InactiveTabViewHolder(
     composeView: ComposeView,
     lifecycleOwner: LifecycleOwner,
@@ -61,6 +62,7 @@ class InactiveTabViewHolder(
                 inactiveTabs = inactiveTabs,
                 expanded = expanded,
                 showAutoCloseDialog = showAutoClosePrompt,
+                showCFR = false, // The CFR in XML is handled by [TabsTrayInactiveTabsOnboardingBinding]
                 onHeaderClick = { interactor.onInactiveTabsHeaderClicked(!expanded) },
                 onDeleteAllButtonClick = interactor::onDeleteAllInactiveTabsClicked,
                 onAutoCloseDismissClick = {
@@ -74,6 +76,9 @@ class InactiveTabViewHolder(
                 },
                 onTabClick = interactor::onInactiveTabClicked,
                 onTabCloseClick = interactor::onInactiveTabClosed,
+                onCFRShown = {},
+                onCFRClick = {},
+                onCFRDismiss = {},
             )
         }
     }
@@ -82,15 +87,16 @@ class InactiveTabViewHolder(
         get() = false
 
     private fun showConfirmationSnackbar() {
-        val context = composeView.context
-        val text = context.getString(R.string.inactive_tabs_auto_close_message_snackbar)
-        val snackbar = FenixSnackbar.make(
-            view = composeView,
-            duration = FenixSnackbar.LENGTH_SHORT,
-            isDisplayedWithBrowserToolbar = true,
-        ).setText(text)
-        snackbar.view.elevation = TabsTrayFragment.ELEVATION
-        snackbar.show()
+        Snackbar.make(
+            snackBarParentView = composeView.rootView,
+            snackbarState = SnackbarState(
+                message = composeView.context.getString(R.string.inactive_tabs_auto_close_message_snackbar),
+                duration = SnackbarDuration.Long,
+            ),
+        ).apply {
+            view.elevation = ELEVATION
+            show()
+        }
     }
 
     companion object {

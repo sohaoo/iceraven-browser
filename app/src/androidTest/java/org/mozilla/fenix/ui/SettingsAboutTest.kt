@@ -4,18 +4,15 @@
 
 package org.mozilla.fenix.ui
 
-import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiSelector
-import okhttp3.mockwebserver.MockWebServer
-import org.junit.After
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mozilla.fenix.helpers.AndroidAssetDispatcher
+import org.mozilla.fenix.BuildConfig
+import org.mozilla.fenix.helpers.AppAndSystemHelper.runWithCondition
 import org.mozilla.fenix.helpers.HomeActivityIntentTestRule
 import org.mozilla.fenix.helpers.RetryTestRule
 import org.mozilla.fenix.helpers.TestHelper.mDevice
+import org.mozilla.fenix.helpers.TestSetup
 import org.mozilla.fenix.ui.robots.clickRateButtonGooglePlay
 import org.mozilla.fenix.ui.robots.homeScreen
 
@@ -24,54 +21,30 @@ import org.mozilla.fenix.ui.robots.homeScreen
  *
  */
 
-class SettingsAboutTest {
-    /* ktlint-disable no-blank-line-before-rbrace */ // This imposes unreadable grouping.
-
-    private lateinit var mDevice: UiDevice
-    private lateinit var mockWebServer: MockWebServer
-
+class SettingsAboutTest : TestSetup() {
     @get:Rule
-    val activityIntentTestRule = HomeActivityIntentTestRule()
+    val activityIntentTestRule = HomeActivityIntentTestRule.withDefaultSettingsOverrides()
 
     @Rule
     @JvmField
     val retryTestRule = RetryTestRule(3)
 
-    @Before
-    fun setUp() {
-        mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-        mockWebServer = MockWebServer().apply {
-            dispatcher = AndroidAssetDispatcher()
-            start()
-        }
-    }
-
-    @After
-    fun tearDown() {
-        mockWebServer.shutdown()
-    }
-
-    // Walks through settings menu and sub-menus to ensure all items are present
+    // Walks through the About settings menu to ensure all items are present
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2092700
     @Test
-    fun settingsAboutItemsTest() {
-        // ABOUT
+    fun verifyAboutSettingsItemsTest() {
         homeScreen {
         }.openThreeDotMenu {
         }.openSettings {
-            // ABOUT
             verifyAboutHeading()
             verifyRateOnGooglePlay()
             verifyAboutFirefoxPreview()
         }
     }
 
-    // ABOUT
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/246966
     @Test
-    fun verifyRateOnGooglePlayRedirect() {
-        activityIntentTestRule.applySettingsExceptions {
-            it.isTCPCFREnabled = false
-        }
-
+    fun verifyRateOnGooglePlayButton() {
         homeScreen {
         }.openThreeDotMenu {
         }.openSettings {
@@ -83,17 +56,27 @@ class SettingsAboutTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/246961
     @Test
-    fun verifyAboutFirefoxPreview() {
-        activityIntentTestRule.applySettingsExceptions {
-            it.isJumpBackInCFREnabled = false
-            it.isTCPCFREnabled = false
-        }
+    fun verifyAboutFirefoxMenuItems() {
         homeScreen {
         }.openThreeDotMenu {
         }.openSettings {
         }.openAboutFirefoxPreview {
-            verifyAboutFirefoxPreview()
+            verifyAboutFirefoxPreviewInfo()
+        }
+    }
+
+    @Test
+    fun verifyLibrariesListInReleaseBuilds() {
+        runWithCondition(!BuildConfig.DEBUG) {
+            homeScreen {
+            }.openThreeDotMenu {
+            }.openSettings {
+            }.openAboutFirefoxPreview {
+                verifyLibrariesUsedLink()
+                verifyTheLibrariesListNotEmpty()
+            }
         }
     }
 }

@@ -26,9 +26,11 @@ import kotlinx.coroutines.launch
 import mozilla.components.lib.state.ext.consumeFrom
 import mozilla.components.service.fxa.SyncEngine
 import mozilla.components.service.sync.autofill.AutofillCreditCardsAddressesStorage
+import mozilla.components.ui.widgets.withCenterAlignedButtons
 import org.mozilla.fenix.NavGraphDirections
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.StoreProvider
+import org.mozilla.fenix.components.accounts.FenixFxAEntryPoint
 import org.mozilla.fenix.ext.requireComponents
 import org.mozilla.fenix.ext.runIfFragmentIsAttached
 import org.mozilla.fenix.ext.secure
@@ -121,13 +123,16 @@ class AutofillSettingFragment : BiometricPromptPreferenceFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
-    ): View? {
+    ): View {
         loadAutofillState()
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        requirePreference<SwitchPreference>(R.string.pref_key_credit_cards_save_and_autofill_cards).summary =
+            getString(R.string.preferences_credit_cards_save_and_autofill_cards_summary_2, getString(R.string.app_name))
 
         consumeFrom(store) { state ->
             if (requireComponents.settings.addressFeature) {
@@ -150,7 +155,7 @@ class AutofillSettingFragment : BiometricPromptPreferenceFragment() {
         if (requireComponents.settings.addressFeature) {
             showToolbar(getString(R.string.preferences_autofill))
         } else {
-            showToolbar(getString(R.string.preferences_credit_cards))
+            showToolbar(getString(R.string.preferences_credit_cards_2))
         }
 
         SyncPreferenceView(
@@ -164,12 +169,14 @@ class AutofillSettingFragment : BiometricPromptPreferenceFragment() {
                 .getString(R.string.preferences_credit_cards_sync_cards),
             onSyncSignInClicked = {
                 findNavController().navigate(
-                    NavGraphDirections.actionGlobalTurnOnSync(),
+                    NavGraphDirections.actionGlobalTurnOnSync(entrypoint = FenixFxAEntryPoint.AutofillSetting),
                 )
             },
             onReconnectClicked = {
                 findNavController().navigate(
-                    AutofillSettingFragmentDirections.actionGlobalAccountProblemFragment(),
+                    AutofillSettingFragmentDirections.actionGlobalAccountProblemFragment(
+                        entrypoint = FenixFxAEntryPoint.AutofillSetting,
+                    ),
                 )
             },
         )
@@ -227,11 +234,11 @@ class AutofillSettingFragment : BiometricPromptPreferenceFragment() {
         if (hasCreditCards) {
             manageSavedCardsPreference.icon = null
             manageSavedCardsPreference.title =
-                getString(R.string.preferences_credit_cards_manage_saved_cards)
+                getString(R.string.preferences_credit_cards_manage_saved_cards_2)
         } else {
             manageSavedCardsPreference.setIcon(R.drawable.ic_new)
             manageSavedCardsPreference.title =
-                getString(R.string.preferences_credit_cards_add_credit_card)
+                getString(R.string.preferences_credit_cards_add_credit_card_2)
         }
 
         manageSavedCardsPreference.setOnPreferenceClickListener {
@@ -275,8 +282,8 @@ class AutofillSettingFragment : BiometricPromptPreferenceFragment() {
      */
     override fun showPinDialogWarning(context: Context) {
         AlertDialog.Builder(context).apply {
-            setTitle(getString(R.string.credit_cards_warning_dialog_title))
-            setMessage(getString(R.string.credit_cards_warning_dialog_message))
+            setTitle(getString(R.string.credit_cards_warning_dialog_title_2))
+            setMessage(getString(R.string.credit_cards_warning_dialog_message_3))
 
             setNegativeButton(getString(R.string.credit_cards_warning_dialog_later)) { _: DialogInterface, _ ->
                 navigateToCreditCardManagementFragment()
@@ -288,7 +295,7 @@ class AutofillSettingFragment : BiometricPromptPreferenceFragment() {
                 startActivity(intent)
             }
 
-            create()
+            create().withCenterAlignedButtons()
         }.show().secure(activity)
         context.settings().incrementSecureWarningCount()
     }

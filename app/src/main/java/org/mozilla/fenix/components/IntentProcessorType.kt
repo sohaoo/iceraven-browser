@@ -10,7 +10,7 @@ import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.customtabs.ExternalAppBrowserActivity
 
 enum class IntentProcessorType {
-    EXTERNAL_APP, NEW_TAB, EXTERNAL_DEEPLINK, OTHER;
+    EXTERNAL_APP, NEW_TAB, EXTERNAL_DEEPLINK, OTHER, ADDON_INSTALL;
 
     /**
      * The destination activity based on this intent
@@ -18,7 +18,8 @@ enum class IntentProcessorType {
     val activityClassName: String
         get() = when (this) {
             EXTERNAL_APP -> ExternalAppBrowserActivity::class.java.name
-            NEW_TAB, EXTERNAL_DEEPLINK, OTHER -> HomeActivity::class.java.name
+            NEW_TAB, EXTERNAL_DEEPLINK, OTHER, ADDON_INSTALL -> HomeActivity::class.java.name
+
         }
 
     /**
@@ -28,6 +29,7 @@ enum class IntentProcessorType {
         EXTERNAL_APP -> true
         NEW_TAB -> intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY == 0
         EXTERNAL_DEEPLINK, OTHER -> false
+        ADDON_INSTALL -> true
     }
 }
 
@@ -38,6 +40,7 @@ fun IntentProcessors.getType(processor: IntentProcessor?) = when {
     externalAppIntentProcessors.contains(processor) ||
         customTabIntentProcessor == processor ||
         privateCustomTabIntentProcessor == processor -> IntentProcessorType.EXTERNAL_APP
+    addonInstallIntentProcessor == processor -> IntentProcessorType.ADDON_INSTALL
     intentProcessor == processor ||
         privateIntentProcessor == processor ||
         fennecPageShortcutIntentProcessor == processor ||

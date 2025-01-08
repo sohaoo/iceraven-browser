@@ -6,11 +6,12 @@ package org.mozilla.fenix.home.recenttabs.controller
 
 import androidx.navigation.NavController
 import mozilla.components.feature.tabs.TabsUseCases.SelectTabUseCase
-import mozilla.components.service.glean.private.NoExtras
+import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.fenix.GleanMetrics.RecentTabs
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.AppStore
 import org.mozilla.fenix.components.appstate.AppAction
+import org.mozilla.fenix.home.HomeFragment
 import org.mozilla.fenix.home.HomeFragmentDirections
 import org.mozilla.fenix.home.recenttabs.RecentTab
 import org.mozilla.fenix.home.recenttabs.interactor.RecentTabInteractor
@@ -41,6 +42,7 @@ interface RecentTabController {
  *
  * @param selectTabUseCase [SelectTabUseCase] used selecting a tab.
  * @param navController [NavController] used for navigation.
+ * @param appStore The [AppStore] that holds the state of the [HomeFragment].
  */
 class DefaultRecentTabsController(
     private val selectTabUseCase: SelectTabUseCase,

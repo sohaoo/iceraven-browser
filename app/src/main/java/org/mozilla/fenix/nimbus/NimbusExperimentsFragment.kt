@@ -35,11 +35,11 @@ class NimbusExperimentsFragment : Fragment() {
         setContent {
             FirefoxTheme {
                 val experiments =
-                    requireContext().components.analytics.experiments.getAvailableExperiments()
+                    requireContext().components.nimbus.sdk.getAvailableExperiments()
 
                 NimbusExperiments(
                     experiments = experiments,
-                    onSelectedExperiment = { experiment ->
+                    onExperimentClick = { experiment ->
                         val directions =
                             NimbusExperimentsFragmentDirections.actionNimbusExperimentsFragmentToNimbusBranchesFragment(
                                 experimentId = experiment.slug,

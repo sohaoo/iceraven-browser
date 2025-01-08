@@ -5,7 +5,7 @@
 package org.mozilla.fenix.settings.creditcards.interactor
 
 import mozilla.components.concept.storage.CreditCard
-import mozilla.components.service.glean.private.NoExtras
+import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.fenix.GleanMetrics.CreditCards
 import org.mozilla.fenix.settings.creditcards.controller.CreditCardsManagementController
 
@@ -24,7 +24,7 @@ interface CreditCardsManagementInteractor {
 
     /**
      * Navigates to the credit card editor to add a new credit card. Called when a user
-     * taps on 'Add credit card' button.
+     * taps on 'Add card' button.
      */
     fun onAddCreditCardClick()
 }

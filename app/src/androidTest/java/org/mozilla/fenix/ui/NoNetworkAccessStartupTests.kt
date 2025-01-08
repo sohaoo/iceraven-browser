@@ -5,14 +5,13 @@
 package org.mozilla.fenix.ui
 
 import androidx.core.net.toUri
-import org.junit.After
+import androidx.test.filters.SdkSuppress
 import org.junit.Rule
 import org.junit.Test
-import org.mozilla.fenix.R
+import org.mozilla.fenix.customannotations.SmokeTest
+import org.mozilla.fenix.helpers.AppAndSystemHelper.setNetworkEnabled
 import org.mozilla.fenix.helpers.HomeActivityTestRule
-import org.mozilla.fenix.helpers.TestHelper.packageName
-import org.mozilla.fenix.helpers.TestHelper.setNetworkEnabled
-import org.mozilla.fenix.helpers.TestHelper.verifyUrl
+import org.mozilla.fenix.helpers.TestSetup
 import org.mozilla.fenix.ui.robots.browserScreen
 import org.mozilla.fenix.ui.robots.homeScreen
 import org.mozilla.fenix.ui.robots.navigationToolbar
@@ -22,20 +21,15 @@ import org.mozilla.fenix.ui.robots.navigationToolbar
  *
  */
 
-class NoNetworkAccessStartupTests {
+class NoNetworkAccessStartupTests : TestSetup() {
 
     @get:Rule
     val activityTestRule = HomeActivityTestRule.withDefaultSettingsOverrides(launchActivity = false)
 
-    @After
-    fun tearDown() {
-        // Restoring network connection
-        setNetworkEnabled(true)
-    }
-
     // Test running on beta/release builds in CI:
     // caution when making changes to it, so they don't block the builds
     // Based on STR from https://github.com/mozilla-mobile/fenix/issues/16886
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2240542
     @Test
     fun noNetworkConnectionStartupTest() {
         setNetworkEnabled(false)
@@ -43,13 +37,12 @@ class NoNetworkAccessStartupTests {
         activityTestRule.launchActivity(null)
 
         homeScreen {
-        }.dismissOnboarding()
-        homeScreen {
             verifyHomeScreen()
         }
     }
 
     // Based on STR from https://github.com/mozilla-mobile/fenix/issues/16886
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2240722
     @Test
     fun networkInterruptedFromBrowserToHomeTest() {
         val url = "example.com"
@@ -67,6 +60,7 @@ class NoNetworkAccessStartupTests {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2240723
     @Test
     fun testPageReloadAfterNetworkInterrupted() {
         val url = "example.com"
@@ -83,6 +77,9 @@ class NoNetworkAccessStartupTests {
         }.refreshPage { }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2240721
+    @SdkSuppress(minSdkVersion = 34)
+    @SmokeTest
     @Test
     fun testSignInPageWithNoNetworkConnection() {
         setNetworkEnabled(false)
@@ -94,11 +91,9 @@ class NoNetworkAccessStartupTests {
         }.openSettings {
         }.openTurnOnSyncMenu {
             tapOnUseEmailToSignIn()
-            verifyUrl(
-                "firefox.com",
-                "$packageName:id/mozac_browser_toolbar_url_view",
-                R.id.mozac_browser_toolbar_url_view,
-            )
+            browserScreen {
+                verifyUrl("firefox.com")
+            }
         }
     }
 }
