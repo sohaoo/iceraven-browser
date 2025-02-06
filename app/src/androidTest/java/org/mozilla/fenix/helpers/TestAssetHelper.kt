@@ -17,6 +17,7 @@ object TestAssetHelper {
     val waitingTime: Long = TimeUnit.SECONDS.toMillis(15)
     val waitingTimeLong = TimeUnit.SECONDS.toMillis(25)
     val waitingTimeShort: Long = TimeUnit.SECONDS.toMillis(3)
+    val waitingTimeVeryShort: Long = TimeUnit.SECONDS.toMillis(1)
 
     data class TestAsset(val url: Uri, val content: String, val title: String)
 
@@ -81,6 +82,12 @@ object TestAssetHelper {
         return TestAsset(url, "", "")
     }
 
+    fun getPdfFormAsset(server: MockWebServer): TestAsset {
+        val url = server.url("resources/pdfForm.pdf").toString().toUri()!!
+
+        return TestAsset(url, "", "")
+    }
+
     fun getSaveLoginAsset(server: MockWebServer): TestAsset {
         val url = server.url("pages/password.html").toString().toUri()!!
 
@@ -127,9 +134,45 @@ object TestAssetHelper {
         return TestAsset(url, content, title)
     }
 
+    fun getMutedVideoPageAsset(server: MockWebServer): TestAsset {
+        val url = server.url("pages/mutedVideoPage.html").toString().toUri()!!
+        val title = "Muted_Video_Test_Page"
+        val content = "Page content: muted video player"
+
+        return TestAsset(url, content, title)
+    }
+
     fun getStorageTestAsset(server: MockWebServer, pageAsset: String): TestAsset {
         val url = server.url("pages/$pageAsset").toString().toUri()!!
 
         return TestAsset(url, "", "")
+    }
+
+    fun getGPCTestAsset(server: MockWebServer): TestAsset {
+        val url = server.url("pages/global_privacy_control.html").toString().toUri()!!
+
+        return TestAsset(url, "", "")
+    }
+
+    fun getTextFragmentAsset(server: MockWebServer): TestAsset {
+        val url = server.url("pages/textFragment.html").toString().toUri()!!
+        val title = "Text_Fragment"
+
+        return TestAsset(url, "", title)
+    }
+
+    fun getPromptAsset(server: MockWebServer): TestAsset {
+        val url = server.url("pages/beforeUnload.html").toString().toUri()!!
+        val title = "BeforeUnload_Test_Page"
+
+        return TestAsset(url, "", title)
+    }
+
+    fun getForeignWebPageAsset(server: MockWebServer): TestAsset {
+        val url = server.url("pages/foreignWebPage.html").toString().toUri()!!
+        val title = "Page_de_test_FR"
+        val content = "Article du jour"
+
+        return TestAsset(url, content, title)
     }
 }

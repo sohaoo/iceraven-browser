@@ -5,8 +5,17 @@
 import org.yaml.snakeyaml.Yaml
 
 buildscript {
+    apply from: file('./gradle/mozconfig.gradle')
+
     repositories {
-        mavenCentral()
+        gradle.mozconfig.substs.GRADLE_MAVEN_REPOSITORIES.each { repository ->
+            maven {
+                url repository
+                if (gradle.mozconfig.substs.ALLOW_INSECURE_GRADLE_REPOSITORIES) {
+                    allowInsecureProtocol = true
+                }
+            }
+        }
     }
 
     dependencies {
@@ -21,6 +30,7 @@ class Config {
 
     public final String componentsVersion
     public final String componentsGroupId
+    public final Integer jvmTargetCompatibility
     public final Integer compileSdkVersion
     public final Integer minSdkVersion
     public final Integer targetSdkVersion
@@ -28,12 +38,14 @@ class Config {
     Config(
             String componentsVersion,
             String componentsGroupId,
+            Integer jvmTargetCompatibility,
             Integer compileSdkVersion,
             Integer minSdkVersion,
             Integer targetSdkVersion
     ) {
         this.componentsVersion = componentsVersion
         this.componentsGroupId = componentsGroupId
+        this.jvmTargetCompatibility = jvmTargetCompatibility
         this.compileSdkVersion = compileSdkVersion
         this.minSdkVersion = minSdkVersion
         this.targetSdkVersion = targetSdkVersion
@@ -102,6 +114,7 @@ gradle.projectsLoaded { ->
     gradle.rootProject.ext.config = new Config(
             version,
             configData.componentsGroupId,
+            configData.jvmTargetCompatibility,
             configData.compileSdkVersion,
             configData.minSdkVersion,
             configData.targetSdkVersion

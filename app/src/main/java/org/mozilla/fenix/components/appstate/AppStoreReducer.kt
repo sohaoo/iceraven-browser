@@ -5,17 +5,22 @@
 package org.mozilla.fenix.components.appstate
 
 import androidx.annotation.VisibleForTesting
-import mozilla.components.service.pocket.PocketStory.PocketRecommendedStory
-import mozilla.components.service.pocket.PocketStory.PocketSponsoredStory
-import mozilla.components.service.pocket.ext.recordNewImpression
+import mozilla.components.lib.crash.store.crashReducer
+import org.mozilla.fenix.browser.browsingmode.BrowsingMode
 import org.mozilla.fenix.components.AppStore
+import org.mozilla.fenix.components.appstate.readerview.ReaderViewStateReducer
+import org.mozilla.fenix.components.appstate.recommendations.ContentRecommendationsReducer
+import org.mozilla.fenix.components.appstate.reducer.FindInPageStateReducer
+import org.mozilla.fenix.components.appstate.shopping.ShoppingStateReducer
+import org.mozilla.fenix.components.appstate.snackbar.SnackbarState
+import org.mozilla.fenix.components.appstate.snackbar.SnackbarStateReducer
+import org.mozilla.fenix.components.appstate.webcompat.WebCompatReducer
 import org.mozilla.fenix.ext.filterOutTab
-import org.mozilla.fenix.ext.getFilteredStories
-import org.mozilla.fenix.home.pocket.PocketRecommendedStoriesSelectedCategory
 import org.mozilla.fenix.home.recentsyncedtabs.RecentSyncedTabState
 import org.mozilla.fenix.home.recentvisits.RecentlyVisitedItem
 import org.mozilla.fenix.home.recentvisits.RecentlyVisitedItem.RecentHistoryGroup
 import org.mozilla.fenix.messaging.state.MessagingReducer
+import org.mozilla.fenix.share.ShareActionReducer
 
 /**
  * Reducer for [AppStore].
@@ -41,7 +46,7 @@ internal object AppStoreReducer {
             collections = action.collections,
             mode = action.mode,
             topSites = action.topSites,
-            recentBookmarks = action.recentBookmarks,
+            bookmarks = action.bookmarks,
             recentTabs = action.recentTabs,
             recentHistory = action.recentHistory,
             recentSyncedTabState = action.recentSyncedTabState,
@@ -59,6 +64,7 @@ internal object AppStoreReducer {
         }
         is AppAction.CollectionsChange -> state.copy(collections = action.collections)
         is AppAction.ModeChange -> state.copy(mode = action.mode)
+        is AppAction.OrientationChange -> state.copy(orientation = action.orientation)
         is AppAction.TopSitesChange -> state.copy(topSites = action.topSites)
         is AppAction.RemoveCollectionsPlaceholder -> {
             state.copy(showCollectionPlaceholder = false)
@@ -79,9 +85,9 @@ internal object AppStoreReducer {
                 recentSyncedTabState = action.state,
             )
         }
-        is AppAction.RecentBookmarksChange -> state.copy(recentBookmarks = action.recentBookmarks)
-        is AppAction.RemoveRecentBookmark -> {
-            state.copy(recentBookmarks = state.recentBookmarks.filterNot { it.url == action.recentBookmark.url })
+        is AppAction.BookmarksChange -> state.copy(bookmarks = action.bookmarks)
+        is AppAction.RemoveBookmark -> {
+            state.copy(bookmarks = state.bookmarks.filterNot { it.url == action.bookmark.url })
         }
         is AppAction.RecentHistoryChange -> state.copy(
             recentHistory = action.recentHistory,
@@ -99,104 +105,16 @@ internal object AppStoreReducer {
                 else -> state.recentSyncedTabState
             },
         )
+        is AppAction.SelectedTabChanged -> state.copy(
+            selectedTabId = action.tab.id,
+            mode = BrowsingMode.fromBoolean(action.tab.content.private),
+        )
         is AppAction.DisbandSearchGroupAction -> state.copy(
             recentHistory = state.recentHistory.filterNot {
                 it is RecentHistoryGroup && it.title.equals(action.searchTerm, true)
             },
         )
-        is AppAction.SelectPocketStoriesCategory -> {
-            val updatedCategoriesState = state.copy(
-                pocketStoriesCategoriesSelections =
-                state.pocketStoriesCategoriesSelections + PocketRecommendedStoriesSelectedCategory(
-                    name = action.categoryName,
-                ),
-            )
 
-            // Selecting a category means the stories to be displayed needs to also be changed.
-            updatedCategoriesState.copy(
-                pocketStories = updatedCategoriesState.getFilteredStories(),
-            )
-        }
-        is AppAction.DeselectPocketStoriesCategory -> {
-            val updatedCategoriesState = state.copy(
-                pocketStoriesCategoriesSelections = state.pocketStoriesCategoriesSelections.filterNot {
-                    it.name == action.categoryName
-                },
-            )
-
-            // Deselecting a category means the stories to be displayed needs to also be changed.
-            updatedCategoriesState.copy(
-                pocketStories = updatedCategoriesState.getFilteredStories(),
-            )
-        }
-        is AppAction.PocketStoriesCategoriesChange -> {
-            val updatedCategoriesState =
-                state.copy(pocketStoriesCategories = action.storiesCategories)
-            // Whenever categories change stories to be displayed needs to also be changed.
-            updatedCategoriesState.copy(
-                pocketStories = updatedCategoriesState.getFilteredStories(),
-            )
-        }
-        is AppAction.PocketStoriesCategoriesSelectionsChange -> {
-            val updatedCategoriesState = state.copy(
-                pocketStoriesCategories = action.storiesCategories,
-                pocketStoriesCategoriesSelections = action.categoriesSelected,
-            )
-            // Whenever categories change stories to be displayed needs to also be changed.
-            updatedCategoriesState.copy(
-                pocketStories = updatedCategoriesState.getFilteredStories(),
-            )
-        }
-        is AppAction.PocketStoriesClean -> state.copy(
-            pocketStoriesCategories = emptyList(),
-            pocketStoriesCategoriesSelections = emptyList(),
-            pocketStories = emptyList(),
-            pocketSponsoredStories = emptyList(),
-        )
-        is AppAction.PocketSponsoredStoriesChange -> {
-            val updatedStoriesState = state.copy(
-                pocketSponsoredStories = action.sponsoredStories,
-            )
-
-            updatedStoriesState.copy(
-                pocketStories = updatedStoriesState.getFilteredStories(),
-            )
-        }
-        is AppAction.PocketStoriesShown -> {
-            var updatedCategories = state.pocketStoriesCategories
-            action.storiesShown.filterIsInstance<PocketRecommendedStory>().forEach { shownStory ->
-                updatedCategories = updatedCategories.map { category ->
-                    when (category.name == shownStory.category) {
-                        true -> {
-                            category.copy(
-                                stories = category.stories.map { story ->
-                                    when (story.title == shownStory.title) {
-                                        true -> story.copy(timesShown = story.timesShown.inc())
-                                        false -> story
-                                    }
-                                },
-                            )
-                        }
-                        false -> category
-                    }
-                }
-            }
-
-            var updatedSponsoredStories = state.pocketSponsoredStories
-            action.storiesShown.filterIsInstance<PocketSponsoredStory>().forEach { shownStory ->
-                updatedSponsoredStories = updatedSponsoredStories.map { story ->
-                    when (story.id == shownStory.id) {
-                        true -> story.recordNewImpression()
-                        false -> story
-                    }
-                }
-            }
-
-            state.copy(
-                pocketStoriesCategories = updatedCategories,
-                pocketSponsoredStories = updatedSponsoredStories,
-            )
-        }
         is AppAction.AddPendingDeletionSet ->
             state.copy(pendingDeletionHistoryItems = state.pendingDeletionHistoryItems + action.historyItems)
 
@@ -227,6 +145,70 @@ internal object AppStoreReducer {
         is AppAction.AppLifecycleAction.PauseAction -> {
             state.copy(isForeground = false)
         }
+
+        is AppAction.UpdateStandardSnackbarErrorAction -> state.copy(
+            standardSnackbarError = action.standardSnackbarError,
+        )
+
+        is AppAction.TabStripAction.UpdateLastTabClosed -> state.copy(
+            wasLastTabClosedPrivate = action.private,
+        )
+
+        is AppAction.UpdateSearchDialogVisibility -> state.copy(isSearchDialogVisible = action.isVisible)
+
+        is AppAction.TranslationsAction.TranslationStarted -> state.copy(
+            snackbarState = SnackbarState.TranslationInProgress(sessionId = action.sessionId),
+        )
+
+        is AppAction.BookmarkAction.BookmarkAdded -> {
+            state.copy(
+                snackbarState = SnackbarState.BookmarkAdded(
+                    guidToEdit = action.guidToEdit,
+                    parentNode = action.parentNode,
+                ),
+            )
+        }
+
+        is AppAction.BookmarkAction.BookmarkDeleted -> state.copy(
+            snackbarState = SnackbarState.BookmarkDeleted(title = action.title),
+        )
+
+        is AppAction.DeleteAndQuitStarted -> {
+            state.copy(snackbarState = SnackbarState.DeletingBrowserDataInProgress)
+        }
+
+        is AppAction.OpenInFirefoxStarted -> {
+            state.copy(openInFirefoxRequested = true)
+        }
+
+        is AppAction.OpenInFirefoxFinished -> {
+            state.copy(openInFirefoxRequested = false)
+        }
+
+        is AppAction.UserAccountAuthenticated -> state.copy(
+            snackbarState = SnackbarState.UserAccountAuthenticated,
+        )
+
+        is AppAction.ShareAction -> ShareActionReducer.reduce(state, action)
+        is AppAction.FindInPageAction -> FindInPageStateReducer.reduce(state, action)
+        is AppAction.ReaderViewAction -> ReaderViewStateReducer.reduce(state, action)
+        is AppAction.ShortcutAction -> ShortcutStateReducer.reduce(state, action)
+        is AppAction.ShoppingAction -> ShoppingStateReducer.reduce(state, action)
+        is AppAction.CrashActionWrapper -> state.copy(
+            crashState = crashReducer(state.crashState, action.inner),
+        )
+
+        is AppAction.SnackbarAction -> SnackbarStateReducer.reduce(state, action)
+        is AppAction.UpdateWasNativeDefaultBrowserPromptShown -> {
+            state.copy(wasNativeDefaultBrowserPromptShown = action.wasShown)
+        }
+
+        is AppAction.ContentRecommendationsAction -> ContentRecommendationsReducer.reduce(
+            state = state,
+            action = action,
+        )
+
+        is AppAction.WebCompatAction -> WebCompatReducer.reduce(state = state, action = action)
     }
 }
 

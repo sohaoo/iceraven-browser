@@ -6,6 +6,7 @@ package org.mozilla.fenix.ext
 
 import android.app.Activity
 import android.content.Intent
+import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
@@ -18,9 +19,11 @@ import androidx.navigation.NavDirections
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import mozilla.components.concept.base.crash.Breadcrumb
+import mozilla.components.support.utils.ext.isLandscape
 import org.mozilla.fenix.NavHostActivity
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.Components
+import org.mozilla.fenix.components.toolbar.ToolbarContainerView
 
 /**
  * Get the requireComponents of this application.
@@ -80,13 +83,6 @@ fun Fragment.redirectToReAuth(
         // https://issuetracker.google.com/issues/37125819
         activity?.invalidateOptionsMenu()
         when (currentLocation) {
-            R.id.loginDetailFragment,
-            R.id.editLoginFragment,
-            R.id.addLoginFragment,
-            R.id.savedLoginsFragment,
-            -> {
-                findNavController().popBackStack(R.id.savedLoginsAuthFragment, false)
-            }
             R.id.creditCardEditorFragment,
             R.id.creditCardsManagementFragment,
             -> {
@@ -147,5 +143,38 @@ fun Fragment.registerForActivityResult(
         } else {
             onFailure(result)
         }
+    }
+}
+
+/**
+ *  Checks whether the current fragment is running on a tablet.
+ */
+fun Fragment.isLargeWindow(): Boolean {
+    return requireContext().isLargeWindow()
+}
+
+/**
+ *
+ * Manages the state of the microsurvey prompt on orientation change.
+ *
+ * @param parent The top level [ViewGroup] of the fragment, which will be hosting the [bottomToolbarContainerView].
+ * @param bottomToolbarContainerView The [ToolbarContainerView] hosting the microsurvey prompt.
+ * @param reinitializeMicrosurveyPrompt lambda for re-initializing the microsurvey prompt inside the host [Fragment].
+ */
+fun Fragment.updateMicrosurveyPromptForConfigurationChange(
+    parent: ViewGroup,
+    bottomToolbarContainerView: ToolbarContainerView?,
+    reinitializeMicrosurveyPrompt: () -> Unit,
+) {
+    if (!requireContext().isLandscape()) {
+        // Already having a bottomContainer after switching back to portrait mode will happen when address bar is
+        // positioned at bottom and also as an edge case if configurationChange is called after onCreateView with the
+        // same orientation. Observed on a foldable emulator while going from single screen portrait mode to landscape
+        // tablet, back and forth.
+        bottomToolbarContainerView?.let {
+            parent.removeView(it)
+        }
+
+        reinitializeMicrosurveyPrompt()
     }
 }

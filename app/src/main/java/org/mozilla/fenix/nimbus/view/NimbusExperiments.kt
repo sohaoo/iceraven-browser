@@ -9,8 +9,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import mozilla.components.compose.base.annotation.LightDarkPreview
 import org.mozilla.experiments.nimbus.AvailableExperiment
-import org.mozilla.fenix.compose.annotation.LightDarkPreview
 import org.mozilla.fenix.compose.list.TextListItem
 import org.mozilla.fenix.theme.FirefoxTheme
 
@@ -23,7 +23,7 @@ import org.mozilla.fenix.theme.FirefoxTheme
 @Composable
 fun NimbusExperiments(
     experiments: List<AvailableExperiment> = listOf(),
-    onSelectedExperiment: (AvailableExperiment) -> Unit,
+    onExperimentClick: (AvailableExperiment) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -34,7 +34,7 @@ fun NimbusExperiments(
                 description = experiment.userFacingDescription,
                 maxDescriptionLines = Int.MAX_VALUE,
                 onClick = {
-                    onSelectedExperiment(experiment)
+                    onExperimentClick(experiment)
                 },
             )
         }
@@ -60,7 +60,7 @@ private fun NimbusExperimentsPreview() {
                 testExperiment,
                 testExperiment,
             ),
-            onSelectedExperiment = {},
+            onExperimentClick = {},
         )
     }
 }

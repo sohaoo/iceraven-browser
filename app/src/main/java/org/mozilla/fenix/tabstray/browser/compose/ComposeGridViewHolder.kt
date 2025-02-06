@@ -65,15 +65,7 @@ class ComposeGridViewHolder(
     }
 
     private fun onClick(tab: TabSessionState) {
-        if (store.state.mode is TabsTrayState.Mode.Select) {
-            interactor.onMultiSelectClicked(tab, featureName)
-        } else {
-            interactor.onTabSelected(tab, featureName)
-        }
-    }
-
-    private fun onLongClick(tab: TabSessionState) {
-        interactor.onTabLongClicked(tab)
+        interactor.onTabSelected(tab, featureName)
     }
 
     @Composable
@@ -86,13 +78,13 @@ class ComposeGridViewHolder(
 
         TabGridItem(
             tab = tab,
+            thumbnailSize = 108,
             isSelected = isSelectedTab,
             multiSelectionEnabled = multiSelectionEnabled,
             multiSelectionSelected = isMultiSelectionSelected,
             onCloseClick = ::onCloseClicked,
             onMediaClick = interactor::onMediaClicked,
             onClick = ::onClick,
-            onLongClick = ::onLongClick,
         )
     }
 

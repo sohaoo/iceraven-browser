@@ -26,7 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.mozilla.fenix.compose.annotation.LightDarkPreview
+import mozilla.components.compose.base.annotation.LightDarkPreview
 import org.mozilla.fenix.compose.button.RadioButton
 import org.mozilla.fenix.theme.FirefoxTheme
 
@@ -38,6 +38,7 @@ fun ProfilerDialogueCard(content: @Composable () -> Unit) {
     FirefoxTheme {
         Card(
             elevation = 8.dp,
+            backgroundColor = FirefoxTheme.colors.layer2,
             shape = RoundedCornerShape(12.dp),
         ) {
             content()
@@ -71,9 +72,13 @@ fun ProfilerLabeledRadioButton(
         Column(
             modifier = Modifier.padding(horizontal = 8.dp),
         ) {
-            Text(text = text)
+            Text(
+                text = text,
+                color = FirefoxTheme.colors.textPrimary,
+            )
             Text(
                 text = subText,
+                color = FirefoxTheme.colors.textPrimary,
                 fontWeight = FontWeight.ExtraLight,
             )
         }

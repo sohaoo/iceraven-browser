@@ -20,17 +20,16 @@ gcloud:
   performance-metrics: true
 
   test-targets:
-    - class org.mozilla.fenix.ui.NavigationToolbarTest#visitURLTest
-    - class org.mozilla.fenix.ui.HistoryTest#visitedUrlHistoryTest
-    - class org.mozilla.fenix.ui.SmokeTest#openMainMenuSettingsItemTest
-    - class org.mozilla.fenix.ui.SettingsSearchTest#toggleSearchSuggestionsTest
+    - class org.mozilla.fenix.ui.HistoryTest#verifyHistoryMenuWithHistoryItemsTest
+    - class org.mozilla.fenix.ui.SettingsSearchTest#verifyShowSearchSuggestionsToggleTest
     - class org.mozilla.fenix.ui.CollectionTest#deleteCollectionTest
-    - class org.mozilla.fenix.ui.SmokeTest#noHistoryInPrivateBrowsingTest
+    - class org.mozilla.fenix.ui.HistoryTest#noHistoryInPrivateBrowsingTest
     - class org.mozilla.fenix.ui.NoNetworkAccessStartupTests#noNetworkConnectionStartupTest
+    - class org.mozilla.fenix.ui.SettingsAboutTest#verifyLibrariesListInReleaseBuilds
 
   device:
-    - model: Pixel2.arm
-      version: 30
+    - model: MediumPhone.arm
+      version: 34
       locale: en_US
 
 flank:
@@ -39,4 +38,3 @@ flank:
   num-test-runs: 1
   output-style: compact
   full-junit-result: true
-

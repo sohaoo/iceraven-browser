@@ -13,8 +13,9 @@ import androidx.preference.SwitchPreference
 import org.mozilla.fenix.FeatureFlags
 import org.mozilla.fenix.GleanMetrics.CustomizeHome
 import org.mozilla.fenix.R
-import org.mozilla.fenix.components.appstate.AppAction
+import org.mozilla.fenix.components.appstate.AppAction.ContentRecommendationsAction
 import org.mozilla.fenix.ext.components
+import org.mozilla.fenix.ext.navigateWithBreadcrumb
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.ext.showToolbar
 import org.mozilla.fenix.utils.view.addToRadioGroup
@@ -43,6 +44,22 @@ class HomeSettingsFragment : PreferenceFragmentCompat() {
                         CustomizeHome.PreferenceToggledExtra(
                             newValue as Boolean,
                             "most_visited_sites",
+                        ),
+                    )
+
+                    return super.onPreferenceChange(preference, newValue)
+                }
+            }
+        }
+
+        requirePreference<SwitchPreference>(R.string.pref_key_show_top_recent_sites).apply {
+            isChecked = context.settings().showTopRecentSites
+            onPreferenceChangeListener = object : SharedPreferenceUpdater() {
+                override fun onPreferenceChange(preference: Preference, newValue: Any?): Boolean {
+                    CustomizeHome.preferenceToggled.record(
+                        CustomizeHome.PreferenceToggledExtra(
+                            newValue as Boolean,
+                            "top_recent_sites",
                         ),
                     )
 
@@ -83,14 +100,14 @@ class HomeSettingsFragment : PreferenceFragmentCompat() {
             }
         }
 
-        requirePreference<SwitchPreference>(R.string.pref_key_recent_bookmarks).apply {
-            isChecked = context.settings().showRecentBookmarksFeature
+        requirePreference<SwitchPreference>(R.string.pref_key_customization_bookmarks).apply {
+            isChecked = context.settings().showBookmarksHomeFeature
             onPreferenceChangeListener = object : SharedPreferenceUpdater() {
                 override fun onPreferenceChange(preference: Preference, newValue: Any?): Boolean {
                     CustomizeHome.preferenceToggled.record(
                         CustomizeHome.PreferenceToggledExtra(
                             newValue as Boolean,
-                            "recently_saved",
+                            "bookmarks",
                         ),
                     )
 
@@ -132,7 +149,10 @@ class HomeSettingsFragment : PreferenceFragmentCompat() {
                         false -> {
                             context.components.core.pocketStoriesService.deleteProfile()
                             context.components.appStore.dispatch(
-                                AppAction.PocketSponsoredStoriesChange(emptyList()),
+                                ContentRecommendationsAction.PocketSponsoredStoriesChange(
+                                    sponsoredStories = emptyList(),
+                                    showContentRecommendations = context.settings().showContentRecommendations,
+                                ),
                             )
                         }
                     }
@@ -167,8 +187,11 @@ class HomeSettingsFragment : PreferenceFragmentCompat() {
 
         requirePreference<Preference>(R.string.pref_key_wallpapers).apply {
             setOnPreferenceClickListener {
-                view?.findNavController()?.navigate(
-                    HomeSettingsFragmentDirections.actionHomeSettingsFragmentToWallpaperSettingsFragment(),
+                view?.findNavController()?.navigateWithBreadcrumb(
+                    directions = HomeSettingsFragmentDirections.actionHomeSettingsFragmentToWallpaperSettingsFragment(),
+                    navigateFrom = "HomeSettingsFragment",
+                    navigateTo = "ActionHomeSettingsFragmentToWallpaperSettingsFragment",
+                    crashReporter = context.components.analytics.crashReporter,
                 )
                 true
             }

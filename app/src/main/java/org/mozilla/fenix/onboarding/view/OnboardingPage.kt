@@ -12,10 +12,10 @@ import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -26,14 +26,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import mozilla.components.compose.base.annotation.LightDarkPreview
 import org.mozilla.fenix.R
-import org.mozilla.fenix.compose.annotation.LightDarkPreview
+import org.mozilla.fenix.compose.LinkText
 import org.mozilla.fenix.compose.button.PrimaryButton
 import org.mozilla.fenix.compose.button.SecondaryButton
 import org.mozilla.fenix.theme.FirefoxTheme
@@ -55,11 +55,6 @@ private const val IMAGE_HEIGHT_RATIO_MEDIUM = 0.36f
 private const val IMAGE_HEIGHT_RATIO_SMALL = 0.28f
 
 /**
- * The tag used for links in the text for annotated strings.
- */
-private const val URL_TAG = "URL_TAG"
-
-/**
  * A composable for displaying onboarding page content.
  *
  * @param pageState [OnboardingPageState] The page content that's displayed.
@@ -68,6 +63,7 @@ private const val URL_TAG = "URL_TAG"
  * it doesn't show the close button.
  */
 @Composable
+@Suppress("LongMethod")
 fun OnboardingPage(
     pageState: OnboardingPageState,
     modifier: Modifier = Modifier,
@@ -93,7 +89,7 @@ fun OnboardingPage(
                     modifier = Modifier.align(Alignment.End),
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.mozac_ic_close),
+                        painter = painterResource(id = R.drawable.mozac_ic_cross_24),
                         contentDescription = stringResource(R.string.onboarding_home_content_description_close_button),
                         tint = FirefoxTheme.colors.iconPrimary,
                     )
@@ -107,7 +103,7 @@ fun OnboardingPage(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Image(
-                    painter = painterResource(id = pageState.image),
+                    painter = painterResource(id = pageState.imageRes),
                     contentDescription = null,
                     modifier = Modifier.height(imageHeight(boxWithConstraintsScope)),
                 )
@@ -123,10 +119,21 @@ fun OnboardingPage(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                DescriptionText(
-                    description = pageState.description,
-                    linkTextState = pageState.linkTextState,
+                Text(
+                    text = pageState.description,
+                    color = FirefoxTheme.colors.textSecondary,
+                    textAlign = TextAlign.Center,
+                    style = FirefoxTheme.typography.body2,
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                pageState.privacyCaption?.let { privacyCaption ->
+                    LinkText(
+                        text = privacyCaption.text,
+                        linkTextStates = listOf(privacyCaption.linkTextState),
+                    )
+                }
             }
 
             Column(
@@ -134,6 +141,11 @@ fun OnboardingPage(
                 modifier = Modifier.padding(horizontal = 16.dp),
             ) {
                 PrimaryButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .semantics {
+                            testTag = pageState.title + "onboarding_card.positive_button"
+                        },
                     text = pageState.primaryButton.text,
                     onClick = pageState.primaryButton.onClick,
                 )
@@ -141,6 +153,11 @@ fun OnboardingPage(
                 if (pageState.secondaryButton != null) {
                     Spacer(modifier = Modifier.height(8.dp))
                     SecondaryButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .semantics {
+                                testTag = pageState.title + "onboarding_card.negative_button"
+                            },
                         text = pageState.secondaryButton.text,
                         onClick = pageState.secondaryButton.onClick,
                     )
@@ -152,71 +169,6 @@ fun OnboardingPage(
             }
         }
     }
-}
-
-@Composable
-private fun DescriptionText(
-    description: String,
-    linkTextState: LinkTextState?,
-) {
-    if (linkTextState != null) {
-        LinkText(
-            text = description,
-            linkTextState = linkTextState,
-        )
-    } else {
-        Text(
-            text = description,
-            color = FirefoxTheme.colors.textSecondary,
-            textAlign = TextAlign.Center,
-            style = FirefoxTheme.typography.body2,
-        )
-    }
-}
-
-/**
- * A composable for displaying text that contains a clickable link text.
- *
- * @param text The complete text.
- * @param linkTextState The clickable part of the text.
- */
-@Composable
-private fun LinkText(
-    text: String,
-    linkTextState: LinkTextState,
-) {
-    val annotatedString = buildAnnotatedString {
-        val startIndex = text.indexOf(linkTextState.text)
-        val endIndex = startIndex + linkTextState.text.length
-        append(text)
-        addStyle(
-            style = SpanStyle(color = FirefoxTheme.colors.textAccent),
-            start = startIndex,
-            end = endIndex,
-        )
-
-        addStringAnnotation(
-            tag = URL_TAG,
-            annotation = linkTextState.url,
-            start = startIndex,
-            end = endIndex,
-        )
-    }
-
-    ClickableText(
-        text = annotatedString,
-        style = FirefoxTheme.typography.body2.copy(
-            textAlign = TextAlign.Center,
-            color = FirefoxTheme.colors.textSecondary,
-        ),
-        onClick = {
-            val range: AnnotatedString.Range<String>? =
-                annotatedString.getStringAnnotations(URL_TAG, it, it).firstOrNull()
-            range?.let { stringAnnotation ->
-                linkTextState.onClick(stringAnnotation.item)
-            }
-        },
-    )
 }
 
 /**
@@ -237,23 +189,23 @@ private fun OnboardingPagePreview() {
     FirefoxTheme {
         OnboardingPage(
             pageState = OnboardingPageState(
-                image = R.drawable.ic_notification_permission,
+                imageRes = R.drawable.ic_notification_permission,
                 title = stringResource(
-                    id = R.string.onboarding_home_enable_notifications_title,
+                    id = R.string.onboarding_home_welcome_title_2,
                     formatArgs = arrayOf(stringResource(R.string.app_name)),
                 ),
                 description = stringResource(
-                    id = R.string.onboarding_home_enable_notifications_description,
+                    id = R.string.onboarding_home_welcome_description,
                     formatArgs = arrayOf(stringResource(R.string.app_name)),
                 ),
                 primaryButton = Action(
                     text = stringResource(
-                        id = R.string.onboarding_home_enable_notifications_positive_button,
+                        id = R.string.onboarding_home_get_started_button,
                     ),
                     onClick = {},
                 ),
                 secondaryButton = Action(
-                    text = stringResource(id = R.string.onboarding_home_enable_notifications_negative_button),
+                    text = stringResource(id = R.string.onboarding_home_skip_button),
                     onClick = {},
                 ),
                 onRecordImpressionEvent = {},

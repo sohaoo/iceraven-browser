@@ -1,9 +1,14 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 package org.mozilla.fenix.ext
 
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.view.View
 import android.widget.ImageView
+import androidx.annotation.VisibleForTesting
 
 /**
  * This will scale the received [Bitmap] to the size of the [view]. It retains the bitmap's
@@ -29,8 +34,8 @@ fun Bitmap.scaleToBottomOfView(view: ImageView) {
                 oldRight: Int,
                 oldBottom: Int,
             ) {
-                val viewWidth: Float = view.width.toFloat()
-                val viewHeight: Float = view.height.toFloat()
+                val viewWidth = view.width.toFloat()
+                val viewHeight = view.safeHeight().toFloat()
                 val bitmapWidth = bitmap.width
                 val bitmapHeight = bitmap.height
                 val widthScale = viewWidth / bitmapWidth
@@ -47,4 +52,17 @@ fun Bitmap.scaleToBottomOfView(view: ImageView) {
             }
         },
     )
+}
+
+/**
+ * If the keyboard is open we must factor in the height for the correct view height.
+ */
+@VisibleForTesting
+internal fun View.safeHeight(): Int {
+    val keyboardHeight = getKeyboardHeight()
+    return if (keyboardHeight > 0) {
+        keyboardHeight.plus(height)
+    } else {
+        height
+    }
 }

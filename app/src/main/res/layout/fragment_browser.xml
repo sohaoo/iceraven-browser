@@ -18,6 +18,7 @@
             android:id="@+id/browserLayout"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            app:layout_constraintHeight_min="1dp"
             app:layout_constraintBottom_toTopOf="@+id/addressSelectBar"
             app:layout_constraintTop_toTopOf="parent"
             tools:context="browser.BrowserFragment">
@@ -35,13 +36,18 @@
                     android:visibility="gone" />
             </mozilla.components.ui.widgets.VerticalSwipeRefreshLayout>
 
-            <ViewStub
-                android:id="@+id/stubFindInPage"
+            <mozilla.components.feature.findinpage.view.FindInPageBar
+                android:id="@+id/findInPageView"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_gravity="bottom"
-                android:inflatedId="@+id/findInPageView"
-                android:layout="@layout/stub_find_in_page" />
+                android:background="?attr/layer1"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone"
+                app:findInPageNoMatchesTextColor="?attr/textCritical"
+                app:findInPageButtonsTint="?attr/textPrimary"
+                app:findInPageResultCountTextColor="?attr/textPrimary" />
 
             <include
                 android:id="@+id/viewDynamicDownloadDialog"
@@ -72,6 +78,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom"
                 android:visibility="gone"
+                android:clickable="true"
+                android:focusable="true"
                 android:elevation="@dimen/browser_fragment_toolbar_elevation"/>
 
             <FrameLayout
@@ -79,6 +87,23 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:elevation="@dimen/browser_fragment_toolbar_elevation"/>
+
+            <mozilla.components.feature.prompts.login.LoginSelectBar
+                android:id="@+id/loginSelectBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/layer1"
+                android:elevation="@dimen/browser_fragment_above_toolbar_panels_elevation"
+                android:outlineProvider="none"
+                android:visibility="gone"
+                tools:ignore="MozMultipleConstraintLayoutsAndCustomViews" />
+
+            <mozilla.components.feature.prompts.login.SuggestStrongPasswordBar
+                android:id="@+id/suggestStrongPasswordBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/layer1"
+                android:visibility="gone" />
 
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
@@ -95,16 +120,8 @@
             android:id="@+id/creditCardSelectBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintBottom_toTopOf="@id/loginSelectBar"
-            app:layout_constraintTop_toBottomOf="@id/addressSelectBar" />
-
-        <mozilla.components.feature.prompts.login.LoginSelectBar
-            android:visibility="gone"
-            android:id="@+id/loginSelectBar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/creditCardSelectBar" />
+            app:layout_constraintTop_toBottomOf="@id/addressSelectBar" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <org.mozilla.fenix.browser.TabPreview

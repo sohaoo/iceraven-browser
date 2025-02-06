@@ -6,30 +6,43 @@ package org.mozilla.fenix.components.toolbar
 
 import androidx.navigation.NavController
 import mozilla.components.browser.state.action.ContentAction
+import mozilla.components.browser.state.ext.getUrl
 import mozilla.components.browser.state.selector.findCustomTabOrSelectedTab
+import mozilla.components.browser.state.selector.findTab
 import mozilla.components.browser.state.selector.getNormalOrPrivateTabs
 import mozilla.components.browser.state.selector.selectedTab
 import mozilla.components.browser.state.state.SessionState
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.concept.engine.EngineView
+import mozilla.components.concept.engine.prompt.ShareData
 import mozilla.components.feature.tabs.TabsUseCases
-import mozilla.components.service.glean.private.NoExtras
 import mozilla.components.support.ktx.kotlin.isUrl
 import mozilla.components.ui.tabcounter.TabCounterMenu
+import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.fenix.GleanMetrics.Events
+import org.mozilla.fenix.GleanMetrics.NavigationBar
 import org.mozilla.fenix.GleanMetrics.ReaderMode
+import org.mozilla.fenix.GleanMetrics.Translations
 import org.mozilla.fenix.HomeActivity
+import org.mozilla.fenix.NavGraphDirections
 import org.mozilla.fenix.R
 import org.mozilla.fenix.browser.BrowserAnimator
 import org.mozilla.fenix.browser.BrowserAnimator.Companion.getToolbarNavOptions
 import org.mozilla.fenix.browser.BrowserFragmentDirections
 import org.mozilla.fenix.browser.browsingmode.BrowsingMode
 import org.mozilla.fenix.browser.readermode.ReaderModeController
+import org.mozilla.fenix.components.AppStore
+import org.mozilla.fenix.components.appstate.AppAction.SnackbarAction
+import org.mozilla.fenix.components.menu.MenuAccessPoint
 import org.mozilla.fenix.components.toolbar.interactor.BrowserToolbarInteractor
+import org.mozilla.fenix.components.toolbar.navbar.shouldAddNavigationBar
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.nav
+import org.mozilla.fenix.ext.navigateSafe
 import org.mozilla.fenix.ext.settings
+import org.mozilla.fenix.home.HomeFragment
 import org.mozilla.fenix.home.HomeScreenViewModel
+import org.mozilla.fenix.utils.Settings
 
 /**
  * An interface that handles the view manipulation of the BrowserToolbar, triggered by the Interactor
@@ -47,13 +60,49 @@ interface BrowserToolbarController {
      * @see [BrowserToolbarInteractor.onHomeButtonClicked]
      */
     fun handleHomeButtonClick()
+
+    /**
+     * @see [BrowserToolbarInteractor.onEraseButtonClicked]
+     */
+    fun handleEraseButtonClick()
+
+    /**
+     * @see [BrowserToolbarInteractor.onTranslationsButtonClicked]
+     */
+    fun handleTranslationsButtonClick()
+
+    /**
+     * @see [BrowserToolbarInteractor.onShareActionClicked]
+     */
+    fun onShareActionClicked()
+
+    /**
+     * @see [BrowserToolbarInteractor.onNewTabButtonClicked]
+     */
+    fun handleNewTabButtonClick()
+
+    /**
+     * @see [BrowserToolbarInteractor.onNewTabButtonLongClicked]
+     */
+    fun handleNewTabButtonLongClick()
+
+    /**
+     * @see [BrowserToolbarInteractor.onMenuButtonClicked]
+     */
+    fun handleMenuButtonClicked(
+        accessPoint: MenuAccessPoint,
+        customTabSessionId: String? = null,
+        isSandboxCustomTab: Boolean = false,
+    )
 }
 
 @Suppress("LongParameterList")
 class DefaultBrowserToolbarController(
     private val store: BrowserStore,
+    private val appStore: AppStore,
     private val tabsUseCases: TabsUseCases,
     private val activity: HomeActivity,
+    private val settings: Settings,
     private val navController: NavController,
     private val readerModeController: ReaderModeController,
     private val engineView: EngineView,
@@ -81,7 +130,7 @@ class DefaultBrowserToolbarController(
     override fun handleToolbarPasteAndGo(text: String) {
         if (text.isUrl()) {
             store.updateSearchTermsOfSelectedSession("")
-            activity.components.useCases.sessionUseCases.loadUrl.invoke(text)
+            activity.components.useCases.sessionUseCases.loadUrl(text)
             return
         }
 
@@ -178,6 +227,83 @@ class DefaultBrowserToolbarController(
                 BrowserFragmentDirections.actionGlobalHome(),
             )
         }
+    }
+
+    override fun handleEraseButtonClick() {
+        Events.browserToolbarEraseTapped.record(NoExtras())
+        homeViewModel.sessionToDelete = HomeFragment.ALL_PRIVATE_TABS
+        val directions = BrowserFragmentDirections.actionGlobalHome()
+        navController.navigate(directions)
+    }
+
+    override fun handleTranslationsButtonClick() {
+        Translations.action.record(Translations.ActionExtra("main_flow_toolbar"))
+
+        appStore.dispatch(SnackbarAction.SnackbarDismissed)
+
+        val directions =
+            BrowserFragmentDirections.actionBrowserFragmentToTranslationsDialogFragment()
+        navController.navigateSafe(R.id.browserFragment, directions)
+    }
+
+    override fun onShareActionClicked() {
+        val sessionId = currentSession?.id
+        val url = sessionId?.let {
+            store.state.findTab(it)?.getUrl()
+        }
+        val directions = NavGraphDirections.actionGlobalShareFragment(
+            sessionId = sessionId,
+            data = arrayOf(
+                ShareData(
+                    url = url,
+                    title = currentSession?.content?.title,
+                ),
+            ),
+            showPage = true,
+        )
+        navController.navigate(directions)
+    }
+
+    override fun handleNewTabButtonClick() {
+        if (settings.enableHomepageAsNewTab) {
+            tabsUseCases.addTab.invoke(
+                startLoading = false,
+                private = currentSession?.content?.private ?: false,
+            )
+        }
+        if (activity.shouldAddNavigationBar()) {
+            NavigationBar.browserNewTabTapped.record(NoExtras())
+        } else {
+            Events.browserToolbarAction.record(Events.BrowserToolbarActionExtra("new_tab"))
+        }
+
+        browserAnimator.captureEngineViewAndDrawStatically {
+            navController.navigate(
+                BrowserFragmentDirections.actionGlobalHome(focusOnAddressBar = true),
+            )
+        }
+    }
+
+    override fun handleNewTabButtonLongClick() {
+        if (activity.shouldAddNavigationBar()) {
+            NavigationBar.browserNewTabLongTapped.record(NoExtras())
+        } else {
+            Events.browserToolbarAction.record(Events.BrowserToolbarActionExtra("new_tab_long_press"))
+        }
+    }
+
+    override fun handleMenuButtonClicked(
+        accessPoint: MenuAccessPoint,
+        customTabSessionId: String?,
+        isSandboxCustomTab: Boolean,
+    ) {
+        navController.navigate(
+            BrowserFragmentDirections.actionGlobalMenuDialogFragment(
+                accesspoint = accessPoint,
+                customTabSessionId = customTabSessionId,
+                isSandboxCustomTab = isSandboxCustomTab,
+            ),
+        )
     }
 
     companion object {

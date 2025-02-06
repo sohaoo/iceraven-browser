@@ -14,6 +14,7 @@ projects:
     - browser-thumbnails
     - browser-toolbar
     - compose-awesomebar
+    - compose-base
     - compose-cfr
     - concept-awesomebar
     - concept-base
@@ -35,6 +36,7 @@ projects:
     - feature-customtabs
     - feature-downloads
     - feature-findinpage
+    - feature-fxsuggest
     - feature-intent
     - feature-logins
     - feature-media
@@ -64,11 +66,11 @@ projects:
     - lib-publicsuffixlist
     - lib-push-firebase
     - lib-state
-    - service-contile
     - service-digitalassetlinks
     - service-firefox-accounts
     - service-glean
     - service-location
+    - service-mars
     - service-nimbus
     - service-pocket
     - service-sync-autofill
@@ -77,14 +79,16 @@ projects:
     - support-images
     - support-ktx
     - support-locale
+    - support-remotesettings
     - support-rusterrors
     - support-rusthttp
     - support-rustlog
-    - support-sync-telemetry
     - support-test
+    - support-test-fakes
     - support-test-libstate
     - support-utils
     - support-webextensions
+    - tooling-lint
     - ui-autocomplete
     - ui-colors
     - ui-icons

@@ -23,9 +23,18 @@ private const val PROFILER_SERVER_HEADER = "application/vnd.firefox-profiler+jso
 private const val TOKEN = "profileToken"
 private const val PROFILER_DATA_URL = "https://profiler.firefox.com/public/"
 
+// IMPORTANT NOTE: Please keep the profiler presets in sync with their Firefox Desktop counterparts:
+// https://searchfox.org/mozilla-central/rev/c130c69b7b863d5e28ab9524b65c27c7a9507c48/devtools/client/performance-new/shared/background.jsm.js#121
+
 private val firefox_features = arrayOf(
-    "screenshots", "js", "leaf", "stackwalk", "cpu", "java",
-    "processcpu", "ipcmessages", "java",
+    "screenshots",
+    "js",
+    "stackwalk",
+    "cpu",
+    "java",
+    "processcpu",
+    "ipcmessages",
+    "memory",
 )
 private val firefox_threads = arrayOf(
     "GeckoMain",
@@ -35,44 +44,48 @@ private val firefox_threads = arrayOf(
     "DOM Worker",
 )
 
-private val graphics_features = arrayOf("java", "ipcmessages")
+private val graphics_features =
+    arrayOf("stackwalk", "js", "cpu", "java", "processcpu", "ipcmessages", "memory")
 private val graphics_threads = arrayOf(
     "GeckoMain",
     "Compositor",
     "Renderer",
     "SwComposite",
     "RenderBackend",
+    "GlyphRasterizer",
     "SceneBuilder",
     "WrWorker",
     "CanvasWorkers",
+    "TextureUpdate",
 )
 
 private val media_features = arrayOf(
     "js",
-    "leaf",
     "stackwalk",
     "cpu",
     "audiocallbacktracing",
     "ipcmessages",
     "processcpu",
     "java",
+    "memory",
 )
 private val media_threads = arrayOf(
-    "cubeb", "audio", "camera", "capture", "Compositor", "GeckoMain", "gmp", "graph", "grph",
-    "InotifyEventThread", "IPDL Background", "media", "ModuleProcessThread", "PacerThread",
+    "cubeb", "audio", "BackgroundThreadPool", "camera", "capture", "Compositor", "decoder", "GeckoMain", "gmp",
+    "graph", "grph", "InotifyEventThread", "IPDL Background", "media", "ModuleProcessThread", "PacerThread",
     "RemVidChild", "RenderBackend", "Renderer", "Socket Thread", "SwComposite",
-    "webrtc",
+    "webrtc", "TextureUpdate",
 )
 
 private val networking_features = arrayOf(
     "screenshots",
     "js",
-    "leaf",
     "stackwalk",
     "cpu",
     "java",
     "processcpu",
+    "bandwidth",
     "ipcmessages",
+    "memory",
 )
 
 private val networking_threads = arrayOf(
@@ -133,6 +146,7 @@ object ProfilerUtils {
                 "Accept" to PROFILER_SERVER_HEADER,
             ),
             body = Request.Body.fromFile(outputFile),
+            conservative = true,
         )
         return context.components.core.client.fetch(request)
     }

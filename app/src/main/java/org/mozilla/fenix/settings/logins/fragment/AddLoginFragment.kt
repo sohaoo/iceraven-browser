@@ -4,6 +4,7 @@
 
 package org.mozilla.fenix.settings.logins.fragment
 
+import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.text.Editable
@@ -14,6 +15,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import androidx.activity.result.ActivityResultLauncher
 import androidx.core.content.ContextCompat
 import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
@@ -24,14 +26,19 @@ import androidx.navigation.fragment.findNavController
 import mozilla.components.lib.state.ext.consumeFrom
 import mozilla.components.support.ktx.android.view.hideKeyboard
 import mozilla.components.support.ktx.android.view.showKeyboard
+import mozilla.components.support.ktx.util.URLStringUtils
+import org.mozilla.fenix.AuthenticationStatus
+import org.mozilla.fenix.BiometricAuthenticationManager
+import org.mozilla.fenix.GleanMetrics.Logins
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.StoreProvider
 import org.mozilla.fenix.databinding.FragmentAddLoginBinding
 import org.mozilla.fenix.ext.components
-import org.mozilla.fenix.ext.redirectToReAuth
+import org.mozilla.fenix.ext.registerForActivityResult
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.ext.showToolbar
 import org.mozilla.fenix.ext.toEditable
+import org.mozilla.fenix.settings.biometric.bindBiometricsCredentialsPromptOrShowWarning
 import org.mozilla.fenix.settings.logins.LoginsFragmentStore
 import org.mozilla.fenix.settings.logins.SavedLogin
 import org.mozilla.fenix.settings.logins.controller.SavedLoginsStorageController
@@ -57,17 +64,31 @@ class AddLoginFragment : Fragment(R.layout.fragment_add_login), MenuProvider {
     private var _binding: FragmentAddLoginBinding? = null
     private val binding get() = _binding!!
 
+    private lateinit var startForResult: ActivityResultLauncher<Intent>
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        startForResult = registerForActivityResult {
+            BiometricAuthenticationManager.biometricAuthenticationNeededInfo.shouldShowAuthenticationPrompt =
+                false
+            BiometricAuthenticationManager.biometricAuthenticationNeededInfo.authenticationStatus =
+                AuthenticationStatus.AUTHENTICATED
+            setSecureContentVisibility(true)
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         _binding = FragmentAddLoginBinding.bind(view)
 
-        loginsFragmentStore = StoreProvider.get(this) {
-            LoginsFragmentStore(
-                createInitialLoginsListState(requireContext().settings()),
-            )
-        }
+        loginsFragmentStore =
+            StoreProvider.get(findNavController().getBackStackEntry(R.id.savedLogins)) {
+                LoginsFragmentStore(
+                    createInitialLoginsListState(requireContext().settings()),
+                )
+            }
 
         interactor = AddLoginInteractor(
             SavedLoginsStorageController(
@@ -272,13 +293,13 @@ class AddLoginFragment : Fragment(R.layout.fragment_add_login), MenuProvider {
             currentValue.isEmpty() && usernameChanged -> {
                 // Invalid username because it's empty (although this is not true when editing logins)
                 validUsername = false
-                layout.error = context?.getString(R.string.saved_login_username_required)
+                layout.error = context?.getString(R.string.saved_login_username_required_2)
                 layout.setErrorIconDrawable(R.drawable.mozac_ic_warning_with_bottom_padding)
                 layout.setErrorIconTintList(
                     ColorStateList.valueOf(
                         ContextCompat.getColor(
                             requireContext(),
-                            R.color.fx_mobile_text_color_warning,
+                            R.color.fx_mobile_text_color_critical,
                         ),
                     ),
                 )
@@ -292,7 +313,7 @@ class AddLoginFragment : Fragment(R.layout.fragment_add_login), MenuProvider {
                     ColorStateList.valueOf(
                         ContextCompat.getColor(
                             requireContext(),
-                            R.color.fx_mobile_text_color_warning,
+                            R.color.fx_mobile_text_color_critical,
                         ),
                     ),
                 )
@@ -304,19 +325,19 @@ class AddLoginFragment : Fragment(R.layout.fragment_add_login), MenuProvider {
                 layout.errorIconDrawable = null
             }
         }
-        clearButton.isVisible = validUsername
-        clearButton.isEnabled = validUsername
+        clearButton.isVisible = currentValue.isNotEmpty()
+        clearButton.isEnabled = currentValue.isNotEmpty()
         setSaveButtonState()
     }
 
     private fun setPasswordError() {
         binding.inputLayoutPassword.let { layout ->
             validPassword = false
-            layout.error = context?.getString(R.string.saved_login_password_required)
+            layout.error = context?.getString(R.string.saved_login_password_required_2)
             layout.setErrorIconDrawable(R.drawable.mozac_ic_warning_with_bottom_padding)
             layout.setErrorIconTintList(
                 ColorStateList.valueOf(
-                    ContextCompat.getColor(requireContext(), R.color.fx_mobile_text_color_warning),
+                    ContextCompat.getColor(requireContext(), R.color.fx_mobile_text_color_critical),
                 ),
             )
         }
@@ -329,7 +350,7 @@ class AddLoginFragment : Fragment(R.layout.fragment_add_login), MenuProvider {
             layout.setErrorIconDrawable(R.drawable.mozac_ic_warning_with_bottom_padding)
             layout.setErrorIconTintList(
                 ColorStateList.valueOf(
-                    ContextCompat.getColor(requireContext(), R.color.fx_mobile_text_color_warning),
+                    ContextCompat.getColor(requireContext(), R.color.fx_mobile_text_color_critical),
                 ),
             )
         }
@@ -351,28 +372,54 @@ class AddLoginFragment : Fragment(R.layout.fragment_add_login), MenuProvider {
         saveButton.isEnabled = changesMadeWithNoErrors
     }
 
-    override fun onPause() {
-        redirectToReAuth(
-            listOf(R.id.loginDetailFragment, R.id.savedLoginsFragment),
-            findNavController().currentDestination?.id,
-            R.id.addLoginFragment,
-        )
-        super.onPause()
-    }
-
     override fun onResume() {
         super.onResume()
-        showToolbar(getString(R.string.add_login))
+        showToolbar(getString(R.string.add_login_2))
+
+        if (BiometricAuthenticationManager.biometricAuthenticationNeededInfo.shouldShowAuthenticationPrompt) {
+            BiometricAuthenticationManager.biometricAuthenticationNeededInfo.shouldShowAuthenticationPrompt =
+                false
+            BiometricAuthenticationManager.biometricAuthenticationNeededInfo.authenticationStatus =
+                AuthenticationStatus.AUTHENTICATION_IN_PROGRESS
+            setSecureContentVisibility(false)
+
+            bindBiometricsCredentialsPromptOrShowWarning(
+                view = requireView(),
+                onShowPinVerification = { intent -> startForResult.launch(intent) },
+                onAuthSuccess = {
+                    BiometricAuthenticationManager.biometricAuthenticationNeededInfo.authenticationStatus =
+                        AuthenticationStatus.AUTHENTICATED
+                    setSecureContentVisibility(true)
+                },
+                onAuthFailure = {
+                    BiometricAuthenticationManager.biometricAuthenticationNeededInfo.authenticationStatus =
+                        AuthenticationStatus.NOT_AUTHENTICATED
+                    setSecureContentVisibility(false)
+                },
+            )
+        } else {
+            setSecureContentVisibility(
+                BiometricAuthenticationManager.biometricAuthenticationNeededInfo.authenticationStatus ==
+                    AuthenticationStatus.AUTHENTICATED,
+            )
+        }
     }
 
     override fun onMenuItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         R.id.save_login_button -> {
             view?.hideKeyboard()
             interactor.onAddLogin(
-                binding.hostnameText.text.toString(),
+                with(binding.hostnameText.text.toString()) {
+                    if (URLStringUtils.isHttpOrHttps(this)) {
+                        this
+                    } else {
+                        "$HTTPS$this"
+                    }
+                },
                 binding.usernameText.text.toString(),
                 binding.passwordText.text.toString(),
             )
+            Logins.saved.add()
             true
         }
         else -> false
@@ -381,5 +428,19 @@ class AddLoginFragment : Fragment(R.layout.fragment_add_login), MenuProvider {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        // If you've made it here and you're authenticated, let's reset the values so we don't
+        // prompt the user again when navigating back.
+        val authenticated = BiometricAuthenticationManager.biometricAuthenticationNeededInfo.authenticationStatus ==
+            AuthenticationStatus.AUTHENTICATED
+        BiometricAuthenticationManager.biometricAuthenticationNeededInfo.shouldShowAuthenticationPrompt =
+            !authenticated
+    }
+
+    private fun setSecureContentVisibility(isVisible: Boolean) {
+        binding.addLoginLayout.isVisible = isVisible
+    }
+
+    companion object {
+        private const val HTTPS = "https://"
     }
 }

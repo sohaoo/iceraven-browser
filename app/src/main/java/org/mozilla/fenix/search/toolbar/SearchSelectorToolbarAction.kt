@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.VisibleForTesting
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -21,7 +22,6 @@ import mozilla.components.lib.state.ext.flow
 import mozilla.components.support.ktx.android.content.getColorFromAttr
 import mozilla.components.support.ktx.android.content.res.resolveAttribute
 import mozilla.components.support.ktx.android.view.toScope
-import mozilla.components.support.ktx.kotlinx.coroutines.flow.ifChanged
 import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.fenix.GleanMetrics.UnifiedSearch
 import org.mozilla.fenix.R
@@ -31,8 +31,9 @@ import org.mozilla.fenix.search.SearchDialogFragmentStore
 /**
  * A [Toolbar.Action] implementation that shows a [SearchSelector].
  *
- * @property store [SearchDialogFragmentStore] containing the complete state of the search dialog.
- * @property menu An instance of [SearchSelectorMenu] to display a popup menu for the search
+ * @param store [SearchDialogFragmentStore] containing the complete state of the search dialog.
+ * @param defaultSearchEngine The user selected or default [SearchEngine].
+ * @param menu An instance of [SearchSelectorMenu] to display a popup menu for the search
  * selections.
  */
 class SearchSelectorToolbarAction(
@@ -52,7 +53,10 @@ class SearchSelectorToolbarAction(
             initialSearchEngine?.let {
                 this.setIcon(
                     icon = initialSearchEngine.getScaledIcon(this.context),
-                    contentDescription = initialSearchEngine.name,
+                    contentDescription = context.getString(
+                        R.string.search_engine_selector_content_description,
+                        initialSearchEngine.name,
+                    ),
                 )
             }
 
@@ -87,7 +91,7 @@ class SearchSelectorToolbarAction(
                 store.flow()
                     .map { state -> state.searchEngineSource.searchEngine }
                     .filterNotNull()
-                    .ifChanged()
+                    .distinctUntilChanged()
                     .collect { searchEngine ->
                         view.setIcon(
                             icon = searchEngine.getScaledIcon(view.context).apply {
@@ -98,7 +102,10 @@ class SearchSelectorToolbarAction(
                                     setTint(view.context.getColorFromAttr(R.attr.textPrimary))
                                 }
                             },
-                            contentDescription = searchEngine.name,
+                            contentDescription = view.context.getString(
+                                R.string.search_engine_selector_content_description,
+                                searchEngine.name,
+                            ),
                         )
                     }
             }.also {

@@ -31,6 +31,12 @@ def parse_args(cmdln_args):
         "--exit-code", type=int, help="Exit code of flank.", required=True
     )
     parser.add_argument("--device-type", help="Type of device ", required=True)
+    parser.add_argument(
+        "--report-treeherder-failures",
+        help="Report failures in treeherder format.",
+        required=False,
+        action="store_true",
+    )
     return parser.parse_args(args=cmdln_args)
 
 
@@ -56,12 +62,27 @@ def main():
     print("| --- | --- | --- | --- |\n")
     for matrix, matrix_result in matrix_ids.items():
         for axis in matrix_result["axes"]:
-            print(f"| {matrix_result['matrixId']} | {matrix_result['outcome']}"
-                  f"| [Firebase Test Lab]({matrix_result['webLink']}) | {axis['details']}\n")
+            print(
+                f"| {matrix_result['matrixId']} | {matrix_result['outcome']}"
+                f"| [Firebase Test Lab]({matrix_result['webLink']}) | {axis['details']}\n"
+            )
+            if (
+                args.report_treeherder_failures
+                and matrix_result["outcome"] != "success"
+                and matrix_result["outcome"] != "flaky"
+            ):
+                # write failures to test log in format known to treeherder logviewer
+                sys.stdout.write(
+                    f"TEST-UNEXPECTED-FAIL | {matrix_result['outcome']} | {matrix_result['webLink']} | {axis['details']}\n"
+                )
     print("---\n")
     print("# References & Documentation\n")
-    print("* [Automated UI Testing Documentation](https://github.com/mozilla-mobile/shared-docs/blob/main/android/ui-testing.md)\n")
-    print("* Mobile Test Engineering on [Mana](https://mana.mozilla.org/wiki/display/MTE/Mobile+Test+Engineering) | [Slack](https://mozilla.slack.com/archives/C02KDDS9QM9) | [Alerts](https://mozilla.slack.com/archives/C0134KJ4JHL)\n")
+    print(
+        "* [Automated UI Testing Documentation](https://github.com/mozilla-mobile/shared-docs/blob/main/android/ui-testing.md)\n"
+    )
+    print(
+        "* Mobile Test Engineering on [Confluence](https://mozilla-hub.atlassian.net/wiki/spaces/MTE/overview) | [Slack](https://mozilla.slack.com/archives/C02KDDS9QM9) | [Alerts](https://mozilla.slack.com/archives/C0134KJ4JHL)\n"
+    )
 
 
 if __name__ == "__main__":

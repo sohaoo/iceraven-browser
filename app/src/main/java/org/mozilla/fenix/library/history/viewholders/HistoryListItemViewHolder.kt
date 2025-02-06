@@ -13,16 +13,19 @@ import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.hideAndDisable
 import org.mozilla.fenix.ext.showAndEnable
 import org.mozilla.fenix.library.history.History
+import org.mozilla.fenix.library.history.HistoryFragmentAction
 import org.mozilla.fenix.library.history.HistoryFragmentState
-import org.mozilla.fenix.library.history.HistoryInteractor
+import org.mozilla.fenix.library.history.HistoryFragmentStore
 import org.mozilla.fenix.library.history.HistoryItemTimeGroup
 import org.mozilla.fenix.selection.SelectionHolder
-import org.mozilla.fenix.utils.Do
 
 class HistoryListItemViewHolder(
     view: View,
-    private val historyInteractor: HistoryInteractor,
     private val selectionHolder: SelectionHolder<History>,
+    private val store: HistoryFragmentStore,
+    private val onHistoryItemClicked: (History) -> Unit,
+    private val onRecentlyClosedClicked: () -> Unit,
+    private val onDeleteInitiated: (Set<History>) -> Unit,
 ) : RecyclerView.ViewHolder(view) {
 
     private var item: History? = null
@@ -30,7 +33,7 @@ class HistoryListItemViewHolder(
 
     init {
         binding.recentlyClosedNavEmpty.recentlyClosedNav.setOnClickListener {
-            historyInteractor.onRecentlyClosedClicked()
+            onRecentlyClosedClicked()
         }
 
         binding.historyLayout.overflowView.apply {
@@ -38,7 +41,8 @@ class HistoryListItemViewHolder(
             contentDescription = view.context.getString(R.string.history_delete_item)
             setOnClickListener {
                 val item = item ?: return@setOnClickListener
-                historyInteractor.onDeleteSome(setOf(item))
+                store.dispatch(HistoryFragmentAction.DeleteItems(setOf(item)))
+                onDeleteInitiated(setOf(item))
             }
         }
     }
@@ -54,7 +58,6 @@ class HistoryListItemViewHolder(
      * @param groupPendingDeletionCount allows to properly display the number of items inside a
      * history group, taking into account pending removal of items inside.
      */
-    @Suppress("LongParameterList")
     fun bind(
         item: History,
         timeGroup: HistoryItemTimeGroup?,
@@ -67,7 +70,7 @@ class HistoryListItemViewHolder(
 
         binding.historyLayout.titleView.text = item.title
 
-        binding.historyLayout.urlView.text = Do exhaustive when (item) {
+        binding.historyLayout.urlView.text = when (item) {
             is History.Regular -> item.url
             is History.Metadata -> item.url
             is History.Group -> {
@@ -86,7 +89,17 @@ class HistoryListItemViewHolder(
         val headerText = timeGroup?.humanReadable(itemView.context)
         toggleHeader(headerText)
 
-        binding.historyLayout.setSelectionInteractor(item, selectionHolder, historyInteractor)
+        binding.historyLayout.setOnClickListener {
+            store.dispatch(HistoryFragmentAction.HistoryItemClicked(item))
+            if (mode.selectedItems.isEmpty()) {
+                onHistoryItemClicked(item)
+            }
+        }
+        binding.historyLayout.setOnLongClickListener {
+            store.dispatch(HistoryFragmentAction.HistoryItemLongClicked(item))
+            true
+        }
+
         binding.historyLayout.changeSelected(item in selectionHolder.selectedItems)
 
         if (item is History.Regular &&

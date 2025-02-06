@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -40,9 +39,6 @@ import org.mozilla.fenix.theme.FirefoxTheme
  * @param onExploreMoreButtonClicked Callback for when the bottom text button is clicked.
  * @param onSelectWallpaper Callback for when a new wallpaper is selected.
  */
-
-@Suppress("LongParameterList")
-@ExperimentalMaterialApi
 @Composable
 fun WallpaperOnboarding(
     wallpapers: List<Wallpaper>,
@@ -61,7 +57,7 @@ fun WallpaperOnboarding(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Icon(
-                painter = painterResource(id = R.drawable.mozac_ic_close),
+                painter = painterResource(id = R.drawable.mozac_ic_cross_24),
                 contentDescription = stringResource(id = R.string.close_tab),
                 tint = FirefoxTheme.colors.iconPrimary,
                 modifier = Modifier
@@ -121,7 +117,6 @@ fun WallpaperOnboarding(
 }
 
 @Preview
-@ExperimentalMaterialApi
 @Composable
 private fun WallpaperSnackbarPreview() {
     FirefoxTheme {

@@ -33,22 +33,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import mozilla.components.concept.base.images.ImageLoadRequest
 import mozilla.components.concept.sync.DeviceType
 import mozilla.components.support.ktx.kotlin.trimmed
 import org.mozilla.fenix.R
-import org.mozilla.fenix.compose.DropdownMenu
 import org.mozilla.fenix.compose.Image
-import org.mozilla.fenix.compose.MenuItem
 import org.mozilla.fenix.compose.ThumbnailCard
 import org.mozilla.fenix.compose.button.SecondaryButton
+import org.mozilla.fenix.compose.menu.DropdownMenu
+import org.mozilla.fenix.compose.menu.MenuItem
+import org.mozilla.fenix.compose.text.Text
 import org.mozilla.fenix.home.recentsyncedtabs.RecentSyncedTab
 import org.mozilla.fenix.theme.FirefoxTheme
+
+private const val THUMBNAIL_SIZE = 108
 
 /**
  * A recent synced tab card.
@@ -62,7 +67,7 @@ import org.mozilla.fenix.theme.FirefoxTheme
  * @param onRemoveSyncedTab Invoked when user clicks on the "Remove" dropdown menu option.
  */
 @OptIn(ExperimentalFoundationApi::class)
-@Suppress("LongMethod", "LongParameterList")
+@Suppress("LongMethod")
 @Composable
 fun RecentSyncedTab(
     tab: RecentSyncedTab?,
@@ -109,7 +114,11 @@ fun RecentSyncedTab(
                     } else {
                         ThumbnailCard(
                             url = tab.url,
-                            key = tab.url.hashCode().toString(),
+                            request = ImageLoadRequest(
+                                id = tab.url.hashCode().toString(),
+                                size = LocalDensity.current.run { THUMBNAIL_SIZE.dp.toPx().toInt() },
+                                isPrivate = false,
+                            ),
                             modifier = imageModifier,
                         )
                     }
@@ -183,13 +192,13 @@ fun RecentSyncedTab(
     }
 
     DropdownMenu(
-        showMenu = isDropdownExpanded && tab != null,
-        onDismissRequest = { isDropdownExpanded = false },
         menuItems = listOf(
-            MenuItem(stringResource(id = R.string.recent_synced_tab_menu_item_remove)) {
+            MenuItem.TextItem(Text.Resource(R.string.recent_synced_tab_menu_item_remove)) {
                 tab?.let { removeSyncedTab(it) }
             },
         ),
+        expanded = isDropdownExpanded && tab != null,
+        onDismissRequest = { isDropdownExpanded = false },
     )
 }
 

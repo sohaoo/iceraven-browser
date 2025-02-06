@@ -20,17 +20,14 @@ import mozilla.components.support.test.libstate.ext.waitUntilIdle
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.mozilla.experiments.nimbus.Branch
 import org.mozilla.fenix.components.Components
-import org.mozilla.fenix.components.FenixSnackbar
+import org.mozilla.fenix.compose.snackbar.Snackbar
 import org.mozilla.fenix.ext.getRootView
 import org.mozilla.fenix.ext.settings
-import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
 import org.mozilla.fenix.nimbus.controller.NimbusBranchesController
 import org.mozilla.fenix.utils.Settings
 
-@RunWith(FenixRobolectricTestRunner::class)
 class NimbusBranchesControllerTest {
 
     private val experiments: NimbusApi = mockk(relaxed = true)
@@ -42,7 +39,7 @@ class NimbusBranchesControllerTest {
     private lateinit var settings: Settings
     private lateinit var activity: Context
     private lateinit var components: Components
-    private lateinit var snackbar: FenixSnackbar
+    private lateinit var snackbar: Snackbar
     private lateinit var rootView: View
 
     @Before
@@ -58,8 +55,8 @@ class NimbusBranchesControllerTest {
             every { getRootView() } returns rootView
         }
 
-        mockkObject(FenixSnackbar)
-        every { FenixSnackbar.make(any(), any(), any(), any()) } returns snackbar
+        mockkObject(Snackbar)
+        every { Snackbar.make(any(), any()) } returns snackbar
 
         every { activity.settings() } returns settings
 
@@ -157,7 +154,7 @@ class NimbusBranchesControllerTest {
         verifyAll {
             experiments.getExperimentBranch(experimentId)
             experiments.optInWithBranch(experimentId, branch.slug)
-            snackbar.setText("hello")
+            snackbar.show()
         }
 
         assertEquals(branch.slug, nimbusBranchesStore.state.selectedBranch)

@@ -4,7 +4,9 @@
 
 package org.mozilla.fenix.utils
 
+import android.content.Context
 import io.mockk.every
+import io.mockk.mockkStatic
 import io.mockk.spyk
 import mozilla.components.concept.engine.Engine.HttpsOnlyMode.DISABLED
 import mozilla.components.concept.engine.Engine.HttpsOnlyMode.ENABLED
@@ -18,9 +20,13 @@ import mozilla.components.support.test.robolectric.testContext
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mozilla.fenix.browser.browsingmode.BrowsingMode
+import org.mozilla.fenix.components.toolbar.ToolbarPosition
+import org.mozilla.fenix.components.toolbar.navbar.shouldAddNavigationBar
 import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
 import org.mozilla.fenix.settings.PhoneFeature
 import org.mozilla.fenix.settings.deletebrowsingdata.DeleteBrowsingDataOnQuitType
@@ -826,24 +832,10 @@ class SettingsTest {
     }
 
     @Test
-    fun `GIVEN junoOnboarding is disabled THEN shouldShowJunoOnboarding returns false`() {
+    fun `GIVEN hasUserBeenOnboarded is false and isLauncherIntent is false THEN shouldShowOnboarding returns false`() {
         val settings = spyk(settings)
-        every { settings.junoOnboardingEnabled } returns false
 
-        val actual = settings.shouldShowJunoOnboarding(
-            hasUserBeenOnboarded = false,
-            isLauncherIntent = true,
-        )
-
-        assertFalse(actual)
-    }
-
-    @Test
-    fun `GIVEN junoOnboarding is enabled, hasUserBeenOnboarded is false and isLauncherIntent is false THEN shouldShowJunoOnboarding returns false`() {
-        val settings = spyk(settings)
-        every { settings.junoOnboardingEnabled } returns true
-
-        val actual = settings.shouldShowJunoOnboarding(
+        val actual = settings.shouldShowOnboarding(
             hasUserBeenOnboarded = false,
             isLauncherIntent = false,
         )
@@ -852,11 +844,10 @@ class SettingsTest {
     }
 
     @Test
-    fun `GIVEN junoOnboarding is enabled and hasUserBeenOnboarded is true THEN shouldShowJunoOnboarding returns false`() {
+    fun `GIVEN hasUserBeenOnboarded is true THEN shouldShowOnboarding returns false`() {
         val settings = spyk(settings)
-        every { settings.junoOnboardingEnabled } returns true
 
-        val actual = settings.shouldShowJunoOnboarding(
+        val actual = settings.shouldShowOnboarding(
             hasUserBeenOnboarded = true,
             isLauncherIntent = true,
         )
@@ -865,11 +856,10 @@ class SettingsTest {
     }
 
     @Test
-    fun `GIVEN junoOnboarding is enabled, hasUserBeenOnboarded is false and isLauncherIntent is true THEN shouldShowJunoOnboarding returns true`() {
+    fun `GIVEN hasUserBeenOnboarded is false and isLauncherIntent is true THEN shouldShowOnboarding returns true`() {
         val settings = spyk(settings)
-        every { settings.junoOnboardingEnabled } returns true
 
-        val actual = settings.shouldShowJunoOnboarding(
+        val actual = settings.shouldShowOnboarding(
             hasUserBeenOnboarded = false,
             isLauncherIntent = true,
         )
@@ -932,5 +922,229 @@ class SettingsTest {
     @Test
     fun `GIVEN unset user preferences THEN https-only is disabled for private tabs`() {
         assertFalse(settings.shouldUseHttpsOnlyInPrivateTabsOnly)
+    }
+
+    @Test
+    fun `GIVEN open links in apps setting THEN return the correct display string`() {
+        settings.openLinksInExternalApp = "pref_key_open_links_in_apps_always"
+        settings.lastKnownMode = BrowsingMode.Normal
+        assertEquals(settings.getOpenLinksInAppsString(), "Always")
+
+        settings.openLinksInExternalApp = "pref_key_open_links_in_apps_ask"
+        assertEquals(settings.getOpenLinksInAppsString(), "Ask before opening")
+
+        settings.openLinksInExternalApp = "pref_key_open_links_in_apps_never"
+        assertEquals(settings.getOpenLinksInAppsString(), "Never")
+
+        settings.openLinksInExternalApp = "pref_key_open_links_in_apps_always"
+        settings.lastKnownMode = BrowsingMode.Private
+        assertEquals(settings.getOpenLinksInAppsString(), "Ask before opening")
+
+        settings.openLinksInExternalApp = "pref_key_open_links_in_apps_ask"
+        assertEquals(settings.getOpenLinksInAppsString(), "Ask before opening")
+
+        settings.openLinksInExternalApp = "pref_key_open_links_in_apps_never"
+        assertEquals(settings.getOpenLinksInAppsString(), "Never")
+    }
+
+    @Test
+    fun `GIVEN a written integer value for pref_key_search_widget_installed WHEN reading searchWidgetInstalled THEN do not throw a ClassCastException`() {
+        val expectedInt = 5
+        val oldPrefKey = "pref_key_search_widget_installed"
+
+        settings.preferences.edit().putInt(oldPrefKey, expectedInt).apply()
+
+        try {
+            assertEquals(expectedInt, settings.preferences.getInt(oldPrefKey, 0))
+            assertFalse(settings.searchWidgetInstalled)
+        } catch (e: ClassCastException) {
+            fail("Unexpected ClassCastException")
+        }
+    }
+
+    @Test
+    fun `GIVEN previously stored pref_key_search_widget_installed value WHEN calling migrateSearchWidgetInstalledIfNeeded THEN migrate the value`() {
+        val expectedInt = 5
+        val oldPrefKey = "pref_key_search_widget_installed"
+
+        settings.preferences.edit().putInt(oldPrefKey, expectedInt).apply()
+
+        assertEquals(expectedInt, settings.preferences.getInt(oldPrefKey, 0))
+        assertFalse(settings.searchWidgetInstalled)
+
+        settings.migrateSearchWidgetInstalledPrefIfNeeded()
+
+        assertTrue(settings.searchWidgetInstalled)
+    }
+
+    @Test
+    fun `GIVEN none previously stored pref_key_search_widget_installed value WHEN calling migrateSearchWidgetInstalledIfNeeded THEN migration should not happen`() {
+        val oldPrefKey = "pref_key_search_widget_installed"
+        val expectedDefaultValue = 0
+        val storedValue = settings.preferences.getInt(oldPrefKey, expectedDefaultValue)
+
+        assertEquals(expectedDefaultValue, storedValue)
+
+        settings.migrateSearchWidgetInstalledPrefIfNeeded()
+
+        assertEquals(expectedDefaultValue, settings.preferences.getInt(oldPrefKey, expectedDefaultValue))
+        assertFalse(settings.searchWidgetInstalled)
+    }
+
+    @Test
+    fun `GIVEN previously stored pref_key_search_widget_installed value is Boolean WHEN calling migrateSearchWidgetInstalledIfNeeded THEN crash should not happen`() {
+        val oldPrefKey = "pref_key_search_widget_installed"
+        settings.preferences.edit().putBoolean(oldPrefKey, false).apply()
+
+        settings.migrateSearchWidgetInstalledPrefIfNeeded()
+        assertFalse(settings.searchWidgetInstalled)
+    }
+
+    @Test
+    fun `GIVEN navigation toolbar is enabled and microsurvey are enabled WHEN getBottomToolbarContainerHeight THEN returns the combined navbar & microsurvey height`() {
+        val settings = spyk(settings)
+        every { settings.navigationToolbarEnabled } returns true
+        every { settings.shouldShowMicrosurveyPrompt } returns true
+
+        val bottomToolbarContainerHeight = settings.getBottomToolbarContainerHeight()
+
+        assertEquals(180, bottomToolbarContainerHeight)
+    }
+
+    @Test
+    fun `GIVEN only navigation toolbar is enabled  WHEN getBottomToolbarContainerHeight THEN returns navbar height`() {
+        val settings = spyk(settings)
+        every { settings.navigationToolbarEnabled } returns true
+
+        val bottomToolbarContainerHeight = settings.getBottomToolbarContainerHeight()
+
+        assertEquals(49, bottomToolbarContainerHeight)
+    }
+
+    @Test
+    fun `GIVEN only microsurvey is enabled WHEN getBottomToolbarContainerHeight THEN returns microsurvey height`() {
+        val settings = spyk(settings)
+        every { settings.navigationToolbarEnabled } returns false
+        every { settings.shouldShowMicrosurveyPrompt } returns true
+
+        val bottomToolbarContainerHeight = settings.getBottomToolbarContainerHeight()
+
+        assertEquals(131, bottomToolbarContainerHeight)
+    }
+
+    @Test
+    fun `GIVEN that both navigation toolbar and microsurvey are not enabled WHEN getBottomToolbarContainerHeight THEN returns zero height`() {
+        val settings = spyk(settings)
+        every { settings.navigationToolbarEnabled } returns false
+        every { settings.shouldShowMicrosurveyPrompt } returns false
+
+        val bottomToolbarContainerHeight = settings.getBottomToolbarContainerHeight()
+
+        assertEquals(0, bottomToolbarContainerHeight)
+    }
+
+    @Test
+    fun `GIVEN all of address bar, navbar and microsurvey are shown at bottom WHEN getBottomToolbarHeight THEN returns the combined height`() {
+        val settings = spyk(settings)
+        every { settings.shouldShowMicrosurveyPrompt } returns true
+        every { settings.toolbarPosition } returns ToolbarPosition.BOTTOM
+
+        mockkStatic(Context::shouldAddNavigationBar) {
+            every { any<Context>().shouldAddNavigationBar(true) } returns true
+
+            val bottomToolbarHeight = settings.getBottomToolbarHeight(testContext)
+
+            assertEquals(236, bottomToolbarHeight)
+        }
+    }
+
+    @Test
+    fun `GIVEN the navbar and the microsurvey are shown WHEN getBottomToolbarHeight THEN returns the combined height`() {
+        val settings = spyk(settings)
+        every { settings.shouldShowMicrosurveyPrompt } returns true
+        every { settings.toolbarPosition } returns ToolbarPosition.TOP
+
+        mockkStatic(Context::shouldAddNavigationBar) {
+            every { any<Context>().shouldAddNavigationBar(true) } returns true
+
+            val bottomToolbarHeight = settings.getBottomToolbarHeight(testContext)
+
+            assertEquals(180, bottomToolbarHeight)
+        }
+    }
+
+    @Test
+    fun `GIVEN the address bar and the navbar are shown at bottom WHEN getBottomToolbarHeight THEN returns the combined height`() {
+        val settings = spyk(settings)
+        every { settings.shouldShowMicrosurveyPrompt } returns false
+        every { settings.toolbarPosition } returns ToolbarPosition.BOTTOM
+
+        mockkStatic(Context::shouldAddNavigationBar) {
+            every { any<Context>().shouldAddNavigationBar(true) } returns true
+
+            val bottomToolbarHeight = settings.getBottomToolbarHeight(testContext)
+
+            assertEquals(105, bottomToolbarHeight)
+        }
+    }
+
+    @Test
+    fun `GIVEN the address bar and the microsurvey are shown at bottom WHEN getBottomToolbarHeight THEN returns the combined height`() {
+        val settings = spyk(settings)
+        every { settings.shouldShowMicrosurveyPrompt } returns true
+        every { settings.toolbarPosition } returns ToolbarPosition.BOTTOM
+
+        mockkStatic(Context::shouldAddNavigationBar) {
+            every { any<Context>().shouldAddNavigationBar(true) } returns false
+
+            val bottomToolbarHeight = settings.getBottomToolbarHeight(testContext)
+
+            assertEquals(187, bottomToolbarHeight)
+        }
+    }
+
+    @Test
+    fun `GIVEN just the navbar is shown at bottom WHEN getBottomToolbarHeight THEN returns it's height`() {
+        val settings = spyk(settings)
+        every { settings.shouldShowMicrosurveyPrompt } returns false
+        every { settings.toolbarPosition } returns ToolbarPosition.TOP
+
+        mockkStatic(Context::shouldAddNavigationBar) {
+            every { any<Context>().shouldAddNavigationBar(true) } returns true
+
+            val bottomToolbarHeight = settings.getBottomToolbarHeight(testContext)
+
+            assertEquals(49, bottomToolbarHeight)
+        }
+    }
+
+    @Test
+    fun `GIVEN just the microsurvey is shown at bottom WHEN getBottomToolbarHeight THEN returns it's height`() {
+        val settings = spyk(settings)
+        every { settings.shouldShowMicrosurveyPrompt } returns true
+        every { settings.toolbarPosition } returns ToolbarPosition.TOP
+
+        mockkStatic(Context::shouldAddNavigationBar) {
+            every { any<Context>().shouldAddNavigationBar(true) } returns false
+
+            val bottomToolbarHeight = settings.getBottomToolbarHeight(testContext)
+
+            assertEquals(131, bottomToolbarHeight)
+        }
+    }
+
+    @Test
+    fun `GIVEN just the addressbar is shown at bottom WHEN getBottomToolbarHeight THEN returns it's height`() {
+        val settings = spyk(settings)
+        every { settings.shouldShowMicrosurveyPrompt } returns false
+        every { settings.toolbarPosition } returns ToolbarPosition.BOTTOM
+
+        mockkStatic(Context::shouldAddNavigationBar) {
+            every { any<Context>().shouldAddNavigationBar(true) } returns false
+
+            val bottomToolbarHeight = settings.getBottomToolbarHeight(testContext)
+
+            assertEquals(56, bottomToolbarHeight)
+        }
     }
 }

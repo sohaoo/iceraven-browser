@@ -1,25 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- This Source Code Form is subject to the terms of the Mozilla Public
+   - License, v. 2.0. If a copy of the MPL was not distributed with this
+   - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission
-        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="28"
-        tools:ignore="ScopedStorage"
-        />
+
+    <!-- Allows for storing and retrieving screenshots -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- This is needed because the android.permission.CAMERA above automatically
+    adds a requirements for camera hardware and we don't want add those restrictions -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
-
-    <!-- Needed for Google Play policy https://support.google.com/googleplay/android-developer/answer/6048248 -->
-    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
 
     <!-- Needed to prompt the user to give permission to install a downloaded apk -->
     <uses-permission-sdk-23 android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
@@ -32,20 +44,22 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- Needed for uploading media files on devices with Android 13 and later. -->
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+
+    <!-- Needed to support Credential Manager with Android 14 and later. -->
+    <uses-permission android:name="android.permission.CREDENTIAL_MANAGER_SET_ORIGIN" />
+    <uses-permission android:name="android.permission.CREDENTIAL_MANAGER_QUERY_CANDIDATE_CREDENTIALS" />
 
     <application
         android:name=".FenixApplication"
         android:allowBackup="false"
-        android:extractNativeLibs="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/NormalTheme"
         android:usesCleartextTraffic="true"
+        android:enableOnBackInvokedCallback="true"
         tools:ignore="UnusedAttribute">
 
         <profileable
@@ -62,13 +76,29 @@
         <activity-alias
             android:name="${applicationId}.App"
             android:exported="true"
-            android:targetActivity=".${targetActivity}">
+            android:targetActivity=".HomeActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+        </activity-alias>
+
+        <activity-alias
+            android:name="${applicationId}.AlternativeApp"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_alternative"
+            android:roundIcon="@mipmap/ic_launcher_round_alternative"
+            android:targetActivity=".HomeActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
             <meta-data
                 android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
@@ -95,6 +125,7 @@
 
         <activity
             android:name=".HomeActivity"
+            android:theme="@style/SplashScreen"
             android:exported="true"
             android:configChanges="keyboard|keyboardHidden|mcc|mnc|orientation|screenSize|layoutDirection|smallestScreenSize|screenLayout"
             android:launchMode="singleTask"
@@ -135,6 +166,8 @@
                     android:host="settings_search_engine"/>
                 <data android:scheme="${deepLinkScheme}"
                     android:host="settings_tracking_protection"/>
+                <data android:scheme="${deepLinkScheme}"
+                    android:host="share_sheet"/>
                 <data android:scheme="${deepLinkScheme}"
                     android:host="turn_on_sync"/>
                 <data android:scheme="${deepLinkScheme}"
@@ -212,6 +245,21 @@
             </intent-filter>
 
             <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="android.intent.action.GET_CONTENT"/>
+                <action android:name="android.intent.action.PICK" />
+                <data android:scheme="file" />
+                <data android:scheme="content"/>
+                <data android:host="*" />
+                <data android:pathSuffix=".xpi"/>
+                <data android:pathSuffix=".zip"/>
+                <data android:mimeType="application/x-xpinstall"/>
+                <data android:mimeType="application/zip"/>
+            </intent-filter>
+
+            <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
@@ -247,6 +295,14 @@
                 <data android:scheme="https" />
             </intent-filter>
 
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="application/pdf" />
+                <data android:scheme="content" />
+            </intent-filter>
+
             <meta-data
                 android:name="com.android.systemui.action_assist_icon"
                 android:resource="@mipmap/ic_launcher" />
@@ -275,14 +331,17 @@
             android:exported="false" />
 
         <activity android:name=".autofill.AutofillUnlockActivity"
+            tools:targetApi="o"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Translucent" />
 
         <activity android:name=".autofill.AutofillConfirmActivity"
+            tools:targetApi="o"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.Translucent" />
 
         <activity android:name=".autofill.AutofillSearchActivity"
+            tools:targetApi="o"
             android:exported="false"
             android:theme="@style/DialogActivityTheme" />
 
@@ -290,8 +349,8 @@
             android:name=".messaging.NotificationClickedReceiverActivity"
             android:exported="false" />
 
-        <service
-            android:name=".autofill.AutofillService"
+        <service android:name=".autofill.AutofillService"
+            tools:targetApi="o"
             android:exported="true"
             android:label="@string/app_name"
             android:permission="android.permission.BIND_AUTOFILL_SERVICE">
@@ -313,12 +372,12 @@
             tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="android.support.customtabs.action.CustomTabsService" />
-                <category android:name="androidx.browser.trusted.category.TrustedWebActivities" />
             </intent-filter>
         </service>
 
         <service
             android:name=".downloads.DownloadService"
+            android:foregroundServiceType="dataSync"
             android:exported="false" />
 
         <receiver
@@ -332,8 +391,21 @@
                 android:resource="@xml/search_widget_info" />
         </receiver>
 
-        <service android:name=".session.PrivateNotificationService"
-                android:exported="false" />
+        <receiver android:name=".onboarding.WidgetPinnedReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="org.mozilla.fenix.onboarding.WidgetPinnedReceiver.widgetPinned"/>
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".session.PrivateNotificationService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="This foreground service allows users to easily remove private tabs from the notification" />
+        </service>
 
         <service
             android:name=".messaging.NotificationDismissedService"

@@ -1,15 +1,14 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
-* License, v. 2.0. If a copy of the MPL was not distributed with this
-* file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 package org.mozilla.fenix.home.intent
 
+import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build.VERSION_CODES.M
-import android.os.Build.VERSION_CODES.N
-import android.os.Build.VERSION_CODES.P
 import androidx.core.net.toUri
 import androidx.navigation.NavController
 import io.mockk.Called
@@ -18,6 +17,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import mozilla.appservices.places.BookmarkRoot
 import mozilla.components.concept.engine.EngineSession
+import mozilla.components.concept.engine.prompt.ShareData
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -28,6 +28,7 @@ import org.mozilla.fenix.BuildConfig.DEEP_LINK_SCHEME
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.NavGraphDirections
 import org.mozilla.fenix.browser.browsingmode.BrowsingMode
+import org.mozilla.fenix.components.accounts.FenixFxAEntryPoint
 import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
 import org.mozilla.fenix.settings.SupportUtils
 import org.robolectric.annotation.Config
@@ -44,7 +45,7 @@ class HomeDeepLinkIntentProcessorTest {
         activity = mockk(relaxed = true)
         navController = mockk(relaxed = true)
         out = mockk()
-        processorHome = HomeDeepLinkIntentProcessor(activity)
+        processorHome = HomeDeepLinkIntentProcessor(activity, ::showAddSearchWidgetPrompt)
     }
 
     @Test
@@ -121,7 +122,13 @@ class HomeDeepLinkIntentProcessorTest {
         assertTrue(processorHome.process(testIntent("turn_on_sync"), navController, out))
 
         verify { activity wasNot Called }
-        verify { navController.navigate(NavGraphDirections.actionGlobalTurnOnSync()) }
+        verify {
+            navController.navigate(
+                NavGraphDirections.actionGlobalTurnOnSync(
+                    entrypoint = FenixFxAEntryPoint.DeepLink,
+                ),
+            )
+        }
         verify { out wasNot Called }
     }
 
@@ -222,6 +229,35 @@ class HomeDeepLinkIntentProcessorTest {
     }
 
     @Test
+    fun `process share_sheet deep link`() {
+        assertTrue(processorHome.process(testIntent("share_sheet"), navController, out))
+
+        verify { navController wasNot Called }
+        verify { out wasNot Called }
+
+        assertTrue(processorHome.process(testIntent("share_sheet?url=test"), navController, out))
+
+        verify { navController wasNot Called }
+        verify { out wasNot Called }
+
+        assertTrue(processorHome.process(testIntent("share_sheet?url=https%3A%2F%2Fexample.com&title=TestTitle&text=TestText&subject=TestSubject"), navController, out))
+
+        verify {
+            navController.navigate(
+                directions = match {
+                    with(it.arguments) {
+                        getBoolean("showPage") == false &&
+                            getParcelableArray("data", ShareData::class.java)?.get(0)?.url == "https://example.com" &&
+                            getString("sessionId") == null &&
+                            getString("shareSubject") == "TestSubject"
+                    }
+                },
+            )
+        }
+        verify { out wasNot Called }
+    }
+
+    @Test
     fun `process invalid open deep link`() {
         val invalidProcessor = HomeDeepLinkIntentProcessor(activity)
 
@@ -234,16 +270,6 @@ class HomeDeepLinkIntentProcessorTest {
         assertTrue(invalidProcessor.process(testIntent("open?url=open?url=https%3A%2F%2Fwww.example.org%2F"), navController, out))
 
         verify { activity wasNot Called }
-        verify { navController wasNot Called }
-        verify { out wasNot Called }
-    }
-
-    @Test
-    @Config(minSdk = N, maxSdk = P)
-    fun `process make_default_browser deep link for above API 23`() {
-        assertTrue(processorHome.process(testIntent("make_default_browser"), navController, out))
-
-        verify { activity.startActivity(any()) }
         verify { navController wasNot Called }
         verify { out wasNot Called }
     }
@@ -262,9 +288,10 @@ class HomeDeepLinkIntentProcessorTest {
 
         assertTrue(processorHome.process(testIntent("make_default_browser"), navController, out))
 
-        val searchTermOrURL = SupportUtils.getGenericSumoURLForTopic(
-            topic = SupportUtils.SumoTopic.SET_AS_DEFAULT_BROWSER,
-        )
+        val searchTermOrURL =
+            SupportUtils.getGenericSumoURLForTopic(
+                topic = SupportUtils.SumoTopic.SET_AS_DEFAULT_BROWSER,
+            )
 
         verify {
             activity.openToBrowserAndLoad(
@@ -296,5 +323,18 @@ class HomeDeepLinkIntentProcessorTest {
         verify { out wasNot Called }
     }
 
+    @Test
+    fun `process install_search_widget deep link`() {
+        assertTrue(processorHome.process(testIntent("install_search_widget"), navController, out))
+
+        verify { showAddSearchWidgetPrompt(activity) }
+        verify { navController wasNot Called }
+        verify { out wasNot Called }
+    }
+
     private fun testIntent(uri: String) = Intent("", "$DEEP_LINK_SCHEME://$uri".toUri())
+
+    private fun showAddSearchWidgetPrompt(activity: Activity) {
+        println("$activity add search widget prompt was shown ")
+    }
 }

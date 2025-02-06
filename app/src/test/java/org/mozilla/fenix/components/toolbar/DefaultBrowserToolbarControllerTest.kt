@@ -42,7 +42,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.fenix.GleanMetrics.Events
+import org.mozilla.fenix.GleanMetrics.NavigationBar
 import org.mozilla.fenix.GleanMetrics.ReaderMode
+import org.mozilla.fenix.GleanMetrics.Translations
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.R
 import org.mozilla.fenix.browser.BrowserAnimator
@@ -50,10 +52,15 @@ import org.mozilla.fenix.browser.BrowserFragmentDirections
 import org.mozilla.fenix.browser.browsingmode.BrowsingMode
 import org.mozilla.fenix.browser.browsingmode.SimpleBrowsingModeManager
 import org.mozilla.fenix.browser.readermode.ReaderModeController
+import org.mozilla.fenix.components.AppStore
+import org.mozilla.fenix.components.appstate.AppAction.SnackbarAction
+import org.mozilla.fenix.components.menu.MenuAccessPoint
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
+import org.mozilla.fenix.home.HomeFragment
 import org.mozilla.fenix.home.HomeScreenViewModel
+import org.mozilla.fenix.utils.Settings
 
 @RunWith(FenixRobolectricTestRunner::class)
 class DefaultBrowserToolbarControllerTest {
@@ -90,7 +97,11 @@ class DefaultBrowserToolbarControllerTest {
     @RelaxedMockK
     private lateinit var homeViewModel: HomeScreenViewModel
 
+    @RelaxedMockK
+    private lateinit var settings: Settings
+
     private lateinit var store: BrowserStore
+    private lateinit var appStore: AppStore
     private val captureMiddleware = CaptureActionsMiddleware<BrowserState, BrowserAction>()
 
     @get:Rule
@@ -124,6 +135,7 @@ class DefaultBrowserToolbarControllerTest {
             ),
             middleware = listOf(captureMiddleware),
         )
+        appStore = AppStore()
     }
 
     @After
@@ -366,13 +378,128 @@ class DefaultBrowserToolbarControllerTest {
         assertNotNull(Events.browserToolbarHomeTapped.testGetValue())
     }
 
+    @Test
+    fun handleEraseButtonClicked() {
+        assertNull(Events.browserToolbarEraseTapped.testGetValue())
+        val controller = createController()
+        controller.handleEraseButtonClick()
+
+        verify {
+            homeViewModel.sessionToDelete = HomeFragment.ALL_PRIVATE_TABS
+            navController.navigate(BrowserFragmentDirections.actionGlobalHome())
+        }
+        assertNotNull(Events.browserToolbarEraseTapped.testGetValue())
+    }
+
+    @Test
+    fun handleTranslationsButtonClick() {
+        val controller = createController()
+        controller.handleTranslationsButtonClick()
+
+        verify {
+            appStore.dispatch(SnackbarAction.SnackbarDismissed)
+
+            navController.navigate(
+                BrowserFragmentDirections.actionBrowserFragmentToTranslationsDialogFragment(),
+            )
+        }
+
+        val telemetry = Translations.action.testGetValue()?.firstOrNull()
+        assertEquals("main_flow_toolbar", telemetry?.extra?.get("item"))
+    }
+
+    @Test
+    fun `WHEN new tab button is clicked and navigation bar is enabled THEN navigate to homepage`() {
+        every { activity.settings().navigationToolbarEnabled } returns true
+        val controller = createController()
+        controller.handleNewTabButtonClick()
+
+        verify {
+            navController.navigate(
+                BrowserFragmentDirections.actionGlobalHome(focusOnAddressBar = true),
+            )
+        }
+
+        assertNotNull(NavigationBar.browserNewTabTapped.testGetValue())
+        val recordedEvents = NavigationBar.browserNewTabTapped.testGetValue()!!
+        assertEquals(1, recordedEvents.size)
+        assertEquals(null, recordedEvents.single().extra)
+    }
+
+    @Test
+    fun `GIVEN homepage as a new tab is enabled WHEN new tab button is clicked THEN a new homepage tab is displayed`() {
+        every { settings.enableHomepageAsNewTab } returns true
+
+        val controller = createController()
+        controller.handleNewTabButtonClick()
+
+        verify {
+            tabsUseCases.addTab.invoke(
+                startLoading = false,
+                private = false,
+            )
+
+            navController.navigate(
+                BrowserFragmentDirections.actionGlobalHome(focusOnAddressBar = true),
+            )
+        }
+    }
+
+    @Test
+    fun `WHEN new tab button is long clicked and navigation toolbar enabled THEN record the navigation bar telemetry event`() {
+        every { activity.settings().navigationToolbarEnabled } returns true
+        val controller = createController()
+        controller.handleNewTabButtonLongClick()
+
+        assertNotNull(NavigationBar.browserNewTabLongTapped.testGetValue())
+        val recordedEvents = NavigationBar.browserNewTabLongTapped.testGetValue()!!
+        assertEquals(1, recordedEvents.size)
+        assertEquals(null, recordedEvents.single().extra)
+    }
+
+    @Test
+    fun `GIVEN that the menu access point is not a custom tab WHEN menu button is clicked THEN handle menu navigation`() {
+        val controller = createController()
+        val accessPoint = MenuAccessPoint.Browser
+
+        controller.handleMenuButtonClicked(accessPoint)
+
+        verify {
+            navController.navigate(
+                BrowserFragmentDirections.actionGlobalMenuDialogFragment(
+                    accesspoint = accessPoint,
+                ),
+            )
+        }
+    }
+
+    @Test
+    fun `GIVEN that the menu access point is a custom tab WHEN menu button is clicked THEN handle menu navigation`() {
+        val controller = createController()
+        val accessPoint = MenuAccessPoint.External
+        val customTabSessionId = "1"
+
+        controller.handleMenuButtonClicked(accessPoint, customTabSessionId)
+
+        verify {
+            navController.navigate(
+                BrowserFragmentDirections.actionGlobalMenuDialogFragment(
+                    accesspoint = accessPoint,
+                    customTabSessionId = customTabSessionId,
+                ),
+            )
+        }
+    }
+
     private fun createController(
         activity: HomeActivity = this.activity,
         customTabSessionId: String? = null,
     ) = DefaultBrowserToolbarController(
         store = store,
+        appStore = appStore,
         tabsUseCases = tabsUseCases,
         activity = activity,
+        settings = settings,
         navController = navController,
         engineView = engineView,
         homeViewModel = homeViewModel,

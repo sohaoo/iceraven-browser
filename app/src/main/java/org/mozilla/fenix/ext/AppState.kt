@@ -6,6 +6,7 @@ package org.mozilla.fenix.ext
 
 import androidx.annotation.VisibleForTesting
 import mozilla.components.service.pocket.PocketStory
+import mozilla.components.service.pocket.PocketStory.ContentRecommendation
 import mozilla.components.service.pocket.PocketStory.PocketRecommendedStory
 import mozilla.components.service.pocket.PocketStory.PocketSponsoredStory
 import mozilla.components.service.pocket.ext.hasFlightImpressionsLimitReached
@@ -14,7 +15,7 @@ import org.mozilla.fenix.components.appstate.AppState
 import org.mozilla.fenix.home.blocklist.BlocklistHandler
 import org.mozilla.fenix.home.pocket.POCKET_STORIES_DEFAULT_CATEGORY_NAME
 import org.mozilla.fenix.home.pocket.PocketRecommendedStoriesCategory
-import org.mozilla.fenix.home.pocket.PocketStory
+import org.mozilla.fenix.home.pocket.ui.PocketStory
 import org.mozilla.fenix.home.recentsyncedtabs.RecentSyncedTabState
 import org.mozilla.fenix.utils.Settings
 
@@ -24,6 +25,13 @@ import org.mozilla.fenix.utils.Settings
  */
 @VisibleForTesting
 internal const val POCKET_STORIES_TO_SHOW_COUNT = 8
+
+/**
+ * Total count of content recommendations to show.
+ * This is an optimistic value taking into account that fewer than this stories may actually be available.
+ */
+@VisibleForTesting
+internal const val CONTENT_RECOMMENDATIONS_TO_SHOW_COUNT = 9
 
 /**
  * Total count of all sponsored Pocket stories to show.
@@ -38,19 +46,19 @@ internal const val POCKET_SPONSORED_STORIES_TO_SHOW_COUNT = 2
  * @return a list of [PocketStory]es from the currently selected categories.
  */
 fun AppState.getFilteredStories(): List<PocketStory> {
-    val recommendedStories = when (pocketStoriesCategoriesSelections.isEmpty()) {
+    val recommendedStories = when (recommendationState.pocketStoriesCategoriesSelections.isEmpty()) {
         true -> {
-            pocketStoriesCategories
+            recommendationState.pocketStoriesCategories
                 .find { it.name == POCKET_STORIES_DEFAULT_CATEGORY_NAME }
                 ?.stories
                 ?.sortedBy { it.timesShown }
                 ?.take(POCKET_STORIES_TO_SHOW_COUNT) ?: emptyList()
         }
         false -> {
-            val oldestSortedCategories = pocketStoriesCategoriesSelections
+            val oldestSortedCategories = recommendationState.pocketStoriesCategoriesSelections
                 .sortedByDescending { it.selectionTimestamp }
                 .mapNotNull { selectedCategory ->
-                    pocketStoriesCategories.find {
+                    recommendationState.pocketStoriesCategories.find {
                         it.name == selectedCategory.name
                     }
                 }
@@ -70,12 +78,34 @@ fun AppState.getFilteredStories(): List<PocketStory> {
     }
 
     val sponsoredStories = getFilteredSponsoredStories(
-        stories = pocketSponsoredStories,
+        stories = recommendationState.pocketSponsoredStories,
         limit = POCKET_SPONSORED_STORIES_TO_SHOW_COUNT,
     )
 
     return combineRecommendedAndSponsoredStories(
         recommendedStories = recommendedStories,
+        sponsoredStories = sponsoredStories,
+    )
+}
+
+/**
+ * Get the list of stories to be displayed based on the content recommendations and sponsored
+ * stories state.
+ *
+ * @return A list of [PocketStory]s containing the content recommendations and sponsored stories
+ * to display.
+ */
+fun AppState.getStories(): List<PocketStory> {
+    val recommendations = recommendationState.contentRecommendations
+        .sortedBy { it.impressions }
+        .take(CONTENT_RECOMMENDATIONS_TO_SHOW_COUNT)
+    val sponsoredStories = getFilteredSponsoredStories(
+        stories = recommendationState.pocketSponsoredStories,
+        limit = POCKET_SPONSORED_STORIES_TO_SHOW_COUNT,
+    )
+
+    return combineRecommendationsAndSponsoredStories(
+        recommendations = recommendations,
         sponsoredStories = sponsoredStories,
     )
 }
@@ -98,6 +128,27 @@ internal fun combineRecommendedAndSponsoredStories(
     return recommendedStories.take(1) +
         sponsoredStories.take(1) +
         recommendedStories.take(recommendedStoriesToShow).drop(1) +
+        sponsoredStories.take(2).drop(1)
+}
+
+/**
+ * Combine all available content recommendations and sponsored stories to show at max
+ * [CONTENT_RECOMMENDATIONS_TO_SHOW_COUNT] stories of both types but based on a specific split.
+ */
+@VisibleForTesting
+internal fun combineRecommendationsAndSponsoredStories(
+    recommendations: List<ContentRecommendation>,
+    sponsoredStories: List<PocketSponsoredStory>,
+): List<PocketStory> {
+    val recommendedStoriesToShow =
+        CONTENT_RECOMMENDATIONS_TO_SHOW_COUNT - sponsoredStories.size.coerceAtMost(
+            POCKET_SPONSORED_STORIES_TO_SHOW_COUNT,
+        )
+
+    // Sponsored stories should be shown at position 2 and 9 if possible.
+    return recommendations.take(1) +
+        sponsoredStories.take(1) +
+        recommendations.take(recommendedStoriesToShow).drop(1) +
         sponsoredStories.take(2).drop(1)
 }
 
@@ -170,7 +221,7 @@ internal fun getFilteredSponsoredStories(
 fun AppState.filterState(blocklistHandler: BlocklistHandler): AppState =
     with(blocklistHandler) {
         copy(
-            recentBookmarks = recentBookmarks.filteredByBlocklist(),
+            bookmarks = bookmarks.filteredByBlocklist(),
             recentTabs = recentTabs.filteredByBlocklist().filterContile(),
             recentHistory = recentHistory.filteredByBlocklist().filterContile(),
             recentSyncedTabState = recentSyncedTabState.filteredByBlocklist().filterContile(),
@@ -187,9 +238,8 @@ fun AppState.shouldShowRecentTabs(settings: Settings): Boolean {
 }
 
 /**
- * Determines whether a recent synced tab section should be shown, based on user preference
- * and the availability of Synced tabs.
+ * Determines whether a recent synced tab section should be shown, based on the availability of Synced tabs.
  */
-fun AppState.shouldShowRecentSyncedTabs(settings: Settings): Boolean {
-    return (settings.enableTaskContinuityEnhancements && recentSyncedTabState is RecentSyncedTabState.Success)
+fun AppState.shouldShowRecentSyncedTabs(): Boolean {
+    return recentSyncedTabState is RecentSyncedTabState.Success
 }

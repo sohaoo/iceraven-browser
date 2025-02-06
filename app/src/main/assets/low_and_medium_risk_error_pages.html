@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html>
+<!doctype html>
 <!-- This Source Code Form is subject to the terms of the Mozilla Public
    - License, v. 2.0. If a copy of the MPL was not distributed with this
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
@@ -8,7 +8,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width; user-scalable=false;" />
-    <meta http-equiv="Content-Security-Policy" content="default-src resource:; object-src 'none'" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src resource:; object-src 'none'"
+    />
     <link rel="stylesheet" type="text/css" href="shared_error_style.css" />
     <link
       rel="stylesheet"
@@ -21,7 +24,9 @@
     <!-- PAGE CONTAINER (for styling purposes only) -->
     <div id="errorPageContainer">
       <!-- Error Image -->
-      <iframe id="errorImage" src="" frameborder="0"></iframe>
+      <div id="imageContainer">
+        <iframe id="errorImage" src="" frameborder="0"></iframe>
+      </div>
 
       <!-- Error Title -->
       <div id="errorTitle">
@@ -33,14 +38,13 @@
         <div id="errorShortDesc"></div>
       </div>
 
+      <div id="errorLinkContent"><a id="errorCode"></a></div>
+
       <!-- Retry Button -->
       <button id="errorTryAgain"></button>
 
       <!-- Advanced Button -->
-      <button
-        id="advancedButton"
-        class="buttonSecondary hidden"
-      ></button>
+      <button id="advancedButton" class="buttonSecondary hidden"></button>
 
       <!-- "Go back" Button (For HTTPS-Only error page only) -->
       <button id="backFromHttp"></button>
@@ -56,9 +60,7 @@
             id="advancedPanelBackButtonContainer"
             class="advancedPanelButtonContainer"
           >
-            <button
-              id="advancedPanelBackButton"
-            ></button>
+            <button id="advancedPanelBackButton"></button>
           </div>
           <div
             id="advancedPanelAcceptButtonContainer"
@@ -75,8 +77,9 @@
   </body>
 
   <script type="text/javascript">
+    /* import-globals-from /mobile/android/android-components/components/browser/errorpages/src/main/assets/errorPageScripts.js */
     if (window.history.length == 1) {
-        document.getElementById('advancedPanelBackButton').style.display = 'none';
+      document.getElementById("advancedPanelBackButton").style.display = "none";
     }
 
     function toggleAdvancedAndScroll() {
@@ -104,5 +107,5 @@
     }
   </script>
 
-    <script src="./lowMediumErrorPages.js"></script>
+  <script src="./lowMediumErrorPages.js"></script>
 </html>

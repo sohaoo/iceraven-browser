@@ -4,45 +4,28 @@
 
 package org.mozilla.fenix.ui
 
-import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.uiautomator.UiDevice
-import okhttp3.mockwebserver.MockWebServer
-import org.junit.After
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mozilla.fenix.helpers.AndroidAssetDispatcher
 import org.mozilla.fenix.helpers.HomeActivityTestRule
+import org.mozilla.fenix.helpers.TestAssetHelper
+import org.mozilla.fenix.helpers.TestHelper.mDevice
+import org.mozilla.fenix.helpers.TestSetup
 import org.mozilla.fenix.ui.robots.homeScreen
+import org.mozilla.fenix.ui.robots.navigationToolbar
+import org.mozilla.fenix.ui.robots.notificationShade
+import org.mozilla.fenix.utils.DURATION_MS_TRANSLATIONS
+import org.mozilla.fenix.utils.exitMenu
 
 /**
  *  Tests for verifying the the privacy and security section of the Settings menu
  *
  */
 
-class SettingsPrivacyTest {
-    /* ktlint-disable no-blank-line-before-rbrace */ // This imposes unreadable grouping.
-
-    private lateinit var mDevice: UiDevice
-    private lateinit var mockWebServer: MockWebServer
-
+class SettingsPrivacyTest : TestSetup() {
     @get:Rule
     val activityTestRule = HomeActivityTestRule.withDefaultSettingsOverrides(skipOnboarding = true)
 
-    @Before
-    fun setUp() {
-        mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-        mockWebServer = MockWebServer().apply {
-            dispatcher = AndroidAssetDispatcher()
-            start()
-        }
-    }
-
-    @After
-    fun tearDown() {
-        mockWebServer.shutdown()
-    }
-
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2092698
     @Test
     fun settingsPrivacyItemsTest() {
         homeScreen {
@@ -53,11 +36,10 @@ class SettingsPrivacyTest {
             verifyPrivateBrowsingButton()
             verifyHTTPSOnlyModeButton()
             verifySettingsOptionSummary("HTTPS-Only Mode", "Off")
-            verifyCookieBannerReductionButton()
-            verifySettingsOptionSummary("Cookie Banner Reduction", "Off")
+            verifySettingsOptionSummary("Cookie Banner Blocker in private browsing", "")
             verifyEnhancedTrackingProtectionButton()
             verifySettingsOptionSummary("Enhanced Tracking Protection", "Standard")
-            verifySitePermissionsButton()
+            verifySiteSettingsButton()
             verifyDeleteBrowsingDataButton()
             verifyDeleteBrowsingDataOnQuitButton()
             verifySettingsOptionSummary("Delete browsing data on quit", "Off")
@@ -67,92 +49,60 @@ class SettingsPrivacyTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/243362
     @Test
-    fun verifyDataCollectionTest() {
-        homeScreen {
-        }.openThreeDotMenu {
-        }.openSettings {
-        }.openSettingsSubMenuDataCollection {
+    fun verifyDataCollectionSettingsTest() {
+        homeScreen {}.openThreeDotMenu {}.openSettings {}.openSettingsSubMenuDataCollection {
+            // Studies depends on the telemetry switch,  if telemetry is off studies will be
+            // turned off as well, and will require the app to be restarted.
             verifyDataCollectionView(
-                true,
                 true,
                 "On",
             )
-        }
-    }
-
-    @Test
-    fun verifyUsageAndTechnicalDataToggleTest() {
-        homeScreen {
-        }.openThreeDotMenu {
-        }.openSettings {
-        }.openSettingsSubMenuDataCollection {
-            verifyUsageAndTechnicalDataToggle(true)
             clickUsageAndTechnicalDataToggle()
             verifyUsageAndTechnicalDataToggle(false)
-        }
-    }
-
-    @Test
-    fun verifyMarketingDataToggleTest() {
-        homeScreen {
-        }.openThreeDotMenu {
-        }.openSettings {
-        }.openSettingsSubMenuDataCollection {
-            verifyMarketingDataToggle(true)
-            clickMarketingDataToggle()
-            verifyMarketingDataToggle(false)
-        }
-    }
-
-    @Test
-    fun verifyStudiesToggleTest() {
-        homeScreen {
-        }.openThreeDotMenu {
-        }.openSettings {
-        }.openSettingsSubMenuDataCollection {
+            // Automatically turned off as telemetry was turned off.
             verifyDataCollectionView(
-                true,
-                true,
-                "On",
+                false,
+                "Off",
             )
+            clickUsageAndTechnicalDataToggle()
+            verifyUsageAndTechnicalDataToggle(true)
+
             clickStudiesOption()
-            verifyStudiesToggle(true)
+            verifyStudiesToggle(false)
+            // Turning to true
             clickStudiesToggle()
-            verifyStudiesDialog()
-            clickStudiesDialogCancelButton()
             verifyStudiesToggle(true)
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1024594
     @Test
-    fun sitePermissionsItemsTest() {
-        homeScreen {
-        }.openThreeDotMenu {
-        }.openSettings {
-        }.openSettingsSubMenuSitePermissions {
-            verifySitePermissionsToolbarTitle()
-            verifyToolbarGoBackButton()
-            verifySitePermissionOption("Autoplay", "Block audio only")
-            verifySitePermissionOption("Camera", "Blocked by Android")
-            verifySitePermissionOption("Location", "Blocked by Android")
-            verifySitePermissionOption("Microphone", "Blocked by Android")
-            verifySitePermissionOption("Notification", "Ask to allow")
-            verifySitePermissionOption("Persistent Storage", "Ask to allow")
-            verifySitePermissionOption("Cross-site cookies", "Ask to allow")
-            verifySitePermissionOption("DRM-controlled content", "Ask to allow")
-            verifySitePermissionOption("Exceptions")
-        }
-    }
+    fun allowAppToSendNotifications() {
+        val defaultWebPage = TestAssetHelper.getGenericAsset(mockWebServer, 1)
 
-    @Test
-    fun notificationPermissionsItemsTest() {
+        // Clear all existing notifications
+        notificationShade {
+            mDevice.openNotification()
+            clearNotifications()
+        }
+
         homeScreen {
+        }.togglePrivateBrowsingMode()
+
+        navigationToolbar {
+        }.enterURLAndEnterToBrowser(defaultWebPage.url) {
+        }.openNotificationShade {
+            verifySystemNotificationExists("Close private tabs?")
+        }.closeNotificationTray {
         }.openThreeDotMenu {
         }.openSettings {
-        }.openSettingsSubMenuSitePermissions {
-        }.openNotification {
-            verifyNotificationSubMenuItems()
+            verifySettingsOptionSummary("Notifications", "Allowed")
+        }.openSettingsSubMenuNotifications {
+            verifyAllSystemNotificationsToggleState(true)
+            verifyPrivateBrowsingSystemNotificationsToggleState(true)
+            exitMenu(DURATION_MS_TRANSLATIONS)
         }
     }
 }

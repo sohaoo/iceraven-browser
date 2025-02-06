@@ -15,11 +15,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.accessibility.AccessibilityManager
 import androidx.annotation.StringRes
+import mozilla.components.compose.base.theme.AcornWindowSize
 import mozilla.components.support.locale.LocaleManager
 import org.mozilla.fenix.FenixApplication
+import org.mozilla.fenix.R
 import org.mozilla.fenix.components.Components
 import org.mozilla.fenix.components.metrics.MetricController
+import org.mozilla.fenix.components.toolbar.ToolbarPosition
 import org.mozilla.fenix.settings.advanced.getSelectedLocale
+import org.mozilla.fenix.utils.isLargeScreenSize
 import java.lang.String.format
 import java.util.Locale
 
@@ -88,9 +92,13 @@ val Context.accessibilityManager: AccessibilityManager get() =
     getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager
 
 /**
- * Used to navigate to system notifications settings for app
+ * Used to navigate to system notifications settings for app.
+ *
+ * @param onError Invoked when the activity described by the intent is not present on the device.
  */
-fun Context.navigateToNotificationsSettings() {
+fun Context.navigateToNotificationsSettings(
+    onError: () -> Unit,
+) {
     val intent = Intent()
     intent.let {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -102,7 +110,24 @@ fun Context.navigateToNotificationsSettings() {
             it.putExtra("app_uid", this.applicationInfo.uid)
         }
     }
-    startActivity(intent)
+    startExternalActivitySafe(intent, onError)
+}
+
+/**
+ * Checks for the presence of an activity before starting it. In case it's not present,
+ * [onActivityNotPresent] is invoked, preventing ActivityNotFoundException from being thrown.
+ * This is useful when navigating to external activities like device permission settings,
+ * notification settings, default app settings, etc.
+ *
+ * @param intent The Intent of the activity to resolve and start.
+ * @param onActivityNotPresent Invoked when the activity to handle the intent is not present.
+ */
+inline fun Context.startExternalActivitySafe(intent: Intent, onActivityNotPresent: () -> Unit) {
+    if (intent.resolveActivity(packageManager) != null) {
+        startActivity(intent)
+    } else {
+        onActivityNotPresent()
+    }
 }
 
 /**
@@ -112,3 +137,34 @@ fun Context.navigateToNotificationsSettings() {
  */
 fun Context.isSystemInDarkTheme(): Boolean =
     resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+
+/**
+ * Returns the message to be shown when a tab is closed based on whether the tab was private or not.
+ * @param private true if the tab was private, false otherwise.
+ */
+fun Context.tabClosedUndoMessage(private: Boolean): String =
+    if (private) {
+        getString(R.string.snackbar_private_tab_closed)
+    } else {
+        getString(R.string.snackbar_tab_closed)
+    }
+
+/**
+ * Helper function used to determine whether the app's total *window* size is at least that of a tablet.
+ * This relies on the window size check from [AcornWindowSize]. To determine whether the device's
+ * *physical* size is at least the size of a tablet, use [Context.isLargeScreenSize] instead.
+ *
+ * @return true if the app has a large window size akin to a tablet.
+ */
+fun Context.isLargeWindow(): Boolean = AcornWindowSize.isLargeWindow(this)
+
+/**
+ *  This will record an event in the Nimbus internal event store. Used for behavioral targeting.
+ */
+fun Context.recordEventInNimbus(eventId: String) = components.nimbus.events.recordEvent(eventId)
+
+/**
+ * Returns true if the toolbar is position at the bottom.
+ */
+fun Context.isToolbarAtBottom() =
+    components.settings.toolbarPosition == ToolbarPosition.BOTTOM

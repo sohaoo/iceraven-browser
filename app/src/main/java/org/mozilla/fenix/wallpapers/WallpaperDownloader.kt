@@ -13,7 +13,6 @@ import mozilla.components.concept.fetch.isSuccess
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.wallpapers.Wallpaper.Companion.getLocalPath
 import java.io.File
-import java.lang.IllegalStateException
 
 /**
  * Can download wallpapers from a remote host.
@@ -73,11 +72,13 @@ class WallpaperDownloader(
         val request = Request(
             url = "$remoteHost/$remotePath",
             method = Request.Method.GET,
+            conservative = true,
         )
 
         return@withContext Result.runCatching {
             val response = client.fetch(request)
             if (!response.isSuccess) {
+                response.close()
                 throw IllegalStateException()
             }
             localFile.parentFile?.mkdirs()

@@ -4,20 +4,23 @@
 
 package org.mozilla.fenix.settings
 
-import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.preference.EditTextPreference
 import androidx.preference.Preference
+import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceScreen
 import androidx.preference.SwitchPreference
 import org.mozilla.fenix.FeatureFlags
 import org.mozilla.fenix.GleanMetrics.AppTheme
+import org.mozilla.fenix.GleanMetrics.CustomizationSettings
 import org.mozilla.fenix.GleanMetrics.PullToRefreshInBrowser
 import org.mozilla.fenix.GleanMetrics.ToolbarSettings
 import org.mozilla.fenix.R
+import org.mozilla.fenix.browser.tabstrip.isTabStripEnabled
 import org.mozilla.fenix.components.toolbar.ToolbarPosition
 import org.mozilla.fenix.ext.requireComponents
 import org.mozilla.fenix.ext.settings
@@ -52,8 +55,25 @@ class CustomizationFragment : PreferenceFragmentCompat() {
         bindLightTheme()
         bindAutoBatteryTheme()
         setupRadioGroups()
-        setupToolbarCategory()
-        setupGesturesCategory()
+        val tabletAndTabStripEnabled = requireContext().isTabStripEnabled()
+        if (tabletAndTabStripEnabled) {
+            val preferenceScreen: PreferenceScreen =
+                requirePreference(R.string.pref_key_customization_preference_screen)
+            val toolbarPrefCategory: PreferenceCategory =
+                requirePreference(R.string.pref_key_customization_category_toolbar)
+            preferenceScreen.removePreference(toolbarPrefCategory)
+        } else {
+            setupToolbarCategory()
+        }
+        val isNavBarEnabled = requireContext().settings().navigationToolbarEnabled
+        if (isNavBarEnabled) {
+            setupNavBarEnabledSettingsUpdates()
+        }
+        // if tab strip is enabled, swipe toolbar to switch tabs should not be enabled so the
+        // preference is not shown
+        setupGesturesCategory(isSwipeToolbarToSwitchTabsVisible = !tabletAndTabStripEnabled)
+
+        setupDownloadCustomizationCategory()
         setupAddonsCustomizationCategory()
         setupSystemBehaviorCategory()
         requirePreference<SwitchPreference>(R.string.pref_key_strip_url).apply {
@@ -67,6 +87,13 @@ class CustomizationFragment : PreferenceFragmentCompat() {
 
             onPreferenceChangeListener = SharedPreferenceUpdater()
         }
+    }
+
+    // Changes to some settings page copy for when the Toolbar(NavBar) is enabled
+    private fun setupNavBarEnabledSettingsUpdates() {
+        val scrollToEnable: SwitchPreference =
+            requirePreference(R.string.pref_key_dynamic_toolbar)
+        scrollToEnable.setTitle(R.string.preference_gestures_dynamic_toolbar_2)
     }
 
     private fun setupRadioGroups() {
@@ -88,8 +115,6 @@ class CustomizationFragment : PreferenceFragmentCompat() {
         }
     }
 
-    @SuppressLint("WrongConstant")
-    // Suppressing erroneous lint warning about using MODE_NIGHT_AUTO_BATTERY, a likely library bug
     private fun bindAutoBatteryTheme() {
         radioAutoBatteryTheme = requirePreference(R.string.pref_key_auto_battery_theme)
         radioAutoBatteryTheme.onClickListener {
@@ -154,7 +179,7 @@ class CustomizationFragment : PreferenceFragmentCompat() {
         addToRadioGroup(topPreference, bottomPreference)
     }
 
-    private fun setupGesturesCategory() {
+    private fun setupGesturesCategory(isSwipeToolbarToSwitchTabsVisible: Boolean) {
         requirePreference<SwitchPreference>(R.string.pref_key_website_pull_to_refresh).apply {
             isVisible = FeatureFlags.pullToRefreshEnabled
             isChecked = context.settings().isPullToRefreshEnabledInBrowser
@@ -166,6 +191,7 @@ class CustomizationFragment : PreferenceFragmentCompat() {
         }
         requirePreference<SwitchPreference>(R.string.pref_key_swipe_toolbar_switch_tabs).apply {
             isChecked = context.settings().isSwipeToolbarToSwitchTabsEnabled
+            isVisible = isSwipeToolbarToSwitchTabsVisible
             onPreferenceChangeListener = SharedPreferenceUpdater()
         }
     }
@@ -187,11 +213,22 @@ class CustomizationFragment : PreferenceFragmentCompat() {
             isChecked = requireContext().settings().shouldRelinquishMemoryUnderPressure
             onPreferenceChangeListener = SharedPreferenceUpdater()
         }
+    }
+
+    private fun setupDownloadCustomizationCategory() {
+        requirePreference<SwitchPreference>(R.string.pref_key_success_download_dialog).apply {
+            isChecked = requireContext().settings().shouldShowSuccessDownloadDialog
+            onPreferenceChangeListener = SharedPreferenceUpdater()
+        }
+    }
 
     override fun onPreferenceTreeClick(preference: Preference): Boolean {
         when (preference.key) {
             resources.getString(R.string.pref_key_website_pull_to_refresh) -> {
                 PullToRefreshInBrowser.enabled.set(requireContext().settings().isPullToRefreshEnabledInBrowser)
+            }
+            resources.getString(R.string.pref_key_dynamic_toolbar) -> {
+                CustomizationSettings.dynamicToolbar.set(requireContext().settings().isDynamicToolbarEnabled)
             }
         }
         return super.onPreferenceTreeClick(preference)

@@ -29,9 +29,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import mozilla.components.compose.base.annotation.LightDarkPreview
 import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.fenix.R
-import org.mozilla.fenix.compose.annotation.LightDarkPreview
 import org.mozilla.fenix.theme.FirefoxTheme
 import org.mozilla.fenix.GleanMetrics.Onboarding as OnboardingMetrics
 
@@ -69,7 +69,7 @@ fun UpgradeOnboarding(
         OnboardingPage(
             pageState = when (onboardingState) {
                 UpgradeOnboardingState.Welcome -> OnboardingPageState(
-                    image = R.drawable.ic_onboarding_welcome,
+                    imageRes = R.drawable.ic_onboarding_welcome,
                     title = stringResource(id = R.string.onboarding_home_welcome_title_2),
                     description = stringResource(id = R.string.onboarding_home_welcome_description),
                     primaryButton = Action(
@@ -88,7 +88,7 @@ fun UpgradeOnboarding(
                     },
                 )
                 UpgradeOnboardingState.SyncSignIn -> OnboardingPageState(
-                    image = R.drawable.ic_onboarding_sync,
+                    imageRes = R.drawable.ic_onboarding_sync,
                     title = stringResource(id = R.string.onboarding_home_sync_title_3),
                     description = stringResource(id = R.string.onboarding_home_sync_description),
                     primaryButton = Action(

@@ -9,7 +9,6 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
 import android.widget.LinearLayout
-import androidx.core.view.MarginLayoutParamsCompat
 import org.mozilla.fenix.R
 
 /**
@@ -46,7 +45,7 @@ class PagerIndicator : LinearLayout {
                 },
                 LayoutParams(dpToPx(DOT_SIZE_IN_DP), dpToPx(DOT_SIZE_IN_DP)).apply {
                     if (!isLast) {
-                        MarginLayoutParamsCompat.setMarginEnd(this, dpToPx(DOT_MARGIN))
+                        this.setMarginEnd(dpToPx(DOT_MARGIN))
                     }
                 },
             )

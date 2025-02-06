@@ -13,9 +13,9 @@ import org.mozilla.fenix.R
 /**
  * Helper class for building a context menu for a top site item.
  *
- * @property context An Android context.
- * @property topSite The [TopSite] to show the context menu for.
- * @property onItemTapped Callback invoked when the user taps on a menu item.
+ * @param context An Android context.
+ * @param topSite The [TopSite] to show the context menu for.
+ * @param onItemTapped Callback invoked when the user taps on a menu item.
  */
 class TopSiteItemMenu(
     private val context: Context,
@@ -24,7 +24,12 @@ class TopSiteItemMenu(
 ) {
     sealed class Item {
         object OpenInPrivateTab : Item()
-        object RenameTopSite : Item()
+
+        /**
+         * Edit top site menu item.
+         */
+        object EditTopSite : Item()
+
         object RemoveTopSite : Item()
         object Settings : Item()
         object SponsorPrivacy : Item()
@@ -35,6 +40,7 @@ class TopSiteItemMenu(
     private val menuItems by lazy {
         val isPinnedSite = topSite is TopSite.Pinned || topSite is TopSite.Default
         val isProvidedSite = topSite is TopSite.Provided
+        val isFrecentSite = topSite is TopSite.Frecent
 
         listOfNotNull(
             SimpleBrowserMenuItem(
@@ -42,11 +48,11 @@ class TopSiteItemMenu(
             ) {
                 onItemTapped.invoke(Item.OpenInPrivateTab)
             },
-            if (isPinnedSite) {
+            if (isPinnedSite || isFrecentSite) {
                 SimpleBrowserMenuItem(
-                    context.getString(R.string.rename_top_site),
+                    context.getString(R.string.top_sites_edit_top_site),
                 ) {
-                    onItemTapped.invoke(Item.RenameTopSite)
+                    onItemTapped.invoke(Item.EditTopSite)
                 }
             } else {
                 null

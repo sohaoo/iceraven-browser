@@ -4,19 +4,18 @@
 
 package org.mozilla.fenix.ui
 
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.core.net.toUri
-import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.uiautomator.UiDevice
-import okhttp3.mockwebserver.MockWebServer
-import org.junit.After
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.customannotations.SmokeTest
-import org.mozilla.fenix.helpers.AndroidAssetDispatcher
+import org.mozilla.fenix.helpers.AppAndSystemHelper.enableOrDisableBackGestureNavigationOnDevice
+import org.mozilla.fenix.helpers.AppAndSystemHelper.runWithAppLocaleChanged
 import org.mozilla.fenix.helpers.HomeActivityTestRule
 import org.mozilla.fenix.helpers.TestAssetHelper
-import org.mozilla.fenix.helpers.TestHelper.runWithSystemLocaleChanged
+import org.mozilla.fenix.helpers.TestAssetHelper.waitingTimeLong
+import org.mozilla.fenix.helpers.TestHelper.mDevice
+import org.mozilla.fenix.helpers.TestSetup
 import org.mozilla.fenix.ui.robots.homeScreen
 import org.mozilla.fenix.ui.robots.navigationToolbar
 import java.util.Locale
@@ -31,78 +30,14 @@ import java.util.Locale
  *  - Find in page
  */
 
-class NavigationToolbarTest {
-    private lateinit var mDevice: UiDevice
-    private lateinit var mockWebServer: MockWebServer
-    private val downloadTestPage =
-        "https://storage.googleapis.com/mobile_test_assets/test_app/downloads.html"
-    private val pdfFileName = "washington.pdf"
-    private val pdfFileURL = "storage.googleapis.com/mobile_test_assets/public/washington.pdf"
-    private val pdfFileContent = "Washington Crossing the Delaware"
-
-    /* ktlint-disable no-blank-line-before-rbrace */ // This imposes unreadable grouping.
+class NavigationToolbarTest : TestSetup() {
     @get:Rule
-    val activityTestRule = HomeActivityTestRule.withDefaultSettingsOverrides()
+    val composeTestRule =
+        AndroidComposeTestRule(
+            HomeActivityTestRule.withDefaultSettingsOverrides(),
+        ) { it.activity }
 
-    @Before
-    fun setUp() {
-        mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-        mockWebServer = MockWebServer().apply {
-            dispatcher = AndroidAssetDispatcher()
-            start()
-        }
-    }
-
-    @After
-    fun tearDown() {
-        mockWebServer.shutdown()
-    }
-
-    @Test
-    fun goBackTest() {
-        val defaultWebPage = TestAssetHelper.getGenericAsset(mockWebServer, 1)
-        val nextWebPage = TestAssetHelper.getGenericAsset(mockWebServer, 2)
-
-        navigationToolbar {
-        }.enterURLAndEnterToBrowser(defaultWebPage.url) {
-            mDevice.waitForIdle()
-        }.openNavigationToolbar {
-        }.enterURLAndEnterToBrowser(nextWebPage.url) {
-            verifyUrl(nextWebPage.url.toString())
-        }.openThreeDotMenu {
-        }.goToPreviousPage {
-            mDevice.waitForIdle()
-            verifyUrl(defaultWebPage.url.toString())
-        }
-    }
-
-    @Test
-    fun goForwardTest() {
-        val defaultWebPage = TestAssetHelper.getGenericAsset(mockWebServer, 1)
-        val nextWebPage = TestAssetHelper.getGenericAsset(mockWebServer, 2)
-
-        navigationToolbar {
-        }.enterURLAndEnterToBrowser(defaultWebPage.url) {
-            mDevice.waitForIdle()
-        }.openNavigationToolbar {
-        }.enterURLAndEnterToBrowser(nextWebPage.url) {
-            mDevice.waitForIdle()
-            verifyUrl(nextWebPage.url.toString())
-        }.openThreeDotMenu {
-        }.goToPreviousPage {
-            mDevice.waitForIdle()
-            verifyUrl(defaultWebPage.url.toString())
-        }
-
-        // Re-open the three-dot menu for verification
-        navigationToolbar {
-        }.openThreeDotMenu {
-            verifyThreeDotMenuExists()
-        }.goForward {
-            verifyUrl(nextWebPage.url.toString())
-        }
-    }
-
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/987326
     // Swipes the nav bar left/right to switch between tabs
     @SmokeTest
     @Test
@@ -110,9 +45,12 @@ class NavigationToolbarTest {
         val firstWebPage = TestAssetHelper.getGenericAsset(mockWebServer, 1)
         val secondWebPage = TestAssetHelper.getGenericAsset(mockWebServer, 2)
 
+        // Disable the back gesture from the edge of the screen on the device.
+        enableOrDisableBackGestureNavigationOnDevice(backGestureNavigationEnabled = false)
+
         navigationToolbar {
         }.enterURLAndEnterToBrowser(firstWebPage.url) {
-        }.openTabDrawer {
+        }.openTabDrawer(composeTestRule) {
         }.openNewTab {
         }.submitQuery(secondWebPage.url.toString()) {
             swipeNavBarRight(secondWebPage.url.toString())
@@ -122,17 +60,20 @@ class NavigationToolbarTest {
         }
     }
 
-    // Because it requires changing system prefs, this test will run only on Debug builds
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/987327
     @Test
     fun swipeToSwitchTabInRTLTest() {
         val firstWebPage = TestAssetHelper.getGenericAsset(mockWebServer, 1)
         val secondWebPage = TestAssetHelper.getGenericAsset(mockWebServer, 2)
         val arabicLocale = Locale("ar", "AR")
 
-        runWithSystemLocaleChanged(arabicLocale, activityTestRule) {
+        // Disable the back gesture from the edge of the screen on the device.
+        enableOrDisableBackGestureNavigationOnDevice(backGestureNavigationEnabled = false)
+
+        runWithAppLocaleChanged(arabicLocale, composeTestRule.activityRule) {
             navigationToolbar {
             }.enterURLAndEnterToBrowser(firstWebPage.url) {
-            }.openTabDrawer {
+            }.openTabDrawer(composeTestRule) {
             }.openNewTab {
             }.submitQuery(secondWebPage.url.toString()) {
                 swipeNavBarLeft(secondWebPage.url.toString())
@@ -143,84 +84,8 @@ class NavigationToolbarTest {
         }
     }
 
-    // Test running on beta/release builds in CI:
-    // caution when making changes to it, so they don't block the builds
-    @Test
-    fun visitURLTest() {
-        val defaultWebPage = TestAssetHelper.getGenericAsset(mockWebServer, 1)
-
-        navigationToolbar {
-        }.enterURLAndEnterToBrowser(defaultWebPage.url) {
-            verifyUrl(defaultWebPage.url.toString())
-        }
-    }
-
-    @Test
-    fun findInPageTest() {
-        val defaultWebPage = TestAssetHelper.getGenericAsset(mockWebServer, 3)
-
-        navigationToolbar {
-        }.enterURLAndEnterToBrowser(defaultWebPage.url) {
-            mDevice.waitForIdle()
-        }.openThreeDotMenu {
-            verifyThreeDotMenuExists()
-            verifyFindInPageButton()
-        }.openFindInPage {
-            verifyFindInPageNextButton()
-            verifyFindInPagePrevButton()
-            verifyFindInPageCloseButton()
-            enterFindInPageQuery("a")
-            verifyFindNextInPageResult("1/3")
-            clickFindInPageNextButton()
-            verifyFindNextInPageResult("2/3")
-            clickFindInPageNextButton()
-            verifyFindNextInPageResult("3/3")
-            clickFindInPagePrevButton()
-            verifyFindPrevInPageResult("2/3")
-            clickFindInPagePrevButton()
-            verifyFindPrevInPageResult("1/3")
-        }.closeFindInPageWithCloseButton {
-            verifyFindInPageBar(false)
-        }.openThreeDotMenu {
-        }.openFindInPage {
-            enterFindInPageQuery("3")
-            verifyFindNextInPageResult("1/1")
-        }.closeFindInPageWithBackButton {
-            verifyFindInPageBar(false)
-        }
-    }
-
-    @Test
-    fun pdfFindInPageTest() {
-        navigationToolbar {
-        }.enterURLAndEnterToBrowser(downloadTestPage.toUri()) {
-            clickLinkMatchingText(pdfFileName)
-            verifyUrl(pdfFileURL)
-            verifyPageContent(pdfFileContent)
-        }.openThreeDotMenu {
-            verifyThreeDotMenuExists()
-            verifyFindInPageButton()
-        }.openFindInPage {
-            verifyFindInPageNextButton()
-            verifyFindInPagePrevButton()
-            verifyFindInPageCloseButton()
-            enterFindInPageQuery("o")
-            verifyFindNextInPageResult("1/2")
-            clickFindInPageNextButton()
-            verifyFindNextInPageResult("2/2")
-            clickFindInPagePrevButton()
-            verifyFindPrevInPageResult("1/2")
-        }.closeFindInPageWithCloseButton {
-            verifyFindInPageBar(false)
-        }.openThreeDotMenu {
-        }.openFindInPage {
-            enterFindInPageQuery("l")
-            verifyFindNextInPageResult("1/1")
-        }.closeFindInPageWithBackButton {
-            verifyFindInPageBar(false)
-        }
-    }
-
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2265279
+    @SmokeTest
     @Test
     fun verifySecurePageSecuritySubMenuTest() {
         val defaultWebPage = "https://mozilla-mobile.github.io/testapp/loginForm"
@@ -228,6 +93,7 @@ class NavigationToolbarTest {
 
         navigationToolbar {
         }.enterURLAndEnterToBrowser(defaultWebPage.toUri()) {
+            waitForPageToLoad(pageLoadWaitingTime = waitingTimeLong)
         }.openSiteSecuritySheet {
             verifyQuickActionSheet(defaultWebPage, true)
             openSecureConnectionSubMenu(true)
@@ -235,12 +101,15 @@ class NavigationToolbarTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2265280
+    @SmokeTest
     @Test
     fun verifyInsecurePageSecuritySubMenuTest() {
         val defaultWebPage = TestAssetHelper.getGenericAsset(mockWebServer, 1)
 
         navigationToolbar {
         }.enterURLAndEnterToBrowser(defaultWebPage.url) {
+            waitForPageToLoad()
         }.openSiteSecuritySheet {
             verifyQuickActionSheet(defaultWebPage.url.toString(), false)
             openSecureConnectionSubMenu(false)
@@ -248,16 +117,51 @@ class NavigationToolbarTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1661318
+    @SmokeTest
     @Test
     fun verifyClearCookiesFromQuickSettingsTest() {
-        val helpPageUrl = "mozilla.org"
+        val loginPage = "https://mozilla-mobile.github.io/testapp/loginForm"
+        val originWebsite = "mozilla-mobile.github.io"
 
-        homeScreen {
-        }.openThreeDotMenu {
-        }.openHelp {
+        navigationToolbar {
+        }.enterURLAndEnterToBrowser(loginPage.toUri()) {
+            waitForPageToLoad(waitingTimeLong)
         }.openSiteSecuritySheet {
             clickQuickActionSheetClearSiteData()
-            verifyClearSiteDataPrompt(helpPageUrl)
+            verifyClearSiteDataPrompt(originWebsite)
+        }
+    }
+
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1360555
+    @SmokeTest
+    @Test
+    fun goToHomeScreenTest() {
+        val genericURL = TestAssetHelper.getGenericAsset(mockWebServer, 1)
+
+        navigationToolbar {
+        }.enterURLAndEnterToBrowser(genericURL.url) {
+            mDevice.waitForIdle()
+        }.goToHomescreen {
+            verifyHomeScreen()
+        }
+    }
+
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2256552
+    @SmokeTest
+    @Test
+    fun goToHomeScreenInPrivateModeTest() {
+        val genericURL = TestAssetHelper.getGenericAsset(mockWebServer, 1)
+
+        homeScreen {
+            togglePrivateBrowsingModeOnOff()
+        }
+
+        navigationToolbar {
+        }.enterURLAndEnterToBrowser(genericURL.url) {
+            mDevice.waitForIdle()
+        }.goToHomescreen {
+            verifyHomeScreen()
         }
     }
 }

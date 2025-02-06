@@ -7,17 +7,15 @@ package org.mozilla.fenix.home
 import android.view.View
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import mozilla.appservices.places.BookmarkRoot
 import mozilla.components.browser.menu.view.MenuButton
 import mozilla.components.support.test.robolectric.testContext
-import mozilla.telemetry.glean.testing.GleanTestRule
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -28,11 +26,11 @@ import org.mozilla.fenix.GleanMetrics.HomeScreen
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.accounts.AccountState
+import org.mozilla.fenix.components.accounts.FenixFxAEntryPoint
 import org.mozilla.fenix.ext.nav
-import org.mozilla.fenix.ext.settings
+import org.mozilla.fenix.helpers.FenixGleanTestRule
 import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
 import org.mozilla.fenix.settings.SupportUtils
-import org.mozilla.fenix.utils.Settings
 import org.mozilla.fenix.whatsnew.WhatsNew
 import java.lang.ref.WeakReference
 import org.mozilla.fenix.GleanMetrics.HomeMenu as HomeMenuMetrics
@@ -41,11 +39,12 @@ import org.mozilla.fenix.GleanMetrics.HomeMenu as HomeMenuMetrics
 class HomeMenuViewTest {
 
     @get:Rule
-    val gleanTestRule = GleanTestRule(testContext)
+    val gleanTestRule = FenixGleanTestRule(testContext)
 
     private lateinit var view: View
     private lateinit var lifecycleOwner: LifecycleOwner
     private lateinit var homeActivity: HomeActivity
+    private lateinit var homeFragment: HomeFragment
     private lateinit var navController: NavController
     private lateinit var menuButton: MenuButton
     private lateinit var homeMenuView: HomeMenuView
@@ -55,18 +54,18 @@ class HomeMenuViewTest {
         view = mockk(relaxed = true)
         lifecycleOwner = mockk(relaxed = true)
         homeActivity = mockk(relaxed = true)
+        homeFragment = mockk(relaxed = true)
         navController = mockk(relaxed = true)
 
         menuButton = spyk(MenuButton(testContext))
 
         homeMenuView = HomeMenuView(
-            view = view,
             context = testContext,
             lifecycleOwner = lifecycleOwner,
             homeActivity = homeActivity,
             navController = navController,
+            homeFragment = homeFragment,
             menuButton = WeakReference(menuButton),
-            hideOnboardingIfNeeded = {},
         )
     }
 
@@ -127,7 +126,9 @@ class HomeMenuViewTest {
         verify {
             navController.nav(
                 R.id.homeFragment,
-                HomeFragmentDirections.actionGlobalAccountProblemFragment(),
+                HomeFragmentDirections.actionGlobalAccountProblemFragment(
+                    entrypoint = FenixFxAEntryPoint.HomeMenu,
+                ),
             )
         }
 
@@ -136,7 +137,7 @@ class HomeMenuViewTest {
         verify {
             navController.nav(
                 R.id.homeFragment,
-                HomeFragmentDirections.actionGlobalTurnOnSync(),
+                HomeFragmentDirections.actionGlobalTurnOnSync(entrypoint = FenixFxAEntryPoint.HomeMenu),
             )
         }
     }
@@ -178,8 +179,12 @@ class HomeMenuViewTest {
     }
 
     @Test
-    fun `WHEN Help menu item is tapped THEN open the browser to the SUMO help page`() {
+    fun `WHEN Help menu item is tapped THEN open the browser to the SUMO help page  and record metrics`() {
+        assertNull(HomeMenuMetrics.helpTapped.testGetValue())
+
         homeMenuView.onItemTapped(HomeMenu.Item.Help)
+
+        assertNotNull(HomeMenuMetrics.helpTapped.testGetValue())
 
         verify {
             homeActivity.openToBrowserAndLoad(
@@ -201,6 +206,11 @@ class HomeMenuViewTest {
 
         assertNotNull(Events.whatsNewTapped.testGetValue())
 
+        val snapshot = Events.whatsNewTapped.testGetValue()!!
+
+        assertEquals(1, snapshot.size)
+        assertEquals("HOME", snapshot.single().extra?.getValue("source"))
+
         verify {
             WhatsNew.userViewedWhatsNew(testContext)
 
@@ -219,7 +229,9 @@ class HomeMenuViewTest {
         verify {
             navController.nav(
                 R.id.homeFragment,
-                HomeFragmentDirections.actionGlobalAccountProblemFragment(),
+                HomeFragmentDirections.actionGlobalAccountProblemFragment(
+                    entrypoint = FenixFxAEntryPoint.HomeMenu,
+                ),
             )
         }
     }
@@ -234,14 +246,5 @@ class HomeMenuViewTest {
                 HomeFragmentDirections.actionGlobalAddonsManagementFragment(),
             )
         }
-    }
-
-    @Test
-    fun `WHEN Desktop Mode menu item is tapped THEN set the desktop mode settings`() {
-        every { testContext.settings() } returns Settings(testContext)
-
-        homeMenuView.onItemTapped(HomeMenu.Item.DesktopMode(checked = true))
-
-        assertTrue(testContext.settings().openNextTabInDesktopMode)
     }
 }

@@ -4,19 +4,25 @@
 
 package org.mozilla.fenix.helpers
 
-import org.mozilla.fenix.helpers.TestHelper.getSponsoredShortcutTitle
+import org.mozilla.fenix.helpers.DataGenerationHelper.getSponsoredShortcutTitle
 
 object Constants {
+
+    // Tag used for logging
+    const val TAG = "MozUITestLog"
 
     // Device or AVD requires a Google Services Android OS installation
     object PackageName {
         const val GOOGLE_PLAY_SERVICES = "com.android.vending"
         const val GOOGLE_APPS_PHOTOS = "com.google.android.apps.photos"
         const val GOOGLE_QUICK_SEARCH = "com.google.android.googlequicksearchbox"
+        const val GOOGLE_DOCS = "com.google.android.apps.docs"
         const val YOUTUBE_APP = "com.google.android.youtube"
         const val GMAIL_APP = "com.google.android.gm"
-        const val PHONE_APP = "com.android.dialer"
+        const val PHONE_APP = "com.google.android.dialer"
         const val ANDROID_SETTINGS = "com.android.settings"
+        const val PRINT_SPOOLER = "com.android.printspooler"
+        const val PIXEL_LAUNCHER = "com.google.android.apps.nexuslauncher"
     }
 
     const val SPEECH_RECOGNITION = "android.speech.action.RECOGNIZE_SPEECH"
@@ -44,4 +50,26 @@ object Constants {
             "Wikipedia" to "Wikipedia",
         )
     }
+
+    val recommendedAddons = listOf(
+        "uBlock Origin",
+        "Privacy Badger",
+        "AdGuard AdBlocker",
+        "Dark Reader",
+        "Bitwarden Password Manager",
+        "Tampermonkey",
+        "Ghostery ",
+        "FoxyProxy Standard",
+        "NoScript Security Suite",
+        "Search by Image",
+        "ClearURLs",
+        "Firefox Relay",
+        "Read Aloud: A Text to Speech Voice Reader",
+        "Decentraleyes",
+        "YouTube High Definition",
+        "Web Archives",
+        "Video Background Play Fix",
+        "Tomato Clock",
+        "Google Search Fixer",
+    )
 }

@@ -5,6 +5,7 @@
 package org.mozilla.fenix.settings.quicksettings.protections
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.background
@@ -23,16 +24,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.isVisible
+import mozilla.components.compose.base.annotation.LightDarkPreview
 import org.mozilla.fenix.R
-import org.mozilla.fenix.compose.annotation.LightDarkPreview
 import org.mozilla.fenix.databinding.QuicksettingsProtectionsPanelBinding
 import org.mozilla.fenix.theme.FirefoxTheme
 import org.mozilla.fenix.trackingprotection.CookieBannerUIMode
+import org.mozilla.fenix.trackingprotection.CookieBannerUIMode.REQUEST_UNSUPPORTED_SITE_SUBMITTED
+import org.mozilla.fenix.trackingprotection.CookieBannerUIMode.SITE_NOT_SUPPORTED
 import org.mozilla.fenix.trackingprotection.ProtectionsState
 import org.mozilla.fenix.utils.Settings
 
@@ -40,13 +42,15 @@ import org.mozilla.fenix.utils.Settings
  * MVI View that displays the tracking protection, cookie banner handling toggles and the navigation
  * to additional tracking protection details.
  *
- * @param containerView [ViewGroup] in which this View will inflate itself.
- * @param interactor [ProtectionsInteractor] which will have delegated to all user
- * @param settings [Settings] application settings.
- * interactions.
+ * @property containerView [ViewGroup] in which this View will inflate itself.
+ * @param trackingProtectionDivider trackingProtectionDivider The divider line between tracking protection layout
+ * and other views from [QuickSettingsSheetDialogFragment].
+ * @property interactor [ProtectionsInteractor] which will have delegated to all user interactions.
+ * @property settings [Settings] application settings.
  */
 class ProtectionsView(
     val containerView: ViewGroup,
+    private val trackingProtectionDivider: View,
     val interactor: ProtectionsInteractor,
     val settings: Settings,
 ) {
@@ -58,17 +62,28 @@ class ProtectionsView(
         bindTrackingProtectionInfo(state.isTrackingProtectionEnabled)
         bindCookieBannerProtection(state.cookieBannerUIMode)
         binding.trackingProtectionSwitch.isVisible = settings.shouldUseTrackingProtection
-        binding.cookieBannerItem.isVisible = shouldShowCookieBanner &&
+        val isPrivateSession = state.tab?.content?.private == true
+        binding.cookieBannerItem.isVisible = isPrivateSession && shouldShowCookieBanner &&
             state.cookieBannerUIMode != CookieBannerUIMode.HIDE
 
         binding.trackingProtectionDetails.setOnClickListener {
             interactor.onTrackingProtectionDetailsClicked()
         }
+        updateDividerVisibility()
+    }
+
+    private fun updateDividerVisibility() {
+        trackingProtectionDivider.isVisible = !(
+            !binding.trackingProtectionSwitch.isVisible &&
+                !binding.trackingProtectionDetails.isVisible &&
+                !binding.cookieBannerItem.isVisible
+            )
     }
 
     @VisibleForTesting
     internal fun updateDetailsSection(show: Boolean) {
         binding.trackingProtectionDetails.isVisible = show
+        updateDividerVisibility()
     }
 
     private fun bindTrackingProtectionInfo(isTrackingProtectionEnabled: Boolean) {
@@ -86,17 +101,20 @@ class ProtectionsView(
     )
 
     private val shouldShowCookieBanner: Boolean
-        get() = settings.shouldShowCookieBannerUI && settings.shouldUseCookieBanner
+        get() = settings.shouldShowCookieBannerUI && settings.shouldUseCookieBannerPrivateMode
 
     private fun bindCookieBannerProtection(cookieBannerMode: CookieBannerUIMode) {
         val context = binding.cookieBannerItem.context
-        val label = context.getString(R.string.preferences_cookie_banner_reduction)
+        val label = context.getString(R.string.cookie_banner_blocker)
 
         binding.cookieBannerItem.apply {
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 FirefoxTheme {
-                    if (cookieBannerMode == CookieBannerUIMode.REQUEST_UNSUPPORTED_SITE_SUBMITTED) {
+                    if (cookieBannerMode in listOf(
+                            REQUEST_UNSUPPORTED_SITE_SUBMITTED,
+                            SITE_NOT_SUPPORTED,
+                        )
+                    ) {
                         CookieBannerItem(
                             label = label,
                             cookieBannerUIMode = cookieBannerMode,

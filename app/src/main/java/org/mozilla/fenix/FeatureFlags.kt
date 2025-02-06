@@ -48,27 +48,63 @@ object FeatureFlags {
     }
 
     /**
-     * Enables the Unified Search feature.
-     */
-    const val unifiedSearchFeature = true
-
-    /**
      * Enables compose on the tabs tray items.
      */
-    const val composeTabsTray = false
+    const val composeTabsTray = true
 
     /**
-     * Enables the wallpaper v2 enhancements.
+     * Enables compose on the top sites.
      */
-    const val wallpaperV2Enabled = true
+    const val composeTopSites = false
 
     /**
-     * Enables the save to PDF feature.
+     * Enables the MARS API integration for sponsored content.
      */
-    const val saveToPDF = true
+    const val marsAPIEnabled = false
 
     /**
-     * Enables the notification pre permission prompt.
+     * Enables new search settings UI with two extra fragments, for managing the default engine
+     * and managing search shortcuts in the quick search menu.
      */
-    const val notificationPrePermissionPromptEnabled = true
+    const val unifiedSearchSettings = true
+
+    /**
+     * Allows users to enable Firefox Suggest.
+     */
+    const val fxSuggest = true
+
+    /**
+     * Enable Meta attribution.
+     */
+    const val metaAttributionEnabled = true
+
+    /**
+     * Enables Navigation Toolbar.
+     */
+    val navigationToolbarEnabled = Config.channel.isNightlyOrDebug
+
+    /**
+     * Enables the Compose Homepage.
+     */
+    const val composeHomepage = false
+
+    /**
+     * Enables Homepage as a New Tab.
+     */
+    const val homepageAsNewTab = false
+
+    /**
+     * Enables Merino content recommendations.
+     */
+    const val merinoContentRecommendations = false
+
+    /**
+     * Enables the Unified Trust Panel.
+     */
+    const val unifiedTrustPanel = false
+
+    /**
+     * Enables native WebCompat Reporter.
+     */
+    val webCompatReporter = Config.channel.isDebug
 }

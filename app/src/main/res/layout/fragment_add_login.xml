@@ -14,7 +14,8 @@
     android:layout_marginEnd="20dp"
     android:layout_marginTop="16dp"
     android:clickable="true"
-    android:focusable="true" >
+    android:focusable="true"
+    tools:ignore="RtlSymmetry" >
 
     <TextView
         android:id="@+id/hostnameHeaderText"
@@ -51,6 +52,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
+            android:paddingEnd="48dp"
             android:textSize="16sp"
             android:fontFamily="sans-serif"
             android:textStyle="normal"
@@ -84,7 +86,7 @@
         app:tint="@color/saved_login_clear_edit_text_tint"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/inputLayoutHostname"
-        app:srcCompat="@drawable/mozac_ic_clear" />
+        app:srcCompat="@drawable/mozac_ic_cross_circle_fill_24" />
 
     <TextView
         android:id="@+id/usernameHeader"
@@ -111,7 +113,7 @@
         android:colorControlHighlight="?attr/textPrimary"
         android:colorControlActivated="?attr/textPrimary"
         android:textColor="?attr/textPrimary"
-        android:contentDescription="@string/saved_login_username_description"
+        android:contentDescription="@string/saved_login_username_description_3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/usernameHeader"
@@ -123,6 +125,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
+            android:paddingEnd="48dp"
             android:textSize="16sp"
             android:fontFamily="sans-serif"
             android:textStyle="normal"
@@ -154,7 +157,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/inputLayoutUsername"
         app:layout_constraintBottom_toBottomOf="@+id/inputLayoutUsername"
-        app:srcCompat="@drawable/mozac_ic_clear" />
+        app:srcCompat="@drawable/mozac_ic_cross_circle_fill_24" />
 
     <TextView
         android:id="@+id/passwordHeader"
@@ -180,7 +183,7 @@
         android:layout_height="wrap_content"
         android:colorControlActivated="?attr/textPrimary"
         android:colorControlHighlight="?attr/textPrimary"
-        android:contentDescription="@string/saved_login_password_description"
+        android:contentDescription="@string/saved_login_password_description_2"
         android:paddingBottom="11dp"
         android:textColor="?attr/textPrimary"
         app:hintEnabled="false"
@@ -194,6 +197,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="48dp"
+            android:paddingEnd="48dp"
             android:clickable="true"
             android:colorControlActivated="?attr/textPrimary"
             android:colorControlHighlight="?attr/textPrimary"
@@ -223,7 +227,7 @@
         android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/inputLayoutPassword"
-        app:srcCompat="@drawable/mozac_ic_clear"
+        app:srcCompat="@drawable/mozac_ic_cross_circle_fill_24"
         app:tint="@color/saved_login_clear_edit_text_tint" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

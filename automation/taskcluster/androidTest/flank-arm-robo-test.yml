@@ -2,7 +2,7 @@
 # Flank Documentation: https://flank.github.io/flank/
 gcloud:
   results-bucket: fenix_test_artifacts
-  record-video: true
+  record-video: false
   timeout: 10m
   async: false
 
@@ -12,25 +12,28 @@ gcloud:
   use-orchestrator: true
   environment-variables:
     clearPackageData: true
+  other-files:
+    /data/local/tmp/org.mozilla.fenix.debug-geckoview-config.yaml: ./automation/taskcluster/androidTest/geckoview-configs/org.mozilla.fenix.debug-geckoview-config.yaml
 
   device:
-    - model: Pixel2.arm
-      version: 26
+    - model: java
+      version: 30
       locale: en_US
-    - model: walleye
-      version: 27
+    - model: MediumPhone.arm
+      version: 32
       locale: en_US
-    - model: dreamlte
-      version: 28
+    - model: redfin
+      version: 30
       locale: en_US
-    - model: HWCOR
-      version: 27
+    - model: oriole
+      version: 31
       locale: en_US
-    - model: blueline
-      version: 28
+    - model: x1q
+      version: 29
       locale: en_US
 
   type: robo
+  robo-script: ./automation/taskcluster/androidTest/robo-scripts/default-browser-dismissal.json
 
 flank:
   project: GOOGLE_PROJECT

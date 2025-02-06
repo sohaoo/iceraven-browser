@@ -11,10 +11,16 @@ import android.os.StrictMode
 import androidx.appcompat.content.res.AppCompatResources.getDrawable
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
+import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import mozilla.components.browser.domains.autocomplete.BaseDomainAutocompleteProvider
 import mozilla.components.browser.domains.autocomplete.ShippedDomainsProvider
 import mozilla.components.browser.engine.gecko.GeckoEngine
 import mozilla.components.browser.engine.gecko.cookiebanners.GeckoCookieBannersStorage
+import mozilla.components.browser.engine.gecko.cookiebanners.ReportSiteDomainsRepository
 import mozilla.components.browser.engine.gecko.fetch.GeckoViewFetchClient
 import mozilla.components.browser.engine.gecko.permission.GeckoSitePermissionsStorage
 import mozilla.components.browser.icons.BrowserIcons
@@ -33,16 +39,20 @@ import mozilla.components.browser.thumbnails.storage.ThumbnailStorage
 import mozilla.components.concept.base.crash.CrashReporting
 import mozilla.components.concept.engine.DefaultSettings
 import mozilla.components.concept.engine.Engine
+import mozilla.components.concept.engine.fission.WebContentIsolationStrategy
 import mozilla.components.concept.engine.mediaquery.PreferredColorScheme
 import mozilla.components.concept.fetch.Client
 import mozilla.components.feature.awesomebar.provider.SessionAutocompleteProvider
 import mozilla.components.feature.customtabs.store.CustomTabsServiceStore
 import mozilla.components.feature.downloads.DownloadMiddleware
+import mozilla.components.feature.fxsuggest.facts.FxSuggestFactsMiddleware
 import mozilla.components.feature.logins.exceptions.LoginExceptionStorage
 import mozilla.components.feature.media.MediaSessionFeature
 import mozilla.components.feature.media.middleware.LastMediaAccessMiddleware
 import mozilla.components.feature.media.middleware.RecordingDevicesMiddleware
 import mozilla.components.feature.prompts.PromptMiddleware
+import mozilla.components.feature.prompts.file.FileUploadsDirCleaner
+import mozilla.components.feature.prompts.file.FileUploadsDirCleanerMiddleware
 import mozilla.components.feature.pwa.ManifestStorage
 import mozilla.components.feature.pwa.WebAppShortcutManager
 import mozilla.components.feature.readerview.ReaderViewMiddleware
@@ -50,8 +60,10 @@ import mozilla.components.feature.recentlyclosed.RecentlyClosedMiddleware
 import mozilla.components.feature.recentlyclosed.RecentlyClosedTabsStorage
 import mozilla.components.feature.search.ext.createApplicationSearchEngine
 import mozilla.components.feature.search.middleware.AdsTelemetryMiddleware
+import mozilla.components.feature.search.middleware.SearchExtraParams
 import mozilla.components.feature.search.middleware.SearchMiddleware
 import mozilla.components.feature.search.region.RegionMiddleware
+import mozilla.components.feature.search.telemetry.SerpTelemetryRepository
 import mozilla.components.feature.search.telemetry.ads.AdsTelemetry
 import mozilla.components.feature.search.telemetry.incontent.InContentTelemetry
 import mozilla.components.feature.session.HistoryDelegate
@@ -64,13 +76,19 @@ import mozilla.components.feature.webcompat.WebCompatFeature
 import mozilla.components.feature.webcompat.reporter.WebCompatReporterFeature
 import mozilla.components.feature.webnotifications.WebNotificationFeature
 import mozilla.components.lib.dataprotect.SecureAbove22Preferences
-import mozilla.components.service.contile.ContileTopSitesProvider
-import mozilla.components.service.contile.ContileTopSitesUpdater
 import mozilla.components.service.digitalassetlinks.RelationChecker
 import mozilla.components.service.digitalassetlinks.local.StatementApi
 import mozilla.components.service.digitalassetlinks.local.StatementRelationChecker
 import mozilla.components.service.location.LocationService
 import mozilla.components.service.location.MozillaLocationService
+import mozilla.components.service.mars.MarsTopSitesProvider
+import mozilla.components.service.mars.MarsTopSitesRequestConfig
+import mozilla.components.service.mars.NEW_TAB_TILE_1_PLACEMENT_KEY
+import mozilla.components.service.mars.NEW_TAB_TILE_2_PLACEMENT_KEY
+import mozilla.components.service.mars.Placement
+import mozilla.components.service.mars.contile.ContileTopSitesProvider
+import mozilla.components.service.mars.contile.ContileTopSitesUpdater
+import mozilla.components.service.pocket.ContentRecommendationsRequestConfig
 import mozilla.components.service.pocket.PocketStoriesConfig
 import mozilla.components.service.pocket.PocketStoriesRequestConfig
 import mozilla.components.service.pocket.PocketStoriesService
@@ -78,12 +96,15 @@ import mozilla.components.service.pocket.Profile
 import mozilla.components.service.sync.autofill.AutofillCreditCardsAddressesStorage
 import mozilla.components.service.sync.logins.SyncableLoginsStorage
 import mozilla.components.support.base.worker.Frequency
+import mozilla.components.support.ktx.android.content.res.readJSONObject
 import mozilla.components.support.locale.LocaleManager
 import org.mozilla.fenix.AppRequestInterceptor
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.Config
 import org.mozilla.fenix.IntentReceiverActivity
 import org.mozilla.fenix.R
+import org.mozilla.fenix.browser.desktopmode.DefaultDesktopModeRepository
+import org.mozilla.fenix.browser.desktopmode.DesktopModeMiddleware
 import org.mozilla.fenix.components.search.SearchMigration
 import org.mozilla.fenix.downloads.DownloadService
 import org.mozilla.fenix.ext.components
@@ -93,6 +114,7 @@ import org.mozilla.fenix.historymetadata.DefaultHistoryMetadataService
 import org.mozilla.fenix.historymetadata.HistoryMetadataMiddleware
 import org.mozilla.fenix.historymetadata.HistoryMetadataService
 import org.mozilla.fenix.media.MediaSessionService
+import org.mozilla.fenix.nimbus.FxNimbus
 import org.mozilla.fenix.perf.StrictModeManager
 import org.mozilla.fenix.perf.lazyMonitored
 import org.mozilla.fenix.settings.SupportUtils
@@ -137,11 +159,50 @@ class Core(
                 R.color.fx_mobile_layer_color_1,
             ),
             httpsOnlyMode = context.settings().getHttpsOnlyMode(),
-            cookieBannerHandlingModePrivateBrowsing = context.settings().getCookieBannerHandling(),
+            globalPrivacyControlEnabled = context.settings().shouldEnableGlobalPrivacyControl,
+            fingerprintingProtection =
+            if (FxNimbus.features.fingerprintingProtection.value().enabled) {
+                FxNimbus.features.fingerprintingProtection.value().enabledNormal
+            } else {
+                context.settings().blockSuspectedFingerprinters
+            },
+            fingerprintingProtectionPrivateBrowsing =
+            if (FxNimbus.features.fingerprintingProtection.value().enabled) {
+                FxNimbus.features.fingerprintingProtection.value().enabledPrivate
+            } else {
+                context.settings().blockSuspectedFingerprintersPrivateBrowsing
+            },
+            fdlibmMathEnabled = FxNimbus.features.fingerprintingProtection.value().fdlibmMath,
             cookieBannerHandlingMode = context.settings().getCookieBannerHandling(),
-            cookieBannerHandlingDetectOnlyMode = context.settings()
-                .shouldShowCookieBannerReEngagementDialog(),
+            cookieBannerHandlingModePrivateBrowsing = context.settings().getCookieBannerHandlingPrivateMode(),
+            cookieBannerHandlingDetectOnlyMode = context.settings().shouldEnableCookieBannerDetectOnly,
+            cookieBannerHandlingGlobalRules = context.settings().shouldEnableCookieBannerGlobalRules,
+            cookieBannerHandlingGlobalRulesSubFrames = context.settings().shouldEnableCookieBannerGlobalRulesSubFrame,
+            emailTrackerBlockingPrivateBrowsing = true,
+            userCharacteristicPingCurrentVersion = FxNimbus.features.userCharacteristics.value().currentVersion,
+            getDesktopMode = {
+                store.state.desktopMode
+            },
+            webContentIsolationStrategy = WebContentIsolationStrategy.ISOLATE_HIGH_VALUE,
+            fetchPriorityEnabled = FxNimbus.features.networking.value().fetchPriorityEnabled,
+            parallelMarkingEnabled = FxNimbus.features.javascript.value().parallelMarkingEnabled,
+            certificateTransparencyMode = FxNimbus.features.pki.value().certificateTransparencyMode,
         )
+
+        // Apply fingerprinting protection overrides if the feature is enabled in Nimbus
+        if (FxNimbus.features.fingerprintingProtection.value().enabled) {
+            defaultSettings.fingerprintingProtectionOverrides =
+                FxNimbus.features.fingerprintingProtection.value().overrides
+        }
+
+        // Apply third-party cookie blocking settings if the Nimbus feature is
+        // enabled.
+        if (FxNimbus.features.thirdPartyCookieBlocking.value().enabled) {
+            defaultSettings.cookieBehaviorOptInPartitioning =
+                FxNimbus.features.thirdPartyCookieBlocking.value().enabledNormal
+            defaultSettings.cookieBehaviorOptInPartitioningPBM =
+                FxNimbus.features.thirdPartyCookieBlocking.value().enabledPrivate
+        }
 
         GeckoEngine(
             context,
@@ -181,6 +242,10 @@ class Core(
         )
     }
 
+    val fileUploadsDirCleaner: FileUploadsDirCleaner by lazyMonitored {
+        FileUploadsDirCleaner { context.cacheDir }
+    }
+
     val geckoRuntime: GeckoRuntime by lazyMonitored {
         GeckoProvider.getOrCreateRuntime(
             context,
@@ -190,14 +255,23 @@ class Core(
         )
     }
 
-    val cookieBannersStorage by lazyMonitored { GeckoCookieBannersStorage(geckoRuntime) }
+    private val Context.dataStore by preferencesDataStore(
+        name = ReportSiteDomainsRepository.REPORT_SITE_DOMAINS_REPOSITORY_NAME,
+    )
+
+    val cookieBannersStorage by lazyMonitored {
+        GeckoCookieBannersStorage(
+            geckoRuntime,
+            ReportSiteDomainsRepository(context.dataStore),
+        )
+    }
 
     val geckoSitePermissionsStorage by lazyMonitored {
         GeckoSitePermissionsStorage(geckoRuntime, OnDiskSitePermissionsStorage(context))
     }
 
     val sessionStorage: SessionStorage by lazyMonitored {
-        SessionStorage(context, engine = engine)
+        SessionStorage(context, engine, crashReporter)
     }
 
     private val locationService: LocationService by lazyMonitored {
@@ -235,6 +309,16 @@ class Core(
      * The [BrowserStore] holds the global [BrowserState].
      */
     val store by lazyMonitored {
+        val searchExtraParamsNimbus = FxNimbus.features.searchExtraParams.value()
+        val searchExtraParams = searchExtraParamsNimbus.takeIf { it.enabled }?.run {
+            SearchExtraParams(
+                searchEngine,
+                featureEnabler.keys.firstOrNull(),
+                featureEnabler.values.firstOrNull(),
+                channelId.keys.first(),
+                channelId.values.first(),
+            )
+        }
         val middlewareList =
             mutableListOf(
                 LastAccessMiddleware(),
@@ -246,9 +330,10 @@ class Core(
                 UndoMiddleware(context.getUndoDelay()),
                 RegionMiddleware(context, locationService),
                 SearchMiddleware(
-                    context,
+                    context = context,
                     additionalBundledSearchEngineIds = listOf("reddit", "youtube"),
                     migration = SearchMigration(context),
+                    searchExtraParams = searchExtraParams,
                 ),
                 RecordingDevicesMiddleware(context, context.components.notificationsDelegate),
                 PromptMiddleware(),
@@ -257,16 +342,20 @@ class Core(
                 HistoryMetadataMiddleware(historyMetadataService),
                 SessionPrioritizationMiddleware(),
                 SaveToPDFMiddleware(context),
+                FxSuggestFactsMiddleware(),
+                FileUploadsDirCleanerMiddleware(fileUploadsDirCleaner),
+                DesktopModeMiddleware(
+                    repository = DefaultDesktopModeRepository(
+                        context = context,
+                    ),
+                    engine = engine,
+                ),
             )
 
         BrowserStore(
             initialState = BrowserState(
                 search = SearchState(
-                    applicationSearchEngines = if (context.settings().showUnifiedSearchFeature) {
-                        applicationSearchEngines
-                    } else {
-                        emptyList()
-                    },
+                    applicationSearchEngines = applicationSearchEngines,
                 ),
             ),
             middleware = middlewareList + EngineMiddleware.create(
@@ -284,11 +373,25 @@ class Core(
             // Install the "icons" WebExtension to automatically load icons for every visited website.
             icons.install(engine, this)
 
-            // Install the "ads" WebExtension to get the links in an partner page.
-            adsTelemetry.install(engine, this)
-
-            // Install the "cookies" WebExtension and tracks user interaction with SERPs.
-            searchTelemetry.install(engine, this)
+            CoroutineScope(Dispatchers.Main).launch {
+                val readJson = { context.assets.readJSONObject("search/search_telemetry_v2.json") }
+                val providerList = withContext(Dispatchers.IO) {
+                    SerpTelemetryRepository(
+                        rootStorageDirectory = context.filesDir,
+                        readJson = readJson,
+                        collectionName = COLLECTION_NAME,
+                        serverUrl = if (context.settings().useProductionRemoteSettingsServer) {
+                            REMOTE_PROD_ENDPOINT_URL
+                        } else {
+                            REMOTE_STAGE_ENDPOINT_URL
+                        },
+                    ).updateProviderList()
+                }
+                // Install the "ads" WebExtension to get the links in an partner page.
+                adsTelemetry.install(engine, this@apply, providerList)
+                // Install the "cookies" WebExtension and tracks user interaction with SERPs.
+                searchTelemetry.install(engine, this@apply, providerList)
+            }
 
             WebNotificationFeature(
                 context,
@@ -377,7 +480,7 @@ class Core(
     /**
      * The storage component to sync and persist tabs in a Firefox Sync account.
      */
-    val lazyRemoteTabsStorage = lazyMonitored { RemoteTabsStorage(context) }
+    val lazyRemoteTabsStorage = lazyMonitored { RemoteTabsStorage(context, crashReporter) }
 
     val recentlyClosedTabsStorage =
         lazyMonitored { RecentlyClosedTabsStorage(context, engine, crashReporter) }
@@ -387,7 +490,12 @@ class Core(
     val bookmarksStorage: PlacesBookmarksStorage get() = lazyBookmarksStorage.value
     val passwordsStorage: SyncableLoginsStorage get() = lazyPasswordsStorage.value
     val autofillStorage: AutofillCreditCardsAddressesStorage get() = lazyAutofillStorage.value
-    val domainsAutocompleteProvider: BaseDomainAutocompleteProvider get() = lazyDomainsAutocompleteProvider.value
+    val domainsAutocompleteProvider: BaseDomainAutocompleteProvider? get() =
+        if (FxNimbus.features.suggestShippedDomains.value().enabled) {
+            lazyDomainsAutocompleteProvider.value
+        } else {
+            null
+        }
     val sessionAutocompleteProvider: SessionAutocompleteProvider get() = lazySessionAutocompleteProvider.value
 
     val tabCollectionStorage by lazyMonitored {
@@ -422,6 +530,9 @@ class Core(
             } else {
                 PocketStoriesRequestConfig()
             },
+            contentRecommendationsParams = ContentRecommendationsRequestConfig(
+                locale = LocaleManager.getSelectedLocale(context).toLanguageTag(),
+            ),
         )
     }
     val pocketStoriesService by lazyMonitored { PocketStoriesService(context, pocketStoriesConfig) }
@@ -434,11 +545,37 @@ class Core(
         )
     }
 
+    val marsTopSitesProvider by lazyMonitored {
+        MarsTopSitesProvider(
+            context = context,
+            client = client,
+            requestConfig = MarsTopSitesRequestConfig(
+                contextId = context.settings().contileContextId,
+                userAgent = engine.settings.userAgentString,
+                placements = listOf(
+                    Placement(
+                        placement = NEW_TAB_TILE_1_PLACEMENT_KEY,
+                        count = 1,
+                    ),
+                    Placement(
+                        placement = NEW_TAB_TILE_2_PLACEMENT_KEY,
+                        count = 1,
+                    ),
+                ),
+            ),
+            maxCacheAgeInSeconds = CONTILE_MAX_CACHE_AGE,
+        )
+    }
+
     @Suppress("MagicNumber")
     val contileTopSitesUpdater by lazyMonitored {
         ContileTopSitesUpdater(
             context = context,
-            provider = contileTopSitesProvider,
+            provider = if (context.settings().marsAPIEnabled) {
+                marsTopSitesProvider
+            } else {
+                contileTopSitesProvider
+            },
             frequency = Frequency(3, TimeUnit.HOURS),
         )
     }
@@ -515,7 +652,11 @@ class Core(
         DefaultTopSitesStorage(
             pinnedSitesStorage = pinnedSiteStorage,
             historyStorage = historyStorage,
-            topSitesProvider = contileTopSitesProvider,
+            topSitesProvider = if (context.settings().marsAPIEnabled) {
+                marsTopSitesProvider
+            } else {
+                contileTopSitesProvider
+            },
             defaultTopSites = defaultTopSites,
         )
     }
@@ -573,5 +714,10 @@ class Core(
 
         // Maximum number of suggestions returned from shortcut search engine.
         const val METADATA_SHORTCUT_SUGGESTION_LIMIT = 20
+
+        // collection name to fetch from server for SERP telemetry
+        const val COLLECTION_NAME = "search-telemetry-v2"
+        internal const val REMOTE_PROD_ENDPOINT_URL = "https://firefox.settings.services.mozilla.com"
+        internal const val REMOTE_STAGE_ENDPOINT_URL = "https://firefox.settings.services.allizom.org"
     }
 }

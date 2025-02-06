@@ -25,7 +25,6 @@ import mozilla.components.concept.engine.permission.SitePermissions
 import mozilla.components.concept.engine.permission.SitePermissions.Status.NO_DECISION
 import mozilla.components.feature.session.SessionUseCases
 import mozilla.components.feature.session.TrackingProtectionUseCases
-import mozilla.components.service.glean.testing.GleanTestRule
 import mozilla.components.support.test.robolectric.testContext
 import mozilla.components.support.test.rule.MainCoroutineRule
 import mozilla.components.support.test.rule.runTestOnMain
@@ -44,6 +43,7 @@ import org.mozilla.fenix.GleanMetrics.TrackingProtection
 import org.mozilla.fenix.components.PermissionStorage
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.directionsEq
+import org.mozilla.fenix.helpers.FenixGleanTestRule
 import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
 import org.mozilla.fenix.settings.PhoneFeature
 import org.mozilla.fenix.settings.quicksettings.ext.shouldBeEnabled
@@ -85,7 +85,7 @@ class DefaultQuickSettingsControllerTest {
     private lateinit var controller: DefaultQuickSettingsController
 
     @get:Rule
-    val gleanRule = GleanTestRule(testContext)
+    val gleanRule = FenixGleanTestRule(testContext)
 
     @get:Rule
     val coroutinesTestRule = MainCoroutineRule()
@@ -210,14 +210,14 @@ class DefaultQuickSettingsControllerTest {
         val autoplayValue = mockk<AutoplayValue.AllowAll>(relaxed = true)
 
         every { store.dispatch(any()) } returns mockk()
-        every { controller.handleAutoplayAdd(any()) } returns Unit
+        every { controller.handleAutoplayAdd(any(), any()) } returns Unit
 
         controller.sitePermissions = null
 
         controller.handleAutoplayChanged(autoplayValue)
 
         verify {
-            controller.handleAutoplayAdd(any())
+            controller.handleAutoplayAdd(any(), any())
             store.dispatch(any())
         }
     }
@@ -227,7 +227,7 @@ class DefaultQuickSettingsControllerTest {
         val autoplayValue = mockk<AutoplayValue.AllowAll>(relaxed = true)
 
         every { store.dispatch(any()) } returns mockk()
-        every { controller.handleAutoplayAdd(any()) } returns Unit
+        every { controller.handleAutoplayAdd(any(), any()) } returns Unit
         every { controller.handlePermissionsChange(any()) } returns Unit
         every { autoplayValue.updateSitePermissions(any()) } returns mockk()
 
@@ -296,11 +296,11 @@ class DefaultQuickSettingsControllerTest {
         runTestOnMain {
             val testPermissions = mockk<SitePermissions>()
 
-            controller.handleAutoplayAdd(testPermissions)
+            controller.handleAutoplayAdd(testPermissions, true)
             advanceUntilIdle()
 
             coVerifyOrder {
-                permissionStorage.add(testPermissions)
+                permissionStorage.add(testPermissions, true)
                 reload(tab.id)
             }
         }

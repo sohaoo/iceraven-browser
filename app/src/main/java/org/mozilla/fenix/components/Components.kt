@@ -9,23 +9,29 @@ import android.app.Application
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-import io.github.forkmaintainers.iceraven.components.PagedAddonCollectionProvider
+import io.github.forkmaintainers.iceraven.components.PagedAMOAddonsProvider
 import androidx.core.app.NotificationManagerCompat
 import mozilla.components.feature.addons.AddonManager
 import mozilla.components.feature.addons.migration.DefaultSupportedAddonsChecker
 import mozilla.components.feature.addons.update.DefaultAddonUpdater
 import mozilla.components.feature.autofill.AutofillConfiguration
+import mozilla.components.lib.crash.store.CrashAction
+import mozilla.components.lib.crash.store.CrashMiddleware
 import mozilla.components.lib.publicsuffixlist.PublicSuffixList
 import mozilla.components.support.base.android.NotificationsDelegate
 import mozilla.components.support.base.worker.Frequency
 import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.Config
 import org.mozilla.fenix.R
+import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.autofill.AutofillConfirmActivity
 import org.mozilla.fenix.autofill.AutofillSearchActivity
 import org.mozilla.fenix.autofill.AutofillUnlockActivity
+import org.mozilla.fenix.components.appstate.AppAction
 import org.mozilla.fenix.components.appstate.AppState
 import org.mozilla.fenix.components.metrics.MetricsMiddleware
+import org.mozilla.fenix.crashes.CrashReportingAppMiddleware
+import org.mozilla.fenix.crashes.SettingsCrashReportCache
 import org.mozilla.fenix.datastore.pocketStoriesSelectedCategoriesDataStore
 import org.mozilla.fenix.ext.asRecentTabs
 import org.mozilla.fenix.ext.components
@@ -35,6 +41,7 @@ import org.mozilla.fenix.home.PocketUpdatesMiddleware
 import org.mozilla.fenix.home.blocklist.BlocklistHandler
 import org.mozilla.fenix.home.blocklist.BlocklistMiddleware
 import org.mozilla.fenix.messaging.state.MessagingMiddleware
+import org.mozilla.fenix.onboarding.FenixOnboarding
 import org.mozilla.fenix.perf.AppStartReasonProvider
 import org.mozilla.fenix.perf.StartupActivityLog
 import org.mozilla.fenix.perf.StartupStateProvider
@@ -68,7 +75,7 @@ class Components(private val context: Context) {
             strictMode,
         )
     }
-    val services by lazyMonitored { Services(context, backgroundServices.accountManager) }
+    val services by lazyMonitored { Services(context, core.store, backgroundServices.accountManager) }
     val core by lazyMonitored { Core(context, analytics.crashReporter, strictMode) }
 
     @Suppress("Deprecation")
@@ -81,6 +88,7 @@ class Components(private val context: Context) {
             core.topSitesStorage,
             core.bookmarksStorage,
             core.historyStorage,
+            backgroundServices.syncedTabsCommands,
             appStore,
             core.client,
             strictMode,
@@ -108,8 +116,8 @@ class Components(private val context: Context) {
         )
     }
 
-    val addonCollectionProvider by lazyMonitored {
-        PagedAddonCollectionProvider(
+    val addonsProvider by lazyMonitored {
+        PagedAMOAddonsProvider(
             context,
             core.client,
             serverURL = BuildConfig.AMO_SERVER_URL,
@@ -118,7 +126,7 @@ class Components(private val context: Context) {
     }
 
     fun clearAddonCache() {
-        addonCollectionProvider.deleteCacheFile()
+        addonsProvider.deleteCacheFile()
     }
 
     @Suppress("MagicNumber")
@@ -135,10 +143,11 @@ class Components(private val context: Context) {
     }
 
     val addonManager by lazyMonitored {
-        AddonManager(core.store, core.engine, addonCollectionProvider, addonUpdater)
+        AddonManager(core.store, core.engine, addonsProvider, addonUpdater)
     }
 
-    val analytics by lazyMonitored { Analytics(context) }
+    val analytics by lazyMonitored { Analytics(context, performance.visualCompletenessQueue.queue) }
+    val nimbus by lazyMonitored { NimbusComponents(context) }
     val publicSuffixList by lazyMonitored { PublicSuffixList(context) }
     val clipboardHandler by lazyMonitored { ClipboardHandler(context) }
     val performance by lazyMonitored { PerformanceComponent() }
@@ -147,6 +156,7 @@ class Components(private val context: Context) {
     val strictMode by lazyMonitored { StrictModeManager(Config, this) }
 
     val settings by lazyMonitored { Settings(context) }
+    val fenixOnboarding by lazyMonitored { FenixOnboarding(context) }
 
     val reviewPromptController by lazyMonitored {
         ReviewPromptController(
@@ -179,7 +189,7 @@ class Components(private val context: Context) {
                 collections = core.tabCollectionStorage.cachedTabCollections,
                 expandedCollections = emptySet(),
                 topSites = core.topSitesStorage.cachedTopSites.sort(),
-                recentBookmarks = emptyList(),
+                bookmarks = emptyList(),
                 showCollectionPlaceholder = settings.showCollectionsPlaceholderOnHome,
                 // Provide an initial state for recent tabs to prevent re-rendering on the home screen.
                 //  This will otherwise cause a visual jump as the section gets rendered from no state
@@ -198,12 +208,24 @@ class Components(private val context: Context) {
                     context.pocketStoriesSelectedCategoriesDataStore,
                 ),
                 MessagingMiddleware(
-                    messagingStorage = analytics.messagingStorage,
+                    controller = nimbus.messaging,
+                    settings = settings,
                 ),
                 MetricsMiddleware(metrics = analytics.metrics),
+                CrashReportingAppMiddleware(
+                    CrashMiddleware(
+                        cache = SettingsCrashReportCache(settings),
+                        crashReporter = analytics.crashReporter,
+                        currentTimeInMillis = { System.currentTimeMillis() },
+                    ),
+                ),
             ),
-        )
+        ).also {
+            it.dispatch(AppAction.CrashActionWrapper(CrashAction.Initialize))
+        }
     }
+
+    val fxSuggest by lazyMonitored { FxSuggest(context) }
 }
 
 /**

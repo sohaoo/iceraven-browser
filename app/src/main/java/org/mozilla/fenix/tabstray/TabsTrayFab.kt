@@ -4,19 +4,18 @@
 
 package org.mozilla.fenix.tabstray
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import mozilla.components.lib.state.ext.observeAsComposableState
+import mozilla.components.compose.base.annotation.LightDarkPreview
+import mozilla.components.lib.state.ext.observeAsState
 import org.mozilla.fenix.R
-import org.mozilla.fenix.compose.annotation.LightDarkPreview
 import org.mozilla.fenix.compose.button.FloatingActionButton
 import org.mozilla.fenix.theme.FirefoxTheme
 
@@ -24,60 +23,71 @@ import org.mozilla.fenix.theme.FirefoxTheme
  * Floating action button for tabs tray.
  *
  * @param tabsTrayStore [TabsTrayStore] used to listen for changes to [TabsTrayState].
+ * @param isSignedIn Used to know when to show the SYNC FAB when [Page.SyncedTabs] is displayed.
+ * @param onNormalTabsFabClicked Invoked when the fab is clicked in [Page.NormalTabs].
+ * @param onPrivateTabsFabClicked Invoked when the fab is clicked in [Page.PrivateTabs].
+ * @param onSyncedTabsFabClicked Invoked when the fab is clicked in [Page.SyncedTabs].
  */
 @Composable
 fun TabsTrayFab(
     tabsTrayStore: TabsTrayStore,
+    isSignedIn: Boolean,
+    onNormalTabsFabClicked: () -> Unit,
+    onPrivateTabsFabClicked: () -> Unit,
+    onSyncedTabsFabClicked: () -> Unit,
 ) {
-    val currentPage: Page = tabsTrayStore.observeAsComposableState { state ->
-        state.selectedPage
-    }.value ?: Page.NormalTabs
-    val isSyncing: Boolean = tabsTrayStore.observeAsComposableState { state ->
-        state.syncing
-    }.value ?: false
-    val isInNormalMode: Boolean = tabsTrayStore.observeAsComposableState { state ->
-        state.mode == TabsTrayState.Mode.Normal
-    }.value ?: false
+    val currentPage by tabsTrayStore.observeAsState(
+        initialValue = tabsTrayStore.state.selectedPage,
+    ) { state -> state.selectedPage }
+    val isSyncing by tabsTrayStore.observeAsState(
+        initialValue = tabsTrayStore.state.syncing,
+    ) { state -> state.syncing }
+    val isInNormalMode by tabsTrayStore.observeAsState(
+        initialValue = tabsTrayStore.state.mode == TabsTrayState.Mode.Normal,
+    ) { state -> state.mode == TabsTrayState.Mode.Normal }
 
     val icon: Painter
     val contentDescription: String
     val label: String?
+    val onClick: () -> Unit
 
     when (currentPage) {
         Page.NormalTabs -> {
             icon = painterResource(id = R.drawable.ic_new)
             contentDescription = stringResource(id = R.string.add_tab)
             label = null
+            onClick = onNormalTabsFabClicked
         }
 
         Page.SyncedTabs -> {
             icon = painterResource(id = R.drawable.ic_fab_sync)
-            contentDescription = stringResource(id = R.string.tab_drawer_fab_sync)
+            contentDescription = stringResource(id = R.string.resync_button_content_description)
             label = if (isSyncing) {
                 stringResource(id = R.string.sync_syncing_in_progress)
             } else {
-                stringResource(id = R.string.resync_button_content_description)
+                stringResource(id = R.string.tab_drawer_fab_sync)
             }.uppercase()
+            onClick = onSyncedTabsFabClicked
         }
 
         Page.PrivateTabs -> {
             icon = painterResource(id = R.drawable.ic_new)
             contentDescription = stringResource(id = R.string.add_private_tab)
             label = stringResource(id = R.string.tab_drawer_fab_content).uppercase()
+            onClick = onPrivateTabsFabClicked
         }
     }
 
-    Box(Modifier.fillMaxSize()) {
-        if (isInNormalMode) {
-            FloatingActionButton(
-                icon = icon,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp),
-                contentDescription = contentDescription,
-                label = label,
-            ) {}
-        }
+    if (isInNormalMode && !(currentPage == Page.SyncedTabs && !isSignedIn)) {
+        FloatingActionButton(
+            icon = icon,
+            modifier = Modifier
+                .padding(bottom = 16.dp, end = 16.dp)
+                .testTag(TabsTrayTestTag.fab),
+            contentDescription = contentDescription,
+            label = label,
+            onClick = onClick,
+        )
     }
 }
 
@@ -92,7 +102,13 @@ private fun TabsTraySyncFabPreview() {
     )
 
     FirefoxTheme {
-        TabsTrayFab(store)
+        TabsTrayFab(
+            tabsTrayStore = store,
+            isSignedIn = true,
+            onNormalTabsFabClicked = {},
+            onPrivateTabsFabClicked = {},
+            onSyncedTabsFabClicked = {},
+        )
     }
 }
 
@@ -105,6 +121,12 @@ private fun TabsTrayPrivateFabPreview() {
         ),
     )
     FirefoxTheme {
-        TabsTrayFab(store)
+        TabsTrayFab(
+            tabsTrayStore = store,
+            isSignedIn = true,
+            onNormalTabsFabClicked = {},
+            onPrivateTabsFabClicked = {},
+            onSyncedTabsFabClicked = {},
+        )
     }
 }

@@ -10,7 +10,6 @@ import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.widget.FrameLayout
-import androidx.core.view.GestureDetectorCompat
 
 /**
  * Interface that allows intercepting and handling swipe gestures received in a [SwipeGestureLayout].
@@ -67,12 +66,12 @@ class SwipeGestureLayout @JvmOverloads constructor(
         }
 
         override fun onScroll(
-            e1: MotionEvent,
+            e1: MotionEvent?,
             e2: MotionEvent,
             distanceX: Float,
             distanceY: Float,
         ): Boolean {
-            val start = e1.let { event -> PointF(event.rawX, event.rawY) }
+            val start = e1?.let { event -> PointF(event.rawX, event.rawY) } ?: return false
             val next = e2.let { event -> PointF(event.rawX, event.rawY) }
 
             if (activeListener == null && !handledInitialScroll) {
@@ -86,7 +85,7 @@ class SwipeGestureLayout @JvmOverloads constructor(
         }
 
         override fun onFling(
-            e1: MotionEvent,
+            e1: MotionEvent?,
             e2: MotionEvent,
             velocityX: Float,
             velocityY: Float,
@@ -101,7 +100,7 @@ class SwipeGestureLayout @JvmOverloads constructor(
         }
     }
 
-    private val gestureDetector = GestureDetectorCompat(context, gestureListener)
+    private val gestureDetector = GestureDetector(context, gestureListener)
 
     private val listeners = mutableListOf<SwipeGestureListener>()
     private var activeListener: SwipeGestureListener? = null

@@ -4,6 +4,7 @@
 
 package org.mozilla.fenix.settings.logins.fragment
 
+import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.text.Editable
@@ -13,6 +14,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import androidx.activity.result.ActivityResultLauncher
 import androidx.core.content.ContextCompat
 import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
@@ -21,17 +23,21 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.google.android.material.textfield.TextInputLayout
 import mozilla.components.lib.state.ext.consumeFrom
-import mozilla.components.service.glean.private.NoExtras
 import mozilla.components.support.ktx.android.view.hideKeyboard
+import mozilla.telemetry.glean.private.NoExtras
+import org.mozilla.fenix.AuthenticationStatus
+import org.mozilla.fenix.BiometricAuthenticationManager
 import org.mozilla.fenix.GleanMetrics.Logins
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.StoreProvider
 import org.mozilla.fenix.databinding.FragmentEditLoginBinding
 import org.mozilla.fenix.ext.components
-import org.mozilla.fenix.ext.redirectToReAuth
+import org.mozilla.fenix.ext.registerForActivityResult
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.ext.toEditable
+import org.mozilla.fenix.settings.biometric.bindBiometricsCredentialsPromptOrShowWarning
 import org.mozilla.fenix.settings.logins.LoginsAction
 import org.mozilla.fenix.settings.logins.LoginsFragmentStore
 import org.mozilla.fenix.settings.logins.SavedLogin
@@ -62,6 +68,19 @@ class EditLoginFragment : Fragment(R.layout.fragment_edit_login), MenuProvider {
     private var _binding: FragmentEditLoginBinding? = null
     private val binding get() = _binding!!
 
+    private lateinit var startForResult: ActivityResultLauncher<Intent>
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        startForResult = registerForActivityResult {
+            BiometricAuthenticationManager.biometricAuthenticationNeededInfo.shouldShowAuthenticationPrompt =
+                false
+            BiometricAuthenticationManager.biometricAuthenticationNeededInfo.authenticationStatus =
+                AuthenticationStatus.AUTHENTICATED
+            setSecureContentVisibility(true)
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         requireActivity().addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
@@ -70,11 +89,12 @@ class EditLoginFragment : Fragment(R.layout.fragment_edit_login), MenuProvider {
 
         oldLogin = args.savedLoginItem
 
-        loginsFragmentStore = StoreProvider.get(this) {
-            LoginsFragmentStore(
-                createInitialLoginsListState(requireContext().settings()),
-            )
-        }
+        loginsFragmentStore =
+            StoreProvider.get(findNavController().getBackStackEntry(R.id.savedLogins)) {
+                LoginsFragmentStore(
+                    createInitialLoginsListState(requireContext().settings()),
+                )
+            }
 
         interactor = EditLoginInteractor(
             SavedLoginsStorageController(
@@ -154,6 +174,24 @@ class EditLoginFragment : Fragment(R.layout.fragment_edit_login), MenuProvider {
         binding.usernameText.addTextChangedListener(
             object : TextWatcher {
                 override fun afterTextChanged(u: Editable?) {
+                    when {
+                        u.toString().isEmpty() -> {
+                            validUsername = false
+                            binding.clearUsernameTextButton.isVisible = false
+                            setLayoutError(
+                                context?.getString(R.string.saved_login_username_required_2),
+                                binding.inputLayoutUsername,
+                            )
+                        }
+
+                        else -> {
+                            validUsername = true
+                            binding.inputLayoutUsername.error = null
+                            binding.inputLayoutUsername.errorIconDrawable = null
+                            binding.inputLayoutUsername.isVisible = true
+                            binding.clearUsernameTextButton.isVisible = true
+                        }
+                    }
                     updateUsernameField()
                     findDuplicate()
                     setSaveButtonState()
@@ -179,11 +217,16 @@ class EditLoginFragment : Fragment(R.layout.fragment_edit_login), MenuProvider {
                 override fun afterTextChanged(p: Editable?) {
                     when {
                         p.toString().isEmpty() -> {
+                            validPassword = false
                             passwordChanged = true
                             binding.revealPasswordButton.isVisible = false
                             binding.clearPasswordTextButton.isVisible = false
-                            setPasswordError()
+                            setLayoutError(
+                                context?.getString(R.string.saved_login_password_required_2),
+                                binding.inputLayoutPassword,
+                            )
                         }
+
                         p.toString() == oldLogin.password -> {
                             passwordChanged = false
                             validPassword = true
@@ -238,10 +281,6 @@ class EditLoginFragment : Fragment(R.layout.fragment_edit_login), MenuProvider {
                 // existing login was already a dupe and the username hasn't
                 // changed
                 usernameChanged = oldLogin.username != currentValue
-                validUsername = true
-                layout.error = null
-                layout.errorIconDrawable = null
-                clearButton.isVisible = true
             }
             else -> {
                 // Invalid login because it's a dupe of another one
@@ -253,7 +292,7 @@ class EditLoginFragment : Fragment(R.layout.fragment_edit_login), MenuProvider {
                     ColorStateList.valueOf(
                         ContextCompat.getColor(
                             requireContext(),
-                            R.color.fx_mobile_text_color_warning,
+                            R.color.fx_mobile_text_color_critical,
                         ),
                     ),
                 )
@@ -264,14 +303,13 @@ class EditLoginFragment : Fragment(R.layout.fragment_edit_login), MenuProvider {
         setSaveButtonState()
     }
 
-    private fun setPasswordError() {
-        binding.inputLayoutPassword.let { layout ->
-            validPassword = false
-            layout.error = context?.getString(R.string.saved_login_password_required)
+    private fun setLayoutError(error: String?, inputLayout: TextInputLayout) {
+        inputLayout.let { layout ->
+            layout.error = error
             layout.setErrorIconDrawable(R.drawable.mozac_ic_warning_with_bottom_padding)
             layout.setErrorIconTintList(
                 ColorStateList.valueOf(
-                    ContextCompat.getColor(requireContext(), R.color.fx_mobile_text_color_warning),
+                    ContextCompat.getColor(requireContext(), R.color.fx_mobile_text_color_critical),
                 ),
             )
         }
@@ -285,7 +323,7 @@ class EditLoginFragment : Fragment(R.layout.fragment_edit_login), MenuProvider {
         inflater.inflate(R.menu.login_save, menu)
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu) {
+    override fun onPrepareMenu(menu: Menu) {
         val saveButton = menu.findItem(R.id.save_login_button)
         val changesMadeWithNoErrors =
             validUsername && validPassword && (usernameChanged || passwordChanged)
@@ -293,13 +331,35 @@ class EditLoginFragment : Fragment(R.layout.fragment_edit_login), MenuProvider {
             changesMadeWithNoErrors // don't enable saving until something has been changed
     }
 
-    override fun onPause() {
-        redirectToReAuth(
-            listOf(R.id.loginDetailFragment, R.id.savedLoginsFragment),
-            findNavController().currentDestination?.id,
-            R.id.editLoginFragment,
-        )
-        super.onPause()
+    override fun onResume() {
+        super.onResume()
+        if (BiometricAuthenticationManager.biometricAuthenticationNeededInfo.shouldShowAuthenticationPrompt) {
+            BiometricAuthenticationManager.biometricAuthenticationNeededInfo.shouldShowAuthenticationPrompt =
+                false
+            BiometricAuthenticationManager.biometricAuthenticationNeededInfo.authenticationStatus =
+                AuthenticationStatus.AUTHENTICATION_IN_PROGRESS
+            setSecureContentVisibility(false)
+
+            bindBiometricsCredentialsPromptOrShowWarning(
+                view = requireView(),
+                onShowPinVerification = { intent -> startForResult.launch(intent) },
+                onAuthSuccess = {
+                    BiometricAuthenticationManager.biometricAuthenticationNeededInfo.authenticationStatus =
+                        AuthenticationStatus.AUTHENTICATED
+                    setSecureContentVisibility(true)
+                },
+                onAuthFailure = {
+                    BiometricAuthenticationManager.biometricAuthenticationNeededInfo.authenticationStatus =
+                        AuthenticationStatus.NOT_AUTHENTICATED
+                    setSecureContentVisibility(false)
+                },
+            )
+        } else {
+            setSecureContentVisibility(
+                BiometricAuthenticationManager.biometricAuthenticationNeededInfo.authenticationStatus ==
+                    AuthenticationStatus.AUTHENTICATED,
+            )
+        }
     }
 
     override fun onMenuItemSelected(item: MenuItem): Boolean = when (item.itemId) {
@@ -311,6 +371,7 @@ class EditLoginFragment : Fragment(R.layout.fragment_edit_login), MenuProvider {
                 binding.passwordText.text.toString(),
             )
             Logins.saveEditedLogin.record(NoExtras())
+            Logins.modified.add()
             true
         }
         else -> false
@@ -319,5 +380,15 @@ class EditLoginFragment : Fragment(R.layout.fragment_edit_login), MenuProvider {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        // If you've made it here and you're authenticated, let's reset the values so we don't
+        // prompt the user again when navigating back.
+        val authenticated = BiometricAuthenticationManager.biometricAuthenticationNeededInfo.authenticationStatus ==
+            AuthenticationStatus.AUTHENTICATED
+        BiometricAuthenticationManager.biometricAuthenticationNeededInfo.shouldShowAuthenticationPrompt =
+            !authenticated
+    }
+
+    private fun setSecureContentVisibility(isVisible: Boolean) {
+        binding.editLoginLayout.isVisible = isVisible
     }
 }

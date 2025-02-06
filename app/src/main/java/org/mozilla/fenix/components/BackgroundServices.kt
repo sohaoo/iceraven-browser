@@ -16,12 +16,17 @@ import mozilla.components.browser.storage.sync.RemoteTabsStorage
 import mozilla.components.concept.sync.AccountObserver
 import mozilla.components.concept.sync.AuthType
 import mozilla.components.concept.sync.DeviceCapability
+import mozilla.components.concept.sync.DeviceCommandQueue
 import mozilla.components.concept.sync.DeviceConfig
 import mozilla.components.concept.sync.DeviceType
 import mozilla.components.concept.sync.OAuthAccount
+import mozilla.components.feature.accounts.push.CloseTabsCommandReceiver
+import mozilla.components.feature.accounts.push.CloseTabsFeature
 import mozilla.components.feature.accounts.push.FxaPushSupportFeature
 import mozilla.components.feature.accounts.push.SendTabFeature
 import mozilla.components.feature.syncedtabs.SyncedTabsAutocompleteProvider
+import mozilla.components.feature.syncedtabs.commands.SyncedTabsCommands
+import mozilla.components.feature.syncedtabs.commands.SyncedTabsCommandsFlushScheduler
 import mozilla.components.feature.syncedtabs.storage.SyncedTabsStorage
 import mozilla.components.lib.crash.CrashReporter
 import mozilla.components.service.fxa.PeriodicSyncConfig
@@ -34,19 +39,30 @@ import mozilla.components.service.fxa.manager.SCOPE_SYNC
 import mozilla.components.service.fxa.store.SyncStore
 import mozilla.components.service.fxa.store.SyncStoreSupport
 import mozilla.components.service.fxa.sync.GlobalSyncableStoreProvider
-import mozilla.components.service.glean.private.NoExtras
 import mozilla.components.service.sync.autofill.AutofillCreditCardsAddressesStorage
 import mozilla.components.service.sync.logins.SyncableLoginsStorage
 import mozilla.components.support.utils.RunWhenReadyQueue
+import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.fenix.Config
 import org.mozilla.fenix.FeatureFlags
 import org.mozilla.fenix.GleanMetrics.SyncAuth
 import org.mozilla.fenix.R
 import org.mozilla.fenix.ext.components
+import org.mozilla.fenix.ext.maxActiveTime
+import org.mozilla.fenix.ext.recordEventInNimbus
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.perf.StrictModeManager
 import org.mozilla.fenix.perf.lazyMonitored
 import org.mozilla.fenix.sync.SyncedTabsIntegration
+import org.mozilla.fenix.utils.getUndoDelay
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
+
+/**
+ * The additional time to wait after the "undo closed tab" snackbar has
+ * disappeared before triggering a [SyncedTabsCommands] flush.
+ */
+private val DEFAULT_SYNCED_TABS_COMMANDS_EXTRA_FLUSH_DELAY = 5.seconds
 
 /**
  * Component group for background services. These are the components that need to be accessed from within a
@@ -83,7 +99,10 @@ class BackgroundServices(
         // NB: flipping this flag back and worth is currently not well supported and may need hand-holding.
         // Consult with the android-components peers before changing.
         // See https://github.com/mozilla/application-services/issues/1308
-        capabilities = setOf(DeviceCapability.SEND_TAB),
+        capabilities = buildSet {
+            add(DeviceCapability.SEND_TAB)
+            add(DeviceCapability.CLOSE_TABS)
+        },
 
         // Enable encryption for account state on supported API levels (23+).
         // Just on Nightly and local builds for now.
@@ -143,10 +162,26 @@ class BackgroundServices(
     }
 
     val syncedTabsStorage by lazyMonitored {
-        SyncedTabsStorage(accountManager, context.components.core.store, remoteTabsStorage.value)
+        SyncedTabsStorage(accountManager, context.components.core.store, remoteTabsStorage.value, maxActiveTime)
     }
     val syncedTabsAutocompleteProvider by lazyMonitored {
         SyncedTabsAutocompleteProvider(syncedTabsStorage)
+    }
+    val syncedTabsCommands by lazyMonitored {
+        SyncedTabsCommands(accountManager, remoteTabsStorage.value).apply {
+            register(SyncedTabsCommandsObserver(syncedTabsCommandsFlushScheduler))
+        }
+    }
+    val syncedTabsCommandsFlushScheduler by lazyMonitored {
+        SyncedTabsCommandsFlushScheduler(
+            context = context,
+            flushDelay = context.getUndoDelay().milliseconds + DEFAULT_SYNCED_TABS_COMMANDS_EXTRA_FLUSH_DELAY,
+        )
+    }
+    val closeSyncedTabsCommandReceiver by lazyMonitored {
+        CloseTabsCommandReceiver(context.components.core.store).apply {
+            register(SyncedTabsClosedNotificationObserver(context, notificationManager))
+        }
     }
 
     @VisibleForTesting(otherwise = PRIVATE)
@@ -193,6 +228,8 @@ class BackgroundServices(
             notificationManager.showReceivedTabs(context, device, tabs)
         }
 
+        CloseTabsFeature(closeSyncedTabsCommandReceiver, accountManager).observe()
+
         SyncedTabsIntegration(context, accountManager).launch()
 
         syncStoreSupport = SyncStoreSupport(syncStore, lazyOf(accountManager)).also {
@@ -230,7 +267,7 @@ internal class TelemetryAccountObserver(
             // User signed-in into an existing FxA account.
             AuthType.Signin -> {
                 SyncAuth.signIn.record(NoExtras())
-                context.components.analytics.experiments.recordEvent("sync_auth.sign_in")
+                context.recordEventInNimbus("sync_auth.sign_in")
             }
 
             // User created a new FxA account.
@@ -261,5 +298,32 @@ internal class TelemetryAccountObserver(
     override fun onLoggedOut() {
         SyncAuth.signOut.record(NoExtras())
         context.settings().signedInFxaAccount = false
+    }
+}
+
+internal class SyncedTabsCommandsObserver(
+    private val flushScheduler: SyncedTabsCommandsFlushScheduler,
+) : DeviceCommandQueue.Observer {
+    override fun onAdded() {
+        flushScheduler.requestFlush()
+    }
+
+    // We don't cancel any scheduled flushes in `onRemoved`, because we should
+    // still flush if N commands were added, but N - 1 commands were removed.
+    // If the queue is empty when the worker runs, that's OK; the worker
+    // won't do anything, and won't run again until the next call to `onAdded`.
+    override fun onRemoved() = Unit
+}
+
+/**
+ * A [CloseTabsCommandReceiver.Observer] that shows a status bar notification
+ * when the user closes one or more tabs on this device from another device.
+ */
+internal class SyncedTabsClosedNotificationObserver(
+    private val context: Context,
+    private val notificationManager: NotificationManager,
+) : CloseTabsCommandReceiver.Observer {
+    override fun onTabsClosed(urls: List<String>) {
+        notificationManager.showSyncedTabsClosed(context, urls.size)
     }
 }

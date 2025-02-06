@@ -4,52 +4,28 @@
 
 package org.mozilla.fenix.ui
 
-import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.uiautomator.UiDevice
-import okhttp3.mockwebserver.MockWebServer
-import org.junit.After
-import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.customannotations.SmokeTest
-import org.mozilla.fenix.helpers.AndroidAssetDispatcher
 import org.mozilla.fenix.helpers.Constants.defaultTopSitesList
+import org.mozilla.fenix.helpers.DataGenerationHelper.getSponsoredShortcutTitle
 import org.mozilla.fenix.helpers.HomeActivityIntentTestRule
 import org.mozilla.fenix.helpers.TestAssetHelper
-import org.mozilla.fenix.helpers.TestHelper.exitMenu
-import org.mozilla.fenix.helpers.TestHelper.getSponsoredShortcutTitle
+import org.mozilla.fenix.helpers.TestSetup
 import org.mozilla.fenix.ui.robots.homeScreen
 
 /**
  * Tests Sponsored shortcuts functionality
  */
 
-class SponsoredShortcutsTest {
-    private lateinit var mDevice: UiDevice
-    private lateinit var mockWebServer: MockWebServer
-    private val defaultSearchEngine = "Amazon.com"
+class SponsoredShortcutsTest : TestSetup() {
     private lateinit var sponsoredShortcutTitle: String
     private lateinit var sponsoredShortcutTitle2: String
 
     @get:Rule
     val activityIntentTestRule = HomeActivityIntentTestRule.withDefaultSettingsOverrides(skipOnboarding = true)
 
-    @Before
-    fun setUp() {
-        mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-
-        mockWebServer = MockWebServer().apply {
-            dispatcher = AndroidAssetDispatcher()
-            start()
-        }
-    }
-
-    @After
-    fun tearDown() {
-        mockWebServer.shutdown()
-    }
-
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1729331
     // Expected for en-us defaults
     @SmokeTest
     @Test
@@ -68,6 +44,7 @@ class SponsoredShortcutsTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1729338
     @Test
     fun openSponsoredShortcutTest() {
         homeScreen {
@@ -77,8 +54,9 @@ class SponsoredShortcutsTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1729334
     @Test
-    fun openSponsoredShortcutInPrivateBrowsingTest() {
+    fun openSponsoredShortcutInPrivateTabTest() {
         homeScreen {
             sponsoredShortcutTitle = getSponsoredShortcutTitle(2)
         }.openContextMenuOnSponsoredShortcut(sponsoredShortcutTitle) {
@@ -87,20 +65,20 @@ class SponsoredShortcutsTest {
         }
     }
 
-    @Ignore("Failing, see: https://github.com/mozilla-mobile/fenix/issues/25926")
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1729335
     @Test
-    fun verifySponsorsAndPrivacyLinkTest() {
+    fun openSponsorsAndYourPrivacyOptionTest() {
         homeScreen {
             sponsoredShortcutTitle = getSponsoredShortcutTitle(2)
         }.openContextMenuOnSponsoredShortcut(sponsoredShortcutTitle) {
         }.clickSponsorsAndPrivacyButton {
-            verifyUrl("support.mozilla.org/en-US/kb/sponsor-privacy")
+            verifySponsoredShortcutsLearnMoreURL()
         }
     }
 
-    @Ignore("Failing, see: https://bugzilla.mozilla.org/show_bug.cgi?id=1807268")
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1729336
     @Test
-    fun verifySponsoredShortcutsSettingsOptionTest() {
+    fun openSponsoredShortcutsSettingsOptionTest() {
         homeScreen {
             sponsoredShortcutTitle = getSponsoredShortcutTitle(2)
         }.openContextMenuOnSponsoredShortcut(sponsoredShortcutTitle) {
@@ -109,6 +87,7 @@ class SponsoredShortcutsTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1729337
     @Test
     fun verifySponsoredShortcutsDetailsTest() {
         homeScreen {
@@ -120,26 +99,7 @@ class SponsoredShortcutsTest {
         }
     }
 
-    // The default search engine should not be displayed as a sponsored shortcut
-    @Test
-    fun defaultSearchEngineIsNotDisplayedAsSponsoredShortcutTest() {
-        val sponsoredShortcutTitle = "Amazon"
-
-        homeScreen {
-        }.openThreeDotMenu {
-        }.openSettings {
-        }.openSearchSubMenu {
-            changeDefaultSearchEngine(defaultSearchEngine)
-        }
-
-        exitMenu()
-
-        homeScreen {
-            verifySponsoredShortcutDoesNotExist(sponsoredShortcutTitle, 2)
-            verifySponsoredShortcutDoesNotExist(sponsoredShortcutTitle, 3)
-        }
-    }
-
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1729328
     // 1 sponsored shortcut should be displayed if there are 7 pinned top sites
     @Test
     fun verifySponsoredShortcutsListWithSevenPinnedSitesTest() {
@@ -158,7 +118,7 @@ class SponsoredShortcutsTest {
         }.enterURLAndEnterToBrowser(firstWebPage.url) {
             verifyPageContent(firstWebPage.content)
         }.openThreeDotMenu {
-            expandMenu()
+            expandMenuFully()
         }.addToFirefoxHome {
         }.goToHomescreen {
             verifyExistingTopSitesTabs(firstWebPage.title)
@@ -166,7 +126,7 @@ class SponsoredShortcutsTest {
         }.enterURLAndEnterToBrowser(secondWebPage.url) {
             verifyPageContent(secondWebPage.content)
         }.openThreeDotMenu {
-            expandMenu()
+            expandMenuFully()
         }.addToFirefoxHome {
         }.goToHomescreen {
             verifyExistingTopSitesTabs(secondWebPage.title)
@@ -174,7 +134,7 @@ class SponsoredShortcutsTest {
         }.enterURLAndEnterToBrowser(thirdWebPage.url) {
             verifyPageContent(thirdWebPage.content)
         }.openThreeDotMenu {
-            expandMenu()
+            expandMenuFully()
         }.addToFirefoxHome {
         }.goToHomescreen {
             verifyExistingTopSitesTabs(thirdWebPage.title)
@@ -182,7 +142,7 @@ class SponsoredShortcutsTest {
         }.enterURLAndEnterToBrowser(fourthWebPage.url) {
             verifyPageContent(fourthWebPage.content)
         }.openThreeDotMenu {
-            expandMenu()
+            expandMenuFully()
         }.addToFirefoxHome {
         }.goToHomescreen {
             verifySponsoredShortcutDetails(sponsoredShortcutTitle, 2)
@@ -190,6 +150,7 @@ class SponsoredShortcutsTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1729329
     // No sponsored shortcuts should be displayed if there are 8 pinned top sites
     @Test
     fun verifySponsoredShortcutsListWithEightPinnedSitesTest() {
@@ -209,7 +170,7 @@ class SponsoredShortcutsTest {
         }.enterURLAndEnterToBrowser(firstWebPage.url) {
             verifyPageContent(firstWebPage.content)
         }.openThreeDotMenu {
-            expandMenu()
+            expandMenuFully()
         }.addToFirefoxHome {
         }.goToHomescreen {
             verifyExistingTopSitesTabs(firstWebPage.title)
@@ -217,7 +178,7 @@ class SponsoredShortcutsTest {
         }.enterURLAndEnterToBrowser(secondWebPage.url) {
             verifyPageContent(secondWebPage.content)
         }.openThreeDotMenu {
-            expandMenu()
+            expandMenuFully()
         }.addToFirefoxHome {
         }.goToHomescreen {
             verifyExistingTopSitesTabs(secondWebPage.title)
@@ -225,7 +186,7 @@ class SponsoredShortcutsTest {
         }.enterURLAndEnterToBrowser(thirdWebPage.url) {
             verifyPageContent(thirdWebPage.content)
         }.openThreeDotMenu {
-            expandMenu()
+            expandMenuFully()
         }.addToFirefoxHome {
         }.goToHomescreen {
             verifyExistingTopSitesTabs(thirdWebPage.title)
@@ -233,7 +194,7 @@ class SponsoredShortcutsTest {
         }.enterURLAndEnterToBrowser(fourthWebPage.url) {
             verifyPageContent(fourthWebPage.content)
         }.openThreeDotMenu {
-            expandMenu()
+            expandMenuFully()
         }.addToFirefoxHome {
         }.goToHomescreen {
             verifyExistingTopSitesTabs(fourthWebPage.title)
@@ -241,7 +202,7 @@ class SponsoredShortcutsTest {
         }.enterURLAndEnterToBrowser(fifthWebPage.url) {
             verifyPageContent(fifthWebPage.content)
         }.openThreeDotMenu {
-            expandMenu()
+            expandMenuFully()
         }.addToFirefoxHome {
         }.goToHomescreen {
             verifySponsoredShortcutDoesNotExist(sponsoredShortcutTitle, 2)

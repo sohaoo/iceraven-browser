@@ -12,7 +12,6 @@ import androidx.core.net.toUri
 import mozilla.components.support.ktx.android.content.appVersionName
 import mozilla.components.support.ktx.android.content.getColorFromAttr
 import org.mozilla.fenix.BuildConfig
-import org.mozilla.fenix.Config
 import org.mozilla.fenix.IntentReceiverActivity
 import org.mozilla.fenix.R
 import org.mozilla.fenix.customtabs.EXTRA_IS_SANDBOX_CUSTOM_TAB
@@ -27,7 +26,7 @@ object SupportUtils {
     const val WIKIPEDIA_URL = "https://www.wikipedia.org/"
     const val FENIX_PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=${BuildConfig.APPLICATION_ID}"
     const val GOOGLE_URL = "https://www.google.com/"
-    const val BAIDU_URL = "https://m.baidu.com/?from=1000969a"
+    const val BAIDU_URL = "https://m.baidu.com/"
     const val JD_URL = "https://union-click.jd.com/jdc" +
         "?e=&p=AyIGZRprFDJWWA1FBCVbV0IUWVALHFRBEwQAQB1AWQkFVUVXfFkAF14lRFRbJXstVWR3WQ1rJ08AZnhS" +
         "HDJBYh4LZR9eEAMUBlccWCUBEQZRGFoXCxc3ZRteJUl8BmUZWhQ" +
@@ -39,6 +38,12 @@ object SupportUtils {
     const val GOOGLE_US_URL = "https://www.google.com/webhp?client=firefox-b-1-m&channel=ts"
     const val GOOGLE_XX_URL = "https://www.google.com/webhp?client=firefox-b-m&channel=ts"
     const val WHATS_NEW_URL = "https://github.com/fork-maintainers/iceraven-browser/releases"
+    const val FXACCOUNT_SUMO_URL = "https://support.mozilla.org/kb/access-mozilla-services-firefox-account"
+
+    // This is locale-less on purpose so that the content negotiation happens on the AMO side because the current
+    // user language might not be supported by AMO and/or the language might not be exactly what AMO is expecting
+    // (e.g. `en` instead of `en-US`).
+    const val AMO_HOMEPAGE_FOR_ANDROID = "${BuildConfig.AMO_BASE_URL}/android/"
 
     enum class SumoTopic(internal val topicStr: String) {
         HELP("faq-android"),
@@ -56,12 +61,19 @@ object SupportUtils {
         SMARTBLOCK("smartblock-enhanced-tracking-protection"),
         SPONSOR_PRIVACY("sponsor-privacy"),
         HTTPS_ONLY_MODE("https-only-mode-firefox-android"),
-        COOKIE_BANNER("cookie-banner-reduction-firefox-android"),
+        UNSIGNED_ADDONS("unsigned-addons"),
+        REVIEW_QUALITY_CHECK("review_checker_mobile"),
+        FX_SUGGEST("search-suggestions-firefox"),
+        TRANSLATIONS("android-translation"),
+        MANAGE_OPTIONAL_EXTENSION_PERMISSIONS("manage-optional-permissions-android-extensions"),
+        EXTENSION_PERMISSIONS("extension-permissions"),
+        FIND_INSTALL_ADDONS("add-ons-firefox-android"),
     }
 
     enum class MozillaPage(internal val path: String) {
         PRIVATE_NOTICE("privacy/firefox/"),
         MANIFESTO("about/manifesto/"),
+        TERMS_OF_SERVICE("about/legal/terms/services/"),
     }
 
     /**
@@ -88,10 +100,6 @@ object SupportUtils {
         val escapedTopic = getEncodedTopicUTF8(topic.topicStr)
         val langTag = getLanguageTag(locale)
         return "https://support.mozilla.org/$langTag/kb/$escapedTopic"
-    }
-
-    fun getFirefoxAccountSumoUrl(): String {
-        return "https://support.mozilla.org/kb/access-mozilla-services-firefox-account"
     }
 
     fun getMozillaPageUrl(page: MozillaPage, locale: Locale = Locale.getDefault()): String {

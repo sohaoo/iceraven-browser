@@ -9,6 +9,7 @@
 
 package org.mozilla.fenix.components
 
+import AddonInstallIntentProcessor
 import android.content.Context
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.concept.engine.Engine
@@ -25,6 +26,7 @@ import org.mozilla.fenix.customtabs.FennecWebAppIntentProcessor
 import org.mozilla.fenix.home.intent.FennecBookmarkShortcutsIntentProcessor
 import org.mozilla.fenix.intent.ExternalDeepLinkIntentProcessor
 import org.mozilla.fenix.perf.lazyMonitored
+import org.mozilla.fenix.shortcut.PasswordManagerIntentProcessor
 
 /**
  * Component group for miscellaneous components.
@@ -51,7 +53,7 @@ class IntentProcessors(
      * Provides intent processing functionality for ACTION_VIEW and ACTION_SEND intents in private tabs.
      */
     val privateIntentProcessor by lazyMonitored {
-        TabIntentProcessor(tabsUseCases, searchUseCases.newTabSearch, isPrivate = true)
+        TabIntentProcessor(tabsUseCases, searchUseCases.newPrivateTabSearch, isPrivate = true)
     }
 
     val customTabIntentProcessor by lazyMonitored {
@@ -79,5 +81,12 @@ class IntentProcessors(
 
     val webNotificationsIntentProcessor by lazyMonitored {
         WebNotificationIntentProcessor(engine)
+    }
+
+    val passwordManagerIntentProcessor by lazyMonitored {
+        PasswordManagerIntentProcessor()
+    }
+    val addonInstallIntentProcessor by lazyMonitored {
+        AddonInstallIntentProcessor(context, engine)
     }
 }

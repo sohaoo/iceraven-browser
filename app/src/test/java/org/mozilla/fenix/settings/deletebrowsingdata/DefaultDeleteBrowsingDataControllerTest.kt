@@ -15,6 +15,9 @@ import mozilla.components.browser.state.action.EngineAction
 import mozilla.components.browser.state.action.RecentlyClosedAction
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.concept.engine.Engine
+import mozilla.components.concept.engine.translate.ModelManagementOptions
+import mozilla.components.concept.engine.translate.ModelOperation
+import mozilla.components.concept.engine.translate.OperationLevel
 import mozilla.components.concept.storage.HistoryStorage
 import mozilla.components.feature.downloads.DownloadsUseCases
 import mozilla.components.feature.tabs.TabsUseCases
@@ -65,12 +68,11 @@ class DefaultDeleteBrowsingDataControllerTest {
     }
 
     @Test
-    fun deleteBrowsingData() = runTestOnMain {
+    fun deleteBrowsingHistory() = runTestOnMain {
         controller = spyk(controller)
-        controller.deleteBrowsingData()
+        controller.deleteBrowsingHistory()
 
         coVerify {
-            engine.clearData(Engine.BrowsingData.select(Engine.BrowsingData.DOM_STORAGES))
             historyStorage.deleteEverything()
             store.dispatch(EngineAction.PurgeHistoryAction)
             store.dispatch(RecentlyClosedAction.RemoveAllClosedTabAction)
@@ -79,8 +81,8 @@ class DefaultDeleteBrowsingDataControllerTest {
     }
 
     @Test
-    fun deleteCookies() = runTestOnMain {
-        controller.deleteCookies()
+    fun deleteCookiesAndSiteData() = runTestOnMain {
+        controller.deleteCookiesAndSiteData()
 
         verify {
             engine.clearData(
@@ -89,6 +91,7 @@ class DefaultDeleteBrowsingDataControllerTest {
                     Engine.BrowsingData.AUTH_SESSIONS,
                 ),
             )
+            engine.clearData(Engine.BrowsingData.select(Engine.BrowsingData.DOM_STORAGES))
         }
     }
 
@@ -97,6 +100,14 @@ class DefaultDeleteBrowsingDataControllerTest {
         controller.deleteCachedFiles()
 
         verify {
+            engine.manageTranslationsLanguageModel(
+                options = ModelManagementOptions(
+                    operation = ModelOperation.DELETE,
+                    operationLevel = OperationLevel.CACHE,
+                ),
+                onSuccess = any(),
+                onError = any(),
+            )
             engine.clearData(Engine.BrowsingData.select(Engine.BrowsingData.ALL_CACHES))
         }
     }

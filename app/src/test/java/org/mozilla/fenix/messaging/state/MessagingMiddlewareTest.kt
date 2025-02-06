@@ -8,42 +8,46 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.test.advanceUntilIdle
 import mozilla.components.service.nimbus.messaging.Message
 import mozilla.components.service.nimbus.messaging.MessageData
 import mozilla.components.service.nimbus.messaging.NimbusMessagingController
-import mozilla.components.service.nimbus.messaging.NimbusMessagingStorage
 import mozilla.components.service.nimbus.messaging.StyleData
 import mozilla.components.support.test.ext.joinBlocking
 import mozilla.components.support.test.libstate.ext.waitUntilIdle
 import mozilla.components.support.test.rule.MainCoroutineRule
 import mozilla.components.support.test.rule.runTestOnMain
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.components.AppStore
+import org.mozilla.fenix.components.appstate.AppAction
 import org.mozilla.fenix.components.appstate.AppAction.MessagingAction.Evaluate
 import org.mozilla.fenix.components.appstate.AppAction.MessagingAction.MessageClicked
 import org.mozilla.fenix.components.appstate.AppAction.MessagingAction.MessageDismissed
+import org.mozilla.fenix.components.appstate.AppAction.MessagingAction.MicrosurveyAction
+import org.mozilla.fenix.components.appstate.AppAction.MessagingAction.MicrosurveyAction.Dismissed
 import org.mozilla.fenix.components.appstate.AppAction.MessagingAction.Restore
 import org.mozilla.fenix.components.appstate.AppState
 import org.mozilla.fenix.messaging.FenixMessageSurfaceId
-import org.mozilla.fenix.messaging.FenixNimbusMessagingController
 import org.mozilla.fenix.messaging.MessagingState
+import org.mozilla.fenix.utils.Settings
 
 class MessagingMiddlewareTest {
     @get:Rule
     val coroutinesTestRule = MainCoroutineRule()
     private val coroutineScope = coroutinesTestRule.scope
-    private lateinit var messagingStorage: NimbusMessagingStorage
     private lateinit var controller: NimbusMessagingController
+    private lateinit var settings: Settings
 
     @Before
     fun setUp() {
-        messagingStorage = mockk(relaxed = true)
-        controller = FenixNimbusMessagingController(messagingStorage) { 0 }
+        controller = mockk(relaxed = true)
+        settings = mockk(relaxed = true)
     }
 
     @Test
@@ -55,12 +59,12 @@ class MessagingMiddlewareTest {
                 ),
             ),
             listOf(
-                MessagingMiddleware(messagingStorage, controller, coroutineScope),
+                MessagingMiddleware(controller, settings, coroutineScope),
             ),
         )
         val message = createMessage()
 
-        coEvery { messagingStorage.getMessages() } returns listOf(message)
+        coEvery { controller.getMessages() } returns listOf(message)
 
         store.dispatch(Restore).joinBlocking()
         store.waitUntilIdle()
@@ -81,12 +85,12 @@ class MessagingMiddlewareTest {
                 ),
             ),
             listOf(
-                MessagingMiddleware(messagingStorage, controller, coroutineScope),
+                MessagingMiddleware(controller, settings, coroutineScope),
             ),
         )
 
         every {
-            messagingStorage.getNextMessage(
+            controller.getNextMessage(
                 FenixMessageSurfaceId.HOMESCREEN,
                 any(),
             )
@@ -111,7 +115,7 @@ class MessagingMiddlewareTest {
                 ),
             ),
             listOf(
-                MessagingMiddleware(messagingStorage, controller, coroutineScope),
+                MessagingMiddleware(controller, settings, coroutineScope),
             ),
         )
 
@@ -121,8 +125,33 @@ class MessagingMiddlewareTest {
         store.waitUntilIdle()
 
         assertTrue(store.state.messaging.messages.isEmpty())
-        coVerify { messagingStorage.updateMetadata(createMetadata(pressed = true)) }
+        coVerify { controller.onMessageClicked(message = message) }
     }
+
+    @Test
+    fun `GVIEN a microsurvey WHEN Started THEN only notify the controller`() =
+        runTestOnMain {
+            val message = createMessage(data = mockk<MessageData>(relaxed = true))
+            val store = AppStore(
+                AppState(
+                    messaging = MessagingState(
+                        messages = listOf(message),
+                        messageToShow = mapOf(message.id to message),
+                    ),
+                ),
+                listOf(
+                    MessagingMiddleware(controller, settings, coroutineScope),
+                ),
+            )
+
+            assertEquals(message, store.state.messaging.messages.first())
+
+            store.dispatch(MicrosurveyAction.Started(message.id)).joinBlocking()
+            store.waitUntilIdle()
+
+            assertFalse(store.state.messaging.messages.isEmpty())
+            coVerify { controller.onMicrosurveyStarted(id = message.id) }
+        }
 
     @Test
     fun `WHEN MessageDismissed THEN update storage`() = runTestOnMain {
@@ -135,15 +164,114 @@ class MessagingMiddlewareTest {
                 ),
             ),
             listOf(
-                MessagingMiddleware(messagingStorage, controller, coroutineScope),
+                MessagingMiddleware(controller, settings, coroutineScope),
             ),
         )
         store.dispatch(MessageDismissed(message)).joinBlocking()
         store.waitUntilIdle()
 
         assertTrue(store.state.messaging.messages.isEmpty())
-        coVerify { messagingStorage.updateMetadata(metadata.copy(dismissed = true)) }
+        coVerify { controller.onMessageDismissed(message = message) }
     }
+
+    @Test
+    fun `WHEN onMicrosurveyDismissed THEN update storage`() = runTestOnMain {
+        val metadata = createMetadata(displayCount = 1, "same-id")
+        val message = createMessage(metadata)
+        val store = AppStore(
+            AppState(
+                messaging = MessagingState(
+                    messages = listOf(message),
+                ),
+            ),
+            listOf(
+                MessagingMiddleware(controller, settings, coroutineScope),
+            ),
+        )
+        store.dispatch(Dismissed(message.id)).joinBlocking()
+        store.waitUntilIdle()
+
+        assertTrue(store.state.messaging.messages.isEmpty())
+        coVerify { controller.onMicrosurveyDismissed(message = message) }
+    }
+
+    @Test
+    fun `GIVEN a microsurvey WHEN onMicrosurveyShown THEN only notify the controller`() =
+        runTestOnMain {
+            val message = createMessage()
+            val store = AppStore(
+                AppState(
+                    messaging = MessagingState(
+                        messages = listOf(message),
+                        messageToShow = mapOf(message.id to message),
+                    ),
+                ),
+                listOf(
+                    MessagingMiddleware(controller, settings, coroutineScope),
+                ),
+            )
+
+            assertEquals(message, store.state.messaging.messages.first())
+
+            store.dispatch(AppAction.MessagingAction.MicrosurveyAction.Shown(message.id))
+                .joinBlocking()
+            store.waitUntilIdle()
+
+            assertFalse(store.state.messaging.messages.isEmpty())
+            coVerify { controller.onMicrosurveyShown(id = message.id) }
+        }
+
+    @Test
+    fun `GVIEN a microsurvey WHEN onMicrosurveyConfirmationShown THEN only notify the controller`() =
+        runTestOnMain {
+            val message = createMessage()
+            val store = AppStore(
+                AppState(
+                    messaging = MessagingState(
+                        messages = listOf(message),
+                        messageToShow = mapOf(message.id to message),
+                    ),
+                ),
+                listOf(
+                    MessagingMiddleware(controller, settings, coroutineScope),
+                ),
+            )
+
+            assertEquals(message, store.state.messaging.messages.first())
+
+            store.dispatch(AppAction.MessagingAction.MicrosurveyAction.SentConfirmationShown(message.id))
+                .joinBlocking()
+            store.waitUntilIdle()
+
+            assertFalse(store.state.messaging.messages.isEmpty())
+            coVerify { controller.onMicrosurveySentConfirmationShown(id = message.id) }
+        }
+
+    @Test
+    fun `GVIEN a microsurvey WHEN onPrivacyNoticeTapped THEN only notify the controller`() =
+        runTestOnMain {
+            val message = createMessage()
+            val store = AppStore(
+                AppState(
+                    messaging = MessagingState(
+                        messages = listOf(message),
+                        messageToShow = mapOf(message.id to message),
+                    ),
+                ),
+                listOf(
+                    MessagingMiddleware(controller, settings, coroutineScope),
+                ),
+            )
+
+            assertEquals(message, store.state.messaging.messages.first())
+
+            store.dispatch(AppAction.MessagingAction.MicrosurveyAction.OnPrivacyNoticeTapped(message.id))
+                .joinBlocking()
+            store.waitUntilIdle()
+
+            assertFalse(store.state.messaging.messages.isEmpty())
+            coVerify { controller.onMicrosurveyPrivacyNoticeTapped(id = message.id) }
+        }
 
     @Test
     fun `WHEN onMessageDismissed THEN remove the message from storage and state`() = runTestOnMain {
@@ -158,11 +286,37 @@ class MessagingMiddlewareTest {
                 ),
             ),
             listOf(
-                MessagingMiddleware(messagingStorage, controller, coroutineScope),
+                MessagingMiddleware(controller, settings, coroutineScope),
             ),
         )
 
         store.dispatch(MessageDismissed(message)).joinBlocking()
+        store.waitUntilIdle()
+
+        // removeMessages causes messages size to be 0
+        assertEquals(0, store.state.messaging.messages.size)
+        // consumeMessageToShowIfNeeded causes messageToShow map size to be 0
+        assertEquals(0, store.state.messaging.messageToShow.size)
+    }
+
+    @Test
+    fun `WHEN onMicrosurveyDismissed THEN remove the message from storage and state`() = runTestOnMain {
+        val message = createMessage(createMetadata(displayCount = 1))
+        val store = AppStore(
+            AppState(
+                messaging = MessagingState(
+                    messages = listOf(
+                        message,
+                    ),
+                    messageToShow = mapOf(message.surface to message),
+                ),
+            ),
+            listOf(
+                MessagingMiddleware(controller, settings, coroutineScope),
+            ),
+        )
+
+        store.dispatch(Dismissed(message.id)).joinBlocking()
         store.waitUntilIdle()
 
         // removeMessages causes messages size to be 0
@@ -184,7 +338,7 @@ class MessagingMiddlewareTest {
                 ),
             ),
             listOf(
-                MessagingMiddleware(messagingStorage, controller, coroutineScope),
+                MessagingMiddleware(controller, settings, coroutineScope),
             ),
         )
 
@@ -198,6 +352,7 @@ class MessagingMiddlewareTest {
     @Test
     fun `WHEN updateMessage THEN update available messages`() = runTestOnMain {
         val message = createMessage()
+        val messageDisplayed = message.copy(metadata = createMetadata(displayCount = 1))
         val store = AppStore(
             AppState(
                 messaging = MessagingState(
@@ -207,21 +362,26 @@ class MessagingMiddlewareTest {
                 ),
             ),
             listOf(
-                MessagingMiddleware(messagingStorage, controller, coroutineScope),
+                MessagingMiddleware(controller, settings, coroutineScope),
             ),
         )
 
         every {
-            messagingStorage.getNextMessage(
+            controller.getNextMessage(
                 FenixMessageSurfaceId.HOMESCREEN,
                 any(),
             )
         } returns message
 
-        store.dispatch(Evaluate(FenixMessageSurfaceId.HOMESCREEN))
+        coEvery {
+            controller.onMessageDisplayed(eq(message), any())
+        } returns messageDisplayed
+
+        store.dispatch(Evaluate(FenixMessageSurfaceId.HOMESCREEN)).joinBlocking()
         store.waitUntilIdle()
 
-        assertEquals(1, store.state.messaging.messages.first().metadata.displayCount)
+        assertEquals(1, store.state.messaging.messages.count())
+        assertEquals(1, store.state.messaging.messages.first().displayCount)
     }
 
     @Test
@@ -229,7 +389,7 @@ class MessagingMiddlewareTest {
         val message1 = createMessage()
         val message2 = message1.copy(id = "message2", action = "action2")
         // An updated message1 that has been displayed once.
-        val messageDisplayed1 = message1.copy(metadata = createMetadata(displayCount = 1))
+        val messageDisplayed1 = incrementDisplayCount(message1)
         val store = AppStore(
             AppState(
                 messaging = MessagingState(
@@ -240,16 +400,23 @@ class MessagingMiddlewareTest {
                 ),
             ),
             listOf(
-                MessagingMiddleware(messagingStorage, controller, coroutineScope),
+                MessagingMiddleware(controller, settings, coroutineScope),
             ),
         )
 
         every {
-            messagingStorage.getNextMessage(
+            controller.getNextMessage(
                 FenixMessageSurfaceId.HOMESCREEN,
                 any(),
             )
         } returns message1
+        coEvery {
+            controller.onMessageDisplayed(message1, any())
+        } returns messageDisplayed1
+
+        coEvery {
+            controller.onMessageDisplayed(eq(message1), any())
+        } returns messageDisplayed1
 
         store.dispatch(Evaluate(FenixMessageSurfaceId.HOMESCREEN)).joinBlocking()
         store.waitUntilIdle()
@@ -262,7 +429,7 @@ class MessagingMiddlewareTest {
     fun `GIVEN a message has not surpassed the maxDisplayCount WHEN evaluate THEN update the message displayCount`() = runTestOnMain {
         val message = createMessage()
         // An updated message that has been displayed once.
-        val messageDisplayed = message.copy(metadata = createMetadata(displayCount = 1))
+        val messageDisplayed = incrementDisplayCount(message)
         val store = AppStore(
             AppState(
                 messaging = MessagingState(
@@ -272,26 +439,39 @@ class MessagingMiddlewareTest {
                 ),
             ),
             listOf(
-                MessagingMiddleware(messagingStorage, controller, coroutineScope),
+                MessagingMiddleware(controller, settings, coroutineScope),
             ),
         )
 
         every {
-            messagingStorage.getNextMessage(
+            controller.getNextMessage(
                 FenixMessageSurfaceId.HOMESCREEN,
                 any(),
             )
         } returns message
+        coEvery {
+            controller.onMessageDisplayed(message, any())
+        } returns messageDisplayed
+
+        coEvery {
+            controller.onMessageDisplayed(eq(message), any())
+        } returns messageDisplayed
 
         store.dispatch(Evaluate(FenixMessageSurfaceId.HOMESCREEN)).joinBlocking()
         store.waitUntilIdle()
 
-        assertEquals(messageDisplayed.metadata.displayCount, store.state.messaging.messages[0].metadata.displayCount)
+        assertEquals(messageDisplayed.displayCount, store.state.messaging.messages[0].displayCount)
+        assertEquals(1, store.state.messaging.messages.size)
+        assertEquals(1, store.state.messaging.messageToShow.size)
     }
 
     @Test
-    fun `GIVEN a message with that surpassed the maxDisplayCount WHEN onMessagedDisplayed THEN remove the message and consume it`() = runTestOnMain {
-        val message = createMessage(createMetadata(displayCount = 6))
+    fun `GIVEN a message has reached the maxDisplayCount WHEN onMessagedDisplayed THEN remove the message`() = runTestOnMain {
+        val message = createMessage(createMetadata(displayCount = 4))
+        val messageDisplayed = createMessage(createMetadata(displayCount = 5))
+        assertFalse(message.isExpired)
+        assertTrue(messageDisplayed.isExpired)
+
         val store = AppStore(
             AppState(
                 messaging = MessagingState(
@@ -302,32 +482,109 @@ class MessagingMiddlewareTest {
                 ),
             ),
             listOf(
-                MessagingMiddleware(messagingStorage, controller, coroutineScope),
+                MessagingMiddleware(controller, settings, coroutineScope),
             ),
         )
 
         every {
-            messagingStorage.getNextMessage(
+            controller.getNextMessage(
                 FenixMessageSurfaceId.HOMESCREEN,
                 any(),
             )
         } returns message
+        coEvery {
+            controller.onMessageDisplayed(message, any())
+        } returns incrementDisplayCount(message)
+
+        coEvery {
+            controller.onMessageDisplayed(eq(message), any())
+        } returns messageDisplayed
 
         store.dispatch(Evaluate(FenixMessageSurfaceId.HOMESCREEN)).joinBlocking()
         store.waitUntilIdle()
 
         assertEquals(0, store.state.messaging.messages.size)
-        assertEquals(0, store.state.messaging.messageToShow.size)
+        assertEquals(1, store.state.messaging.messageToShow.size)
+    }
+
+    @Test
+    fun `GIVEN a microsurvey message that surpassed the maxDisplayCount WHEN onMessagedDisplayed THEN remove the message, consume it & reset the pref`() = runTestOnMain {
+        val message = createMessage(metadata = createMetadata(displayCount = 4), data = MessageData(surface = "microsurvey"))
+        val messageDisplayed = createMessage(createMetadata(displayCount = 5), data = MessageData(surface = "microsurvey"))
+
+        assertFalse(message.isExpired)
+        assertTrue(messageDisplayed.isExpired)
+        settings.shouldShowMicrosurveyPrompt = true
+        verify { settings.shouldShowMicrosurveyPrompt = true }
+
+        val store = AppStore(
+            AppState(
+                messaging = MessagingState(
+                    messages = listOf(message),
+                    messageToShow = mapOf(message.surface to message),
+                ),
+            ),
+            listOf(MessagingMiddleware(controller, settings, coroutineScope)),
+        )
+
+        every { controller.getNextMessage(FenixMessageSurfaceId.MICROSURVEY, any()) } returns message
+        coEvery { controller.onMessageDisplayed(message, any()) } returns incrementDisplayCount(
+            message,
+        )
+        coEvery { controller.onMessageDisplayed(eq(message), any()) } returns messageDisplayed
+
+        store.dispatch(Evaluate(FenixMessageSurfaceId.MICROSURVEY)).joinBlocking()
+        store.waitUntilIdle()
+
+        verify { settings.shouldShowMicrosurveyPrompt = false }
+        assertEquals(0, store.state.messaging.messages.size)
+        assertEquals(1, store.state.messaging.messageToShow.size)
+    }
+
+    @Test
+    fun `GIVEN message is not found WHEN updateMessage THEN do not update the message list`() = runTestOnMain {
+        val message = createMessage(messageId = "1")
+        val message2 = createMessage(messageId = "2")
+        val store = AppStore(
+            AppState(
+                messaging = MessagingState(
+                    messages = listOf(
+                        message,
+                    ),
+                ),
+            ),
+            listOf(
+                MessagingMiddleware(controller, settings, coroutineScope),
+            ),
+        )
+
+        every {
+            controller.getNextMessage(
+                FenixMessageSurfaceId.HOMESCREEN,
+                any(),
+            )
+        } returns message
+
+        coEvery {
+            controller.onMessageDisplayed(eq(message), any())
+        } returns message2
+
+        store.dispatch(Evaluate(FenixMessageSurfaceId.HOMESCREEN)).joinBlocking()
+        store.waitUntilIdle()
+
+        assertEquals(1, store.state.messaging.messages.count())
+        assertEquals(message, store.state.messaging.messages.first())
     }
 }
 private fun createMessage(
     metadata: Message.Metadata = createMetadata(),
-    messageId: String = "control-id",
+    messageId: String = "message-id",
     data: MessageData = mockk(relaxed = true),
     action: String = "action",
     styleData: StyleData = StyleData(),
     triggers: List<String> = listOf("triggers"),
-) = Message(messageId, data, action, styleData, triggers, metadata)
+    except: List<String> = listOf(),
+) = Message(messageId, data, action, styleData, triggers, except, metadata)
 
 private fun createMetadata(
     displayCount: Int = 0,
@@ -344,3 +601,10 @@ private fun createMetadata(
     lastTimeShown,
     latestBootIdentifier,
 )
+
+private fun incrementDisplayCount(message: Message) =
+    message.copy(
+        metadata = createMetadata(
+            displayCount = message.displayCount + 1,
+        ),
+    )

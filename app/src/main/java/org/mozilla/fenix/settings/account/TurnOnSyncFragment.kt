@@ -17,6 +17,8 @@ import androidx.navigation.fragment.navArgs
 import mozilla.components.concept.sync.AccountObserver
 import mozilla.components.concept.sync.AuthType
 import mozilla.components.concept.sync.OAuthAccount
+import mozilla.components.service.fxa.manager.SCOPE_PROFILE
+import mozilla.components.service.fxa.manager.SCOPE_SYNC
 import mozilla.components.support.ktx.android.content.hasCamera
 import mozilla.components.support.ktx.android.content.isPermissionGranted
 import mozilla.components.support.ktx.android.view.hideKeyboard
@@ -25,9 +27,11 @@ import org.mozilla.fenix.Config
 import org.mozilla.fenix.GleanMetrics.SyncAuth
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.R
-import org.mozilla.fenix.components.FenixSnackbar
+import org.mozilla.fenix.components.appstate.AppAction
 import org.mozilla.fenix.databinding.FragmentTurnOnSyncBinding
+import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.increaseTapArea
+import org.mozilla.fenix.ext.navigateWithBreadcrumb
 import org.mozilla.fenix.ext.requireComponents
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.ext.showToolbar
@@ -63,8 +67,17 @@ class TurnOnSyncFragment : Fragment(), AccountObserver {
     private val binding get() = _binding!!
 
     private fun navigateToPairFragment() {
-        val directions = TurnOnSyncFragmentDirections.actionTurnOnSyncFragmentToPairFragment()
-        requireView().findNavController().navigate(directions)
+        val directions = TurnOnSyncFragmentDirections.actionTurnOnSyncFragmentToPairFragment(
+            entrypoint = args.entrypoint,
+        )
+        context?.let {
+            requireView().findNavController().navigateWithBreadcrumb(
+                directions = directions,
+                navigateFrom = "TurnOnSyncFragment",
+                navigateTo = "ActionTurnOnSyncFragmentToPairFragment",
+                crashReporter = it.components.analytics.crashReporter,
+            )
+        }
         SyncAuth.scanPairing.record(NoExtras())
     }
 
@@ -150,27 +163,19 @@ class TurnOnSyncFragment : Fragment(), AccountObserver {
     }
 
     override fun onAuthenticated(account: OAuthAccount, authType: AuthType) {
-        // If we're in a `shouldLoginJustWithEmail = true` state, we won't have a view available,
-        // and can't display a snackbar.
-        if (view == null) {
-            return
-        }
-        val snackbarText = requireContext().getString(R.string.sync_syncing_in_progress)
-        val snackbarLength = FenixSnackbar.LENGTH_SHORT
-
-        // Since the snackbar can be presented in BrowserFragment or in SettingsFragment we must
-        // base our display method on the padSnackbar argument
-        FenixSnackbar.make(
-            view = requireView(),
-            duration = snackbarLength,
-            isDisplayedWithBrowserToolbar = args.padSnackbar,
+        // Configure a snackbar to inform the user about the successful sign in.
+        // The screen will close immediately after and the snackbar will be shown by the parent fragment.
+        context?.components?.appStore?.dispatch(
+            AppAction.UserAccountAuthenticated,
         )
-            .setText(snackbarText)
-            .show()
     }
 
     private fun navigateToPairWithEmail() {
-        requireComponents.services.accountsAuthFeature.beginAuthentication(requireContext())
+        requireComponents.services.accountsAuthFeature.beginAuthentication(
+            requireContext(),
+            entrypoint = args.entrypoint,
+            setOf(SCOPE_PROFILE, SCOPE_SYNC),
+        )
         SyncAuth.useEmail.record(NoExtras())
         // TODO The sign-in web content populates session history,
         // so pressing "back" after signing in won't take us back into the settings screen, but rather up the

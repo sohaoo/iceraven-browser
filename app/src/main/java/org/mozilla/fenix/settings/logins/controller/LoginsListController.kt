@@ -5,7 +5,7 @@
 package org.mozilla.fenix.settings.logins.controller
 
 import androidx.navigation.NavController
-import mozilla.components.service.glean.private.NoExtras
+import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.fenix.BrowserDirection
 import org.mozilla.fenix.GleanMetrics.Logins
 import org.mozilla.fenix.settings.SupportUtils
@@ -22,6 +22,7 @@ import org.mozilla.fenix.utils.Settings
  * @param loginsFragmentStore Store used to hold in-memory collection state.
  * @param navController NavController manages app navigation within a NavHost.
  * @param browserNavigator Controller allowing browser navigation to any Uri.
+ * @param addLoginCallback Callback used for add login
  * @param settings SharedPreferences wrapper for easier usage.
  */
 class LoginsListController(
@@ -32,10 +33,12 @@ class LoginsListController(
         newTab: Boolean,
         from: BrowserDirection,
     ) -> Unit,
+    private val addLoginCallback: () -> Unit,
     private val settings: Settings,
 ) {
 
     fun handleItemClicked(item: SavedLogin) {
+        Logins.managementLoginsTapped.record(NoExtras())
         loginsFragmentStore.dispatch(LoginsAction.LoginSelected(item))
         Logins.openIndividualLogin.record(NoExtras())
         navController.navigate(
@@ -44,6 +47,8 @@ class LoginsListController(
     }
 
     fun handleAddLoginClicked() {
+        Logins.managementAddTapped.record(NoExtras())
+        addLoginCallback.invoke()
         navController.navigate(
             SavedLoginsFragmentDirections.actionSavedLoginsFragmentToAddLoginFragment(),
         )

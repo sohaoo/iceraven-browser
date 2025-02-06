@@ -30,8 +30,9 @@ import io.mockk.unmockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.CoroutineScope
 import mozilla.components.browser.menu.BrowserMenu
+import mozilla.components.browser.state.state.ContentState
+import mozilla.components.browser.state.state.TabSessionState
 import mozilla.components.browser.state.store.BrowserStore
-import mozilla.components.service.glean.testing.GleanTestRule
 import mozilla.components.support.test.robolectric.testContext
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -50,6 +51,7 @@ import org.mozilla.fenix.databinding.ComponentTabstrayFabBinding
 import org.mozilla.fenix.databinding.FragmentTabTrayDialogBinding
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.settings
+import org.mozilla.fenix.helpers.FenixGleanTestRule
 import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
 import org.mozilla.fenix.helpers.MockkRetryTestRule
 import org.mozilla.fenix.home.HomeScreenViewModel
@@ -69,7 +71,7 @@ class TabsTrayFragmentTest {
     val mockkRule = MockkRetryTestRule()
 
     @get:Rule
-    val gleanTestRule = GleanTestRule(testContext)
+    val gleanTestRule = FenixGleanTestRule(testContext)
 
     @Before
     fun setup() {
@@ -98,7 +100,7 @@ class TabsTrayFragmentTest {
             every { any<LifecycleOwner>().lifecycleScope } returns lifecycleScope
             fabButtonBinding.newTabButton.isVisible = true
             every { fragment.context } returns testContext // needed for getString()
-            every { any<CoroutineScope>().allowUndo(any(), any(), any(), any(), any(), any(), any(), any()) } just Runs
+            every { any<CoroutineScope>().allowUndo(any(), any(), any(), any(), any(), any(), any()) } just Runs
             every { fragment.requireView() } returns view
             every { testContext.settings().enableTabsTrayToCompose } returns false
 
@@ -106,14 +108,13 @@ class TabsTrayFragmentTest {
 
             verify {
                 lifecycleScope.allowUndo(
-                    view,
-                    testContext.getString(R.string.snackbar_private_tab_closed),
-                    testContext.getString(R.string.snackbar_deleted_undo),
-                    any(),
-                    any(),
-                    fabButtonBinding.newTabButton,
-                    TabsTrayFragment.ELEVATION,
-                    false,
+                    view = view,
+                    message = testContext.getString(R.string.snackbar_private_tab_closed),
+                    undoActionTitle = testContext.getString(R.string.snackbar_deleted_undo),
+                    onCancel = any(),
+                    operation = any(),
+                    anchorView = fabButtonBinding.newTabButton,
+                    elevation = TabsTrayFragment.ELEVATION,
                 )
             }
         } finally {
@@ -130,7 +131,7 @@ class TabsTrayFragmentTest {
             val lifecycleScope: LifecycleCoroutineScope = mockk(relaxed = true)
             every { any<LifecycleOwner>().lifecycleScope } returns lifecycleScope
             every { fragment.context } returns testContext // needed for getString()
-            every { any<CoroutineScope>().allowUndo(any(), any(), any(), any(), any(), any(), any(), any()) } just Runs
+            every { any<CoroutineScope>().allowUndo(any(), any(), any(), any(), any(), any(), any()) } just Runs
             every { fragment.requireView() } returns view
             every { testContext.settings().enableTabsTrayToCompose } returns false
 
@@ -138,14 +139,13 @@ class TabsTrayFragmentTest {
 
             verify {
                 lifecycleScope.allowUndo(
-                    view,
-                    testContext.getString(R.string.snackbar_private_tab_closed),
-                    testContext.getString(R.string.snackbar_deleted_undo),
-                    any(),
-                    any(),
-                    null,
-                    TabsTrayFragment.ELEVATION,
-                    false,
+                    view = view,
+                    message = testContext.getString(R.string.snackbar_private_tab_closed),
+                    undoActionTitle = testContext.getString(R.string.snackbar_deleted_undo),
+                    onCancel = any(),
+                    operation = any(),
+                    anchorView = null,
+                    elevation = TabsTrayFragment.ELEVATION,
                 )
             }
         } finally {
@@ -163,7 +163,7 @@ class TabsTrayFragmentTest {
             every { any<LifecycleOwner>().lifecycleScope } returns lifecycleScope
             fabButtonBinding.newTabButton.isVisible = true
             every { fragment.context } returns testContext // needed for getString()
-            every { any<CoroutineScope>().allowUndo(any(), any(), any(), any(), any(), any(), any(), any()) } just Runs
+            every { any<CoroutineScope>().allowUndo(any(), any(), any(), any(), any(), any(), any()) } just Runs
             every { fragment.requireView() } returns view
             every { testContext.settings().enableTabsTrayToCompose } returns false
 
@@ -171,14 +171,13 @@ class TabsTrayFragmentTest {
 
             verify {
                 lifecycleScope.allowUndo(
-                    view,
-                    testContext.getString(R.string.snackbar_tab_closed),
-                    testContext.getString(R.string.snackbar_deleted_undo),
-                    any(),
-                    any(),
-                    fabButtonBinding.newTabButton,
-                    TabsTrayFragment.ELEVATION,
-                    false,
+                    view = view,
+                    message = testContext.getString(R.string.snackbar_tab_closed),
+                    undoActionTitle = testContext.getString(R.string.snackbar_deleted_undo),
+                    onCancel = any(),
+                    operation = any(),
+                    anchorView = fabButtonBinding.newTabButton,
+                    elevation = TabsTrayFragment.ELEVATION,
                 )
             }
         } finally {
@@ -195,7 +194,7 @@ class TabsTrayFragmentTest {
             val lifecycleScope: LifecycleCoroutineScope = mockk(relaxed = true)
             every { any<LifecycleOwner>().lifecycleScope } returns lifecycleScope
             every { fragment.context } returns testContext // needed for getString()
-            every { any<CoroutineScope>().allowUndo(any(), any(), any(), any(), any(), any(), any(), any()) } just Runs
+            every { any<CoroutineScope>().allowUndo(any(), any(), any(), any(), any(), any(), any()) } just Runs
             every { fragment.requireView() } returns view
             every { testContext.settings().enableTabsTrayToCompose } returns false
 
@@ -203,14 +202,76 @@ class TabsTrayFragmentTest {
 
             verify {
                 lifecycleScope.allowUndo(
-                    view,
-                    testContext.getString(R.string.snackbar_tab_closed),
-                    testContext.getString(R.string.snackbar_deleted_undo),
-                    any(),
-                    any(),
-                    null,
-                    TabsTrayFragment.ELEVATION,
-                    false,
+                    view = view,
+                    message = testContext.getString(R.string.snackbar_tab_closed),
+                    undoActionTitle = testContext.getString(R.string.snackbar_deleted_undo),
+                    onCancel = any(),
+                    operation = any(),
+                    anchorView = null,
+                    elevation = TabsTrayFragment.ELEVATION,
+                )
+            }
+        } finally {
+            unmockkStatic("org.mozilla.fenix.utils.UndoKt")
+            unmockkStatic("androidx.lifecycle.LifecycleOwnerKt")
+        }
+    }
+
+    @Test
+    fun `WHEN showUndoSnackbarForInactiveTab is called for one inactive tab THEN an appropriate snackbar is shown`() {
+        try {
+            mockkStatic("org.mozilla.fenix.utils.UndoKt")
+            mockkStatic("androidx.lifecycle.LifecycleOwnerKt")
+            val lifecycleScope: LifecycleCoroutineScope = mockk(relaxed = true)
+            every { any<LifecycleOwner>().lifecycleScope } returns lifecycleScope
+            every { fragment.context } returns testContext // needed for getString()
+            every { any<CoroutineScope>().allowUndo(any(), any(), any(), any(), any(), any(), any()) } just Runs
+            every { fragment.requireView() } returns view
+            every { testContext.settings().enableTabsTrayToCompose } returns false
+
+            fragment.showUndoSnackbarForInactiveTab(numClosed = 1)
+
+            verify {
+                lifecycleScope.allowUndo(
+                    view = view,
+                    message = testContext.getString(R.string.snackbar_tab_closed),
+                    undoActionTitle = testContext.getString(R.string.snackbar_deleted_undo),
+                    onCancel = any(),
+                    operation = any(),
+                    anchorView = null,
+                    elevation = TabsTrayFragment.ELEVATION,
+                )
+            }
+        } finally {
+            unmockkStatic("org.mozilla.fenix.utils.UndoKt")
+            unmockkStatic("androidx.lifecycle.LifecycleOwnerKt")
+        }
+    }
+
+    @Test
+    fun `WHEN showUndoSnackbarForInactiveTab is called for two inactive tabs THEN an appropriate snackbar is shown`() {
+        try {
+            mockkStatic("org.mozilla.fenix.utils.UndoKt")
+            mockkStatic("androidx.lifecycle.LifecycleOwnerKt")
+            val lifecycleScope: LifecycleCoroutineScope = mockk(relaxed = true)
+            every { any<LifecycleOwner>().lifecycleScope } returns lifecycleScope
+            every { fragment.context } returns testContext // needed for getString()
+            every { any<CoroutineScope>().allowUndo(any(), any(), any(), any(), any(), any(), any()) } just Runs
+            every { fragment.requireView() } returns view
+            every { testContext.settings().enableTabsTrayToCompose } returns false
+
+            val numClosed = 2
+            fragment.showUndoSnackbarForInactiveTab(numClosed = numClosed)
+
+            verify {
+                lifecycleScope.allowUndo(
+                    view = view,
+                    message = testContext.getString(R.string.snackbar_num_tabs_closed, numClosed),
+                    undoActionTitle = testContext.getString(R.string.snackbar_deleted_undo),
+                    onCancel = any(),
+                    operation = any(),
+                    anchorView = null,
+                    elevation = TabsTrayFragment.ELEVATION,
                 )
             }
         } finally {
@@ -363,10 +424,12 @@ class TabsTrayFragmentTest {
     @Test
     fun `WHEN dismissTabsTray is called THEN it dismisses the tray`() {
         every { fragment.dismissAllowingStateLoss() } just Runs
+        mockkStatic("org.mozilla.fenix.ext.ContextKt") {
+            every { any<Context>().components } returns mockk(relaxed = true)
+            fragment.dismissTabsTray()
 
-        fragment.dismissTabsTray()
-
-        verify { fragment.dismissAllowingStateLoss() }
+            verify { fragment.dismissAllowingStateLoss() }
+        }
     }
 
     @Test
@@ -423,5 +486,40 @@ class TabsTrayFragmentTest {
         fragment.onConfigurationChanged(newConfiguration)
 
         verify(exactly = 0) { adapter.notifyDataSetChanged() }
+    }
+
+    @Test
+    fun `GIVEN a list of tabs WHEN a tab is present with an ID THEN the index is returned`() {
+        val tab1 = TabSessionState(
+            id = "tab1",
+            content = ContentState(
+                url = "https://mozilla.org",
+                private = false,
+                isProductUrl = false,
+            ),
+        )
+        val tab2 = TabSessionState(
+            id = "tab2",
+            content = ContentState(
+                url = "https://mozilla.org",
+                private = false,
+                isProductUrl = false,
+            ),
+        )
+        val tab3 = TabSessionState(
+            id = "tab3",
+            content = ContentState(
+                url = "https://mozilla.org",
+                private = false,
+                isProductUrl = false,
+            ),
+        )
+        val tabsList = listOf(
+            tab1,
+            tab2,
+            tab3,
+        )
+        val position = fragment.getTabPositionFromId(tabsList, "tab2")
+        assertEquals(1, position)
     }
 }

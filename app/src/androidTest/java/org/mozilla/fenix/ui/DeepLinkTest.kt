@@ -5,16 +5,10 @@
 package org.mozilla.fenix.ui
 
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.uiautomator.UiDevice
-import okhttp3.mockwebserver.MockWebServer
-import org.junit.After
-import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import org.mozilla.fenix.helpers.AndroidAssetDispatcher
 import org.mozilla.fenix.helpers.HomeActivityIntentTestRule
-import org.mozilla.fenix.helpers.TestAssetHelper
+import org.mozilla.fenix.helpers.TestSetup
 import org.mozilla.fenix.ui.robots.DeepLinkRobot
 
 /**
@@ -30,29 +24,17 @@ import org.mozilla.fenix.ui.robots.DeepLinkRobot
  *  - fenix://settings_logins — take the user to the settings page to do with logins (not the saved logins).
  **/
 
-@Ignore("All tests perma-failing, see: https://github.com/mozilla-mobile/fenix/issues/13491")
-class DeepLinkTest {
-    private lateinit var mDevice: UiDevice
-    private lateinit var mockWebServer: MockWebServer
-
+class DeepLinkTest : TestSetup() {
     private val robot = DeepLinkRobot()
 
     @get:Rule
-    val activityIntentTestRule = HomeActivityIntentTestRule()
-
-    @Before
-    fun setUp() {
-        mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
-        mockWebServer = MockWebServer().apply {
-            dispatcher = AndroidAssetDispatcher()
-            start()
-        }
-    }
-
-    @After
-    fun tearDown() {
-        mockWebServer.shutdown()
-    }
+    val activityIntentTestRule = HomeActivityIntentTestRule(
+        isHomeOnboardingDialogEnabled = false,
+        isNavigationBarCFREnabled = false,
+        isNavigationToolbarEnabled = false,
+        isMenuRedesignEnabled = false,
+        isMenuRedesignCFREnabled = false,
+    )
 
     @Test
     fun openHomeScreen() {
@@ -68,9 +50,9 @@ class DeepLinkTest {
     @Test
     fun openURL() {
         val genericURL =
-            TestAssetHelper.getGenericAsset(mockWebServer, 1)
-        robot.openURL(genericURL.url.toString()) {
-            verifyUrl(genericURL.url.toString())
+            "https://support.mozilla.org/en-US/products/mobile"
+        robot.openURL(genericURL) {
+            verifyUrl("support.mozilla.org/en-US/products/mobile")
         }
     }
 
@@ -91,7 +73,6 @@ class DeepLinkTest {
 
     @Test
     fun openCollections() {
-        robot.openHomeScreen { /* do nothing */ }.dismissOnboarding()
         robot.openCollections {
             verifyCollectionsHeader()
         }
@@ -127,7 +108,6 @@ class DeepLinkTest {
         }
     }
 
-    @Ignore("Crashing, see: https://github.com/mozilla-mobile/fenix/issues/11239")
     @Test
     fun openSettingsSearchEngine() {
         robot.openSettingsSearchEngine {

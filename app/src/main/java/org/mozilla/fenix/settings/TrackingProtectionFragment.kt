@@ -11,6 +11,7 @@ import androidx.preference.CheckBoxPreference
 import androidx.preference.DropDownPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.SwitchPreference
 import org.mozilla.fenix.BrowserDirection
 import org.mozilla.fenix.GleanMetrics.TrackingProtection
 import org.mozilla.fenix.HomeActivity
@@ -55,6 +56,12 @@ class TrackingProtectionFragment : PreferenceFragmentCompat() {
 
     @VisibleForTesting
     internal lateinit var customRedirectTrackers: CheckBoxPreference
+
+    @VisibleForTesting
+    internal lateinit var customSuspectedFingerprinters: CheckBoxPreference
+
+    @VisibleForTesting
+    internal lateinit var customSuspectedFingerprintersSelect: DropDownPreference
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.tracking_protection_preferences, rootKey)
@@ -103,6 +110,16 @@ class TrackingProtectionFragment : PreferenceFragmentCompat() {
         val preferenceExceptions =
             requirePreference<Preference>(R.string.pref_key_tracking_protection_exceptions)
         preferenceExceptions.onPreferenceClickListener = exceptionsClickListener
+
+        requirePreference<SwitchPreference>(R.string.pref_key_privacy_enable_global_privacy_control).apply {
+            onPreferenceChangeListener = object : SharedPreferenceUpdater() {
+                override fun onPreferenceChange(preference: Preference, newValue: Any?): Boolean {
+                    context.components.core.engine.settings.globalPrivacyControlEnabled = newValue as Boolean
+                    context.components.useCases.sessionUseCases.reload.invoke()
+                    return super.onPreferenceChange(preference, newValue)
+                }
+            }
+        }
     }
 
     private fun bindTrackingProtectionRadio(
@@ -151,6 +168,12 @@ class TrackingProtectionFragment : PreferenceFragmentCompat() {
 
         customRedirectTrackers =
             requirePreference(R.string.pref_key_tracking_protection_redirect_trackers)
+
+        customSuspectedFingerprinters =
+            requirePreference(R.string.pref_key_tracking_protection_suspected_fingerprinters)
+
+        customSuspectedFingerprintersSelect =
+            requirePreference(R.string.pref_key_tracking_protection_suspected_fingerprinters_select)
 
         customCookies.onPreferenceChangeListener = object : SharedPreferenceUpdater() {
             override fun onPreferenceChange(preference: Preference, newValue: Any?): Boolean {
@@ -210,6 +233,23 @@ class TrackingProtectionFragment : PreferenceFragmentCompat() {
             }
         }
 
+        customSuspectedFingerprinters.onPreferenceChangeListener = object : SharedPreferenceUpdater() {
+            override fun onPreferenceChange(preference: Preference, newValue: Any?): Boolean {
+                customSuspectedFingerprintersSelect.isVisible = !customSuspectedFingerprinters.isChecked
+                return super.onPreferenceChange(preference, newValue).also {
+                    updateTrackingProtectionPolicy()
+                }
+            }
+        }
+
+        customSuspectedFingerprintersSelect.onPreferenceChangeListener = object : StringSharedPreferenceUpdater() {
+            override fun onPreferenceChange(preference: Preference, newValue: Any?): Boolean {
+                return super.onPreferenceChange(preference, newValue).also {
+                    updateTrackingProtectionPolicy()
+                }
+            }
+        }
+
         updateCustomOptionsVisibility()
 
         return radio
@@ -220,6 +260,7 @@ class TrackingProtectionFragment : PreferenceFragmentCompat() {
             val policy = it.core.trackingProtectionPolicyFactory
                 .createTrackingProtectionPolicy()
             it.useCases.settingsUseCases.updateTrackingProtection.invoke(policy)
+            updateFingerprintingProtection()
             it.useCases.sessionUseCases.reload.invoke()
         }
     }
@@ -233,5 +274,32 @@ class TrackingProtectionFragment : PreferenceFragmentCompat() {
         customCryptominers.isVisible = isCustomSelected
         customFingerprinters.isVisible = isCustomSelected
         customRedirectTrackers.isVisible = isCustomSelected
+        customSuspectedFingerprinters.isVisible = isCustomSelected
+        customSuspectedFingerprintersSelect.isVisible = isCustomSelected && customSuspectedFingerprinters.isChecked
+    }
+
+    private fun updateFingerprintingProtection() {
+        val isStandardSelected = requireContext().settings().useStandardTrackingProtection
+        val isStrictSelected = requireContext().settings().useStrictTrackingProtection
+        val isCustomSelected = requireContext().settings().useCustomTrackingProtection
+
+        context?.components?.let {
+            if (isCustomSelected) {
+                if (it.settings.blockSuspectedFingerprintersInCustomTrackingProtection) {
+                    it.core.engine.settings.fingerprintingProtection = it.settings.blockSuspectedFingerprinters
+                    it.core.engine.settings.fingerprintingProtectionPrivateBrowsing = it.settings
+                        .blockSuspectedFingerprintersPrivateBrowsing
+                } else {
+                    it.core.engine.settings.fingerprintingProtection = false
+                    it.core.engine.settings.fingerprintingProtectionPrivateBrowsing = false
+                }
+            } else if (isStrictSelected) {
+                it.core.engine.settings.fingerprintingProtection = true
+                it.core.engine.settings.fingerprintingProtectionPrivateBrowsing = true
+            } else if (isStandardSelected) {
+                it.core.engine.settings.fingerprintingProtection = false
+                it.core.engine.settings.fingerprintingProtectionPrivateBrowsing = true
+            }
+        }
     }
 }

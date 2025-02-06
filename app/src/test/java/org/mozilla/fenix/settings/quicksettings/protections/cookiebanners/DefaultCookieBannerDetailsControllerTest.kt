@@ -31,7 +31,6 @@ import mozilla.components.concept.engine.permission.SitePermissions
 import mozilla.components.feature.session.SessionUseCases
 import mozilla.components.feature.session.TrackingProtectionUseCases
 import mozilla.components.lib.publicsuffixlist.PublicSuffixList
-import mozilla.components.service.glean.testing.GleanTestRule
 import mozilla.components.support.test.robolectric.testContext
 import mozilla.components.support.test.rule.MainCoroutineRule
 import mozilla.components.support.test.rule.runTestOnMain
@@ -46,6 +45,7 @@ import org.mozilla.fenix.GleanMetrics.CookieBanners
 import org.mozilla.fenix.GleanMetrics.Pings
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.settings
+import org.mozilla.fenix.helpers.FenixGleanTestRule
 import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
 import org.mozilla.fenix.trackingprotection.CookieBannerUIMode
 import org.mozilla.fenix.trackingprotection.ProtectionsAction
@@ -93,7 +93,7 @@ internal class DefaultCookieBannerDetailsControllerTest {
     private val scope = coroutinesTestRule.scope
 
     @get:Rule
-    val gleanRule = GleanTestRule(testContext)
+    val gleanRule = FenixGleanTestRule(testContext)
 
     @Before
     fun setUp() {
@@ -135,7 +135,7 @@ internal class DefaultCookieBannerDetailsControllerTest {
 
     @Test
     fun `WHEN handleBackPressed is called THEN should call popBackStack and navigate`() = runTestOnMain {
-        every { context.settings().shouldUseCookieBanner } returns false
+        every { context.settings().shouldUseCookieBannerPrivateMode } returns false
 
         controller.handleBackPressed()
 
@@ -234,7 +234,7 @@ internal class DefaultCookieBannerDetailsControllerTest {
                 ),
             )
             every { testContext.components.core.store } returns store
-            coEvery { controller.getTabDomain(any()) } returns "https://www.amazon.de"
+            coEvery { controller.getTabDomain(any()) } returns "mozilla.org"
             every { protectionsStore.dispatch(any()) } returns mockk()
 
             controller.handleRequestSiteSupportPressed()
@@ -242,13 +242,13 @@ internal class DefaultCookieBannerDetailsControllerTest {
             assertNotNull(CookieBanners.reportDomainSiteButton.testGetValue())
             Pings.cookieBannerReportSite.testBeforeNextSubmit {
                 assertNotNull(CookieBanners.reportSiteDomain.testGetValue())
-                assertEquals("https://www.amazon.de", CookieBanners.reportSiteDomain.testGetValue())
+                assertEquals("mozilla.org", CookieBanners.reportSiteDomain.testGetValue())
             }
             advanceUntilIdle()
             coVerifyOrder {
                 protectionsStore.dispatch(
                     ProtectionsAction.RequestReportSiteDomain(
-                        "https://www.amazon.de",
+                        "mozilla.org",
                     ),
                 )
                 protectionsStore.dispatch(
@@ -256,6 +256,7 @@ internal class DefaultCookieBannerDetailsControllerTest {
                         cookieBannerUIMode = CookieBannerUIMode.REQUEST_UNSUPPORTED_SITE_SUBMITTED,
                     ),
                 )
+                cookieBannersStorage.saveSiteDomain("mozilla.org")
             }
         }
 }

@@ -2,22 +2,26 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-@file:Suppress("TooManyFunctions")
-
 package org.mozilla.fenix.ext
 
 import android.graphics.Rect
 import android.os.Build
 import android.view.TouchDelegate
 import android.view.View
-import android.view.accessibility.AccessibilityNodeInfo
 import androidx.annotation.Dimension
 import androidx.annotation.Dimension.Companion.DP
 import androidx.annotation.VisibleForTesting
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import mozilla.components.support.ktx.android.util.dpToPx
 import mozilla.components.support.utils.ext.bottom
 import org.mozilla.fenix.R
+import org.mozilla.fenix.components.Components
+
+/**
+ * [View] helper to retrieve the [Components.settings].
+ */
+fun View.settings() = context.components.settings
 
 fun View.increaseTapArea(@Dimension(unit = DP) extraDps: Int) {
     val dips = extraDps.dpToPx(resources.displayMetrics)
@@ -30,6 +34,23 @@ fun View.increaseTapArea(@Dimension(unit = DP) extraDps: Int) {
     }
 }
 
+/**
+ * Increase tap area only vertically.
+ *
+ * @param extraDps the extra dps that's wanted to be added on top and bottom of the view
+ */
+fun View.increaseTapAreaVertically(@Dimension(unit = DP) extraDps: Int) {
+    val dips = extraDps.dpToPx(resources.displayMetrics)
+    val parent = this.parent as View
+    parent.post {
+        val touchArea = Rect()
+        getHitRect(touchArea)
+        touchArea.top -= dips
+        touchArea.bottom += dips
+        parent.touchDelegate = TouchDelegate(touchArea, this)
+    }
+}
+
 fun View.removeTouchDelegate() {
     val parent = this.parent as View
     parent.post {
@@ -38,97 +59,11 @@ fun View.removeTouchDelegate() {
 }
 
 /**
- * Sets the new a11y parent.
- */
-fun View.setNewAccessibilityParent(newParent: View) {
-    this.accessibilityDelegate = object : View.AccessibilityDelegate() {
-        override fun onInitializeAccessibilityNodeInfo(
-            host: View,
-            info: AccessibilityNodeInfo,
-        ) {
-            super.onInitializeAccessibilityNodeInfo(host, info)
-            info.setParent(newParent)
-        }
-    }
-}
-
-/**
- * Updates the a11y collection item info for an item in a list.
- */
-fun View.updateAccessibilityCollectionItemInfo(
-    rowIndex: Int,
-    columnIndex: Int,
-    isSelected: Boolean,
-    rowSpan: Int = 1,
-    columnSpan: Int = 1,
-) {
-    this.accessibilityDelegate = object : View.AccessibilityDelegate() {
-        override fun onInitializeAccessibilityNodeInfo(
-            host: View,
-            info: AccessibilityNodeInfo,
-        ) {
-            super.onInitializeAccessibilityNodeInfo(host, info)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                info.collectionItemInfo =
-                    AccessibilityNodeInfo.CollectionItemInfo(
-                        rowIndex,
-                        rowSpan,
-                        columnIndex,
-                        columnSpan,
-                        false,
-                        isSelected,
-                    )
-            } else {
-                @Suppress("DEPRECATION")
-                AccessibilityNodeInfo.CollectionItemInfo.obtain(
-                    rowIndex,
-                    rowSpan,
-                    columnIndex,
-                    columnSpan,
-                    false,
-                    isSelected,
-                )
-            }
-        }
-    }
-}
-
-/**
- * Updates the a11y collection info for a list.
- */
-fun View.updateAccessibilityCollectionInfo(
-    rowCount: Int,
-    columnCount: Int,
-) {
-    this.accessibilityDelegate = object : View.AccessibilityDelegate() {
-        override fun onInitializeAccessibilityNodeInfo(
-            host: View,
-            info: AccessibilityNodeInfo,
-        ) {
-            super.onInitializeAccessibilityNodeInfo(host, info)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                info.collectionInfo = AccessibilityNodeInfo.CollectionInfo(
-                    rowCount,
-                    columnCount,
-                    false,
-                )
-            } else {
-                @Suppress("DEPRECATION")
-                info.collectionInfo = AccessibilityNodeInfo.CollectionInfo.obtain(
-                    rowCount,
-                    columnCount,
-                    false,
-                )
-            }
-        }
-    }
-}
-
-/**
  * Fills a [Rect] with data about a view's location in the screen.
  *
- * @see View.getLocationOnScreen
- * @see View.getRectWithViewLocation for a version of this that is relative to a window
+ * @see android.view.View.getLocationOnScreen
+ * @see mozilla.components.support.ktx.android.view.getRectWithViewLocation for a version of this
+ * that is relative to a window
  */
 fun View.getRectWithScreenLocation(): Rect {
     val locationOnScreen = IntArray(2).apply { getLocationOnScreen(this) }
@@ -179,8 +114,10 @@ internal fun View.getWindowVisibleDisplayFrame(): Rect = with(Rect()) {
     this
 }
 
-@VisibleForTesting
-internal fun View.getKeyboardHeight(): Int {
+/**
+ * Calculates the height of the onscreen keyboard.
+ */
+fun View.getKeyboardHeight(): Int {
     val windowRect = getWindowVisibleDisplayFrame()
     val statusBarHeight = windowRect.top
     var keyboardHeight = rootView.height - (windowRect.height() + statusBarHeight)
@@ -192,8 +129,17 @@ internal fun View.getKeyboardHeight(): Int {
 }
 
 /**
- * The assumed minimum height of the keyboard.
+ * Returns the system gesture insets informing about areas where system gestures have priority.
+ *
+ * Only available on Android Q and above (API 29+), otherwise, `null` is returned.
+ * Only available after this view has been attached a Window, otherwise, `null` is returned.
  */
-@VisibleForTesting
-@Dimension(unit = DP)
-internal const val MINIMUM_KEYBOARD_HEIGHT = 100
+@Suppress("DEPRECATION")
+val View.systemGesturesInsets
+    get() = if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+        rootWindowInsets?.systemGestureInsets
+    } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) {
+        rootWindowInsets?.getInsets(WindowInsetsCompat.Type.systemGestures())
+    } else {
+        null
+    }

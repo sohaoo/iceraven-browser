@@ -11,13 +11,16 @@
     <dimen name="mozac_browser_menu_width_max" tools:ignore="UnusedResources">314dp</dimen>
     <dimen name="mozac_browser_menu_corner_radius">8dp</dimen>
     <dimen name="mozac_browser_menu2_corner_radius">8dp</dimen>
+    <dimen name="mozac_browser_menu_item_checkbox_container_padding_end" tools:ignore="UnusedResources">0dp</dimen>
+    <dimen name="mozac_browser_menu_item_checkbox_text_label_padding_end" tools:ignore="UnusedResources">8dp</dimen>
+    <dimen name="mozac_browser_menu_item_image_checkbox_padding_start" tools:ignore="UnusedResources">8dp</dimen>
+    <dimen name="mozac_browser_menu_item_image_checkbox_padding_end" tools:ignore="UnusedResources">16dp</dimen>
     <dimen name="library_item_height">56dp</dimen>
     <dimen name="library_item_icon_margin_horizontal">16dp</dimen>
-    <dimen name="history_favicon_width_height">40dp</dimen>
+    <dimen name="history_favicon_width_height">48dp</dimen>
     <dimen name="tab_corner_radius">8dp</dimen>
     <dimen name="preference_icon_drawable_size">24dp</dimen>
     <dimen name="search_bar_search_engine_icon_padding">12dp</dimen>
-    <dimen name="search_bar_search_icon_margin">28dp</dimen>
     <dimen name="search_engine_engine_icon_margin">12dp</dimen>
     <dimen name="search_engine_engine_icon_top_margin">14dp</dimen>
     <dimen name="search_engine_radio_button_height">48dp</dimen>
@@ -60,16 +63,18 @@
     <dimen name="tracking_protection_item_margin_end">16dp</dimen>
     <dimen name="tracking_protection_item_margin_bottom">18dp</dimen>
 
-    <dimen name="onboarding_header_icon_height_width">32dp</dimen>
-
     <!-- Bottom Sheet Fragment card -->
     <dimen name="bottom_sheet_corner_radius">8dp</dimen>
     <dimen name="bottom_sheet_handle_height">3dp</dimen>
     <dimen name="bottom_sheet_handle_top_margin">8dp</dimen>
 
-
     <!-- Browser Toolbar -->
     <dimen name="browser_toolbar_height">56dp</dimen>
+    <dimen name="browser_navbar_height">49dp</dimen>
+    <dimen name="tab_strip_height">56dp</dimen>
+    <dimen name="browser_microsurvey_height">131dp</dimen>
+    <dimen name="toolbar_horizontal_margin">16dp</dimen>
+    <dimen name="toolbar_horizontal_margin_end">8dp</dimen>
 
     <!-- Bookmark Edit Fragment  -->
     <dimen name="bookmark_edit_text_height">48dp</dimen>
@@ -78,6 +83,7 @@
     <!-- Home Fragment -->
     <dimen name="home_fragment_top_toolbar_header_margin">60dp</dimen>
     <dimen name="home_item_horizontal_margin">16dp</dimen>
+    <dimen name="home_item_horizontal_short_margin">8dp</dimen>
     <dimen name="home_item_vertical_margin">8dp</dimen>
     <dimen name="wordmark_text_height">18dp</dimen>
     <dimen name="wordmark_text_margin_top">10dp</dimen>
@@ -86,18 +92,18 @@
     <!--The size of the gap between the tab preview and content layout.-->
     <dimen name="browser_fragment_gesture_preview_offset">48dp</dimen>
     <dimen name="browser_fragment_toolbar_elevation">16dp</dimen>
-    <!-- The download dialogs are shown above the toolbar so they need a bigger elevation. -->
-    <dimen name="browser_fragment_download_dialog_elevation">17dp</dimen>
+    <!-- Panels shown above the toolbar need a bigger elevation. -->
+    <dimen name="browser_fragment_above_toolbar_panels_elevation">17dp</dimen>
+
+    <!-- Display Toolbar -->
+    <!-- The size of padding for the display toolbar. -->
+    <dimen name="browser_fragment_display_toolbar_padding" tools:ignore="UnusedResources">16dp</dimen>
+    <dimen name="mozac_browser_toolbar_button_width" tools:ignore="UnusedResources">48dp</dimen>
 
     <!-- Search Fragment -->
     <dimen name="search_fragment_clipboard_item_height">56dp</dimen>
     <dimen name="search_fragment_clipboard_item_horizontal_margin">8dp</dimen>
     <dimen name="search_fragment_clipboard_item_title_margin_start">8dp</dimen>
-    <dimen name="search_fragment_pill_height">40dp</dimen>
-    <dimen name="search_fragment_pill_padding_start">20dp</dimen>
-    <dimen name="search_fragment_pill_padding_end">16dp</dimen>
-    <dimen name="search_fragment_pill_padding_vertical">4dp</dimen>
-    <dimen name="search_fragment_scan_button_margin_end">8dp</dimen>
 
     <dimen name="search_fragment_clipboard_title_text_size">15sp</dimen>
 
@@ -134,10 +140,6 @@
     <dimen name="share_all_apps_list_margin">8dp</dimen>
     <dimen name="share_header_text_size">12sp</dimen>
     <dimen name="share_progress_bar_margin">16dp</dimen>
-
-    <!--  Onboarding  -->
-    <dimen name="onboarding_dual_pane_radio_button_translation_x">-7dp</dimen>
-    <dimen name="onboarding_dual_pane_radio_button_translation_y">-8dp</dimen>
 
     <!-- Addon Details Fragment -->
     <dimen name="addon_details_rating_view_margin_start">6dp</dimen>
@@ -188,6 +190,11 @@
 
     <!-- a11y -->
     <dimen name="accessibility_min_height">48dp</dimen>
-
     <dimen name="tap_increase_16">16dp</dimen>
+    <dimen name="tap_increase_2">2dp</dimen>
+
+    <!-- Browser Menu -->
+    <dimen name="browser_menu_max_width">640dp</dimen>
+    <dimen name="browser_menu_padding">56dp</dimen>
+
 </resources>

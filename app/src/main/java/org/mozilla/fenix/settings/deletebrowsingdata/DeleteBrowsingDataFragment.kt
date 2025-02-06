@@ -15,13 +15,15 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import mozilla.components.lib.state.ext.flowScoped
-import mozilla.components.support.ktx.kotlinx.coroutines.flow.ifChanged
+import mozilla.components.ui.widgets.withCenterAlignedButtons
 import org.mozilla.fenix.R
-import org.mozilla.fenix.components.FenixSnackbar
+import org.mozilla.fenix.compose.snackbar.Snackbar
+import org.mozilla.fenix.compose.snackbar.SnackbarState
 import org.mozilla.fenix.databinding.FragmentDeleteBrowsingDataBinding
 import org.mozilla.fenix.ext.requireComponents
 import org.mozilla.fenix.ext.runIfFragmentIsAttached
@@ -66,8 +68,8 @@ class DeleteBrowsingDataFragment : Fragment(R.layout.fragment_delete_browsing_da
         getCheckboxes().iterator().forEach {
             it.isChecked = when (it.id) {
                 R.id.open_tabs_item -> settings.deleteOpenTabs
-                R.id.browsing_data_item -> settings.deleteBrowsingHistory
-                R.id.cookies_item -> settings.deleteCookies
+                R.id.browsing_history_item -> settings.deleteBrowsingHistory
+                R.id.cookies_and_site_data_item -> settings.deleteCookies
                 R.id.cached_files_item -> settings.deleteCache
                 R.id.site_permissions_item -> settings.deleteSitePermissions
                 R.id.downloads_item -> settings.deleteDownloads
@@ -84,8 +86,8 @@ class DeleteBrowsingDataFragment : Fragment(R.layout.fragment_delete_browsing_da
     private fun updatePreference(it: DeleteBrowsingDataItem) {
         when (it.id) {
             R.id.open_tabs_item -> settings.deleteOpenTabs = it.isChecked
-            R.id.browsing_data_item -> settings.deleteBrowsingHistory = it.isChecked
-            R.id.cookies_item -> settings.deleteCookies = it.isChecked
+            R.id.browsing_history_item -> settings.deleteBrowsingHistory = it.isChecked
+            R.id.cookies_and_site_data_item -> settings.deleteCookies = it.isChecked
             R.id.cached_files_item -> settings.deleteCache = it.isChecked
             R.id.site_permissions_item -> settings.deleteSitePermissions = it.isChecked
             R.id.downloads_item -> settings.deleteDownloads = it.isChecked
@@ -98,7 +100,7 @@ class DeleteBrowsingDataFragment : Fragment(R.layout.fragment_delete_browsing_da
 
         scope = requireComponents.core.store.flowScoped(viewLifecycleOwner) { flow ->
             flow.map { state -> state.tabs.size }
-                .ifChanged()
+                .distinctUntilChanged()
                 .collect { openTabs -> updateTabCount(openTabs) }
         }
     }
@@ -123,6 +125,15 @@ class DeleteBrowsingDataFragment : Fragment(R.layout.fragment_delete_browsing_da
         }
     }
 
+    private fun updateCheckboxes(deleteInProgress: Boolean = false) {
+        runIfFragmentIsAttached {
+            getCheckboxes().forEach {
+                it.isEnabled = !deleteInProgress
+                binding.deleteData.alpha = if (!deleteInProgress) ENABLED_ALPHA else DISABLED_ALPHA
+            }
+        }
+    }
+
     private fun askToDelete() {
         runIfFragmentIsAttached {
             AlertDialog.Builder(requireContext()).apply {
@@ -141,35 +152,38 @@ class DeleteBrowsingDataFragment : Fragment(R.layout.fragment_delete_browsing_da
                     it.dismiss()
                     deleteSelected()
                 }
-                create()
+                create().withCenterAlignedButtons()
             }.show()
         }
     }
 
     private fun deleteSelected() {
-        startDeletion()
-        lifecycleScope.launch(IO) {
-            getCheckboxes().mapIndexed { i, v ->
-                if (v.isChecked) {
-                    when (i) {
-                        OPEN_TABS_INDEX -> controller.deleteTabs()
-                        HISTORY_INDEX -> controller.deleteBrowsingData()
-                        COOKIES_INDEX -> controller.deleteCookies()
-                        CACHED_INDEX -> controller.deleteCachedFiles()
-                        PERMS_INDEX -> controller.deleteSitePermissions()
-                        DOWNLOADS_INDEX -> controller.deleteDownloads()
+        runIfFragmentIsAttached {
+            startDeletion()
+            lifecycleScope.launch(IO) {
+                getCheckboxes().mapIndexed { i, v ->
+                    if (v.isChecked) {
+                        when (i) {
+                            OPEN_TABS_INDEX -> controller.deleteTabs()
+                            HISTORY_INDEX -> controller.deleteBrowsingHistory()
+                            COOKIES_INDEX -> controller.deleteCookiesAndSiteData()
+                            CACHED_INDEX -> controller.deleteCachedFiles()
+                            PERMS_INDEX -> controller.deleteSitePermissions()
+                            DOWNLOADS_INDEX -> controller.deleteDownloads()
+                        }
                     }
                 }
-            }
 
-            withContext(Main) {
-                finishDeletion()
+                withContext(Main) {
+                    finishDeletion()
+                }
             }
         }
     }
 
     private fun startDeletion() {
         updateDeleteButton(deleteInProgress = true)
+        updateCheckboxes(deleteInProgress = true)
         binding.progressBar.visibility = View.VISIBLE
         binding.deleteBrowsingDataWrapper.isEnabled = false
         binding.deleteBrowsingDataWrapper.isClickable = false
@@ -178,6 +192,7 @@ class DeleteBrowsingDataFragment : Fragment(R.layout.fragment_delete_browsing_da
 
     private fun finishDeletion() {
         updateDeleteButton(deleteInProgress = false)
+        updateCheckboxes(deleteInProgress = false)
         val popAfter = binding.openTabsItem.isChecked
         binding.progressBar.visibility = View.GONE
         binding.deleteBrowsingDataWrapper.isEnabled = true
@@ -186,13 +201,12 @@ class DeleteBrowsingDataFragment : Fragment(R.layout.fragment_delete_browsing_da
 
         updateItemCounts()
 
-        FenixSnackbar.make(
-            view = requireView(),
-            duration = FenixSnackbar.LENGTH_SHORT,
-            isDisplayedWithBrowserToolbar = true,
-        )
-            .setText(resources.getString(R.string.preferences_delete_browsing_data_snackbar))
-            .show()
+        Snackbar.make(
+            snackBarParentView = requireView(),
+            snackbarState = SnackbarState(
+                message = getString(R.string.preferences_delete_browsing_data_snackbar),
+            ),
+        ).show()
 
         if (popAfter) {
             viewLifecycleOwner.lifecycleScope.launch(Main) {
@@ -239,12 +253,12 @@ class DeleteBrowsingDataFragment : Fragment(R.layout.fragment_delete_browsing_da
     }
 
     private fun updateHistoryCount() {
-        binding.browsingDataItem.subtitleView.text = ""
+        binding.browsingHistoryItem.subtitleView.text = ""
 
         viewLifecycleOwner.lifecycleScope.launch(IO) {
             val historyCount = requireComponents.core.historyStorage.getVisited().size
             launch(Main) {
-                binding.browsingDataItem.apply {
+                binding.browsingHistoryItem.apply {
                     subtitleView.text =
                         resources.getString(
                             R.string.preferences_delete_browsing_data_browsing_data_subtitle,
@@ -270,8 +284,8 @@ class DeleteBrowsingDataFragment : Fragment(R.layout.fragment_delete_browsing_da
     private fun getCheckboxes(): List<DeleteBrowsingDataItem> {
         return listOf(
             binding.openTabsItem,
-            binding.browsingDataItem,
-            binding.cookiesItem,
+            binding.browsingHistoryItem,
+            binding.cookiesAndSiteDataItem,
             binding.cachedFilesItem,
             binding.sitePermissionsItem,
             binding.downloadsItem,

@@ -7,6 +7,7 @@ package org.mozilla.fenix.settings.account
 import android.os.Bundle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import kotlinx.coroutines.Dispatchers
@@ -14,6 +15,8 @@ import kotlinx.coroutines.launch
 import mozilla.components.concept.sync.AccountObserver
 import mozilla.components.concept.sync.AuthType
 import mozilla.components.concept.sync.OAuthAccount
+import mozilla.components.service.fxa.manager.SCOPE_PROFILE
+import mozilla.components.service.fxa.manager.SCOPE_SYNC
 import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.fenix.GleanMetrics.SyncAuth
 import org.mozilla.fenix.R
@@ -23,9 +26,14 @@ import org.mozilla.fenix.ext.requireComponents
 import org.mozilla.fenix.ext.showToolbar
 
 class AccountProblemFragment : PreferenceFragmentCompat(), AccountObserver {
+    private val args by navArgs<AccountProblemFragmentArgs>()
 
     private val signInClickListener = Preference.OnPreferenceClickListener {
-        requireComponents.services.accountsAuthFeature.beginAuthentication(requireContext())
+        requireComponents.services.accountsAuthFeature.beginAuthentication(
+            requireContext(),
+            args.entrypoint,
+            setOf(SCOPE_PROFILE, SCOPE_SYNC),
+        )
         SyncAuth.useEmailProblem.record(NoExtras())
         // TODO The sign-in web content populates session history,
         // so pressing "back" after signing in won't take us back into the settings screen, but rather up the

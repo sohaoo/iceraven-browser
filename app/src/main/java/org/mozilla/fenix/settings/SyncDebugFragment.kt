@@ -5,12 +5,13 @@
 package org.mozilla.fenix.settings
 
 import android.os.Bundle
+import androidx.preference.CheckBoxPreference
 import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.Preference.OnPreferenceClickListener
 import androidx.preference.PreferenceFragmentCompat
-import mozilla.components.support.base.log.logger.Logger
 import org.mozilla.fenix.R
+import org.mozilla.fenix.ext.requireComponents
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.ext.showToolbar
 import kotlin.system.exitProcess
@@ -19,7 +20,6 @@ import kotlin.system.exitProcess
  * Lets the user customize Private browsing options.
  */
 class SyncDebugFragment : PreferenceFragmentCompat() {
-    private val logger = Logger("SyncDebugFragment")
     private var hasChanges = false
 
     private val preferenceUpdater = object : StringSharedPreferenceUpdater() {
@@ -55,6 +55,27 @@ class SyncDebugFragment : PreferenceFragmentCompat() {
                 // Copied from StudiesView. This feels like a dramatic way to
                 // quit, is there a better way?
                 exitProcess(0)
+            }
+        }
+        requirePreference<CheckBoxPreference>(R.string.pref_key_use_react_fxa).apply {
+            onPreferenceChangeListener = SharedPreferenceUpdater()
+        }
+        requirePreference<Preference>(R.string.pref_key_sync_debug_network_error).let { pref ->
+            pref.onPreferenceClickListener = OnPreferenceClickListener {
+                requireComponents.backgroundServices.accountManager.simulateNetworkError()
+                true
+            }
+        }
+        requirePreference<Preference>(R.string.pref_key_sync_debug_temporary_auth_error).let { pref ->
+            pref.onPreferenceClickListener = OnPreferenceClickListener {
+                requireComponents.backgroundServices.accountManager.simulateTemporaryAuthTokenIssue()
+                true
+            }
+        }
+        requirePreference<Preference>(R.string.pref_key_sync_debug_permanent_auth_error).let { pref ->
+            pref.onPreferenceClickListener = OnPreferenceClickListener {
+                requireComponents.backgroundServices.accountManager.simulatePermanentAuthTokenIssue()
+                true
             }
         }
         updateMenu()

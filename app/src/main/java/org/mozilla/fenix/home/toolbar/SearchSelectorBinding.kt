@@ -6,9 +6,8 @@ package org.mozilla.fenix.home.toolbar
 
 import android.content.Context
 import android.graphics.drawable.BitmapDrawable
-import androidx.core.view.isGone
-import androidx.core.view.isVisible
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import mozilla.components.browser.state.search.SearchEngine
 import mozilla.components.browser.state.state.BrowserState
@@ -16,12 +15,12 @@ import mozilla.components.browser.state.state.selectedOrDefaultSearchEngine
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.concept.menu.Orientation
 import mozilla.components.lib.state.helpers.AbstractBinding
-import mozilla.components.service.glean.private.NoExtras
 import mozilla.components.support.ktx.android.content.getColorFromAttr
-import mozilla.components.support.ktx.kotlinx.coroutines.flow.ifChanged
+import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.fenix.GleanMetrics.UnifiedSearch
 import org.mozilla.fenix.R
 import org.mozilla.fenix.databinding.FragmentHomeBinding
+import org.mozilla.fenix.ext.increaseTapAreaVertically
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.search.toolbar.SearchSelectorMenu
 
@@ -38,11 +37,6 @@ class SearchSelectorBinding(
     override fun start() {
         super.start()
 
-        context.settings().showUnifiedSearchFeature.let {
-            binding.searchSelectorButton.isVisible = it
-            binding.searchEngineIcon.isGone = it
-        }
-
         binding.searchSelectorButton.apply {
             setOnClickListener {
                 val orientation = if (context.settings().shouldUseBottomToolbar) {
@@ -58,12 +52,14 @@ class SearchSelectorBinding(
                     orientation = orientation,
                 )
             }
+
+            increaseTapAreaVertically(SEARCH_SELECTOR_INCREASE_HEIGHT_DPS)
         }
     }
 
     override suspend fun onState(flow: Flow<BrowserState>) {
         flow.map { state -> state.search.selectedOrDefaultSearchEngine }
-            .ifChanged()
+            .distinctUntilChanged()
             .collect { searchEngine ->
                 val name = searchEngine?.name
                 val icon = searchEngine?.let {
@@ -79,12 +75,16 @@ class SearchSelectorBinding(
                         }
                     }
                 }
+                val contentDescription = context.getString(
+                    R.string.search_engine_selector_content_description,
+                    name ?: "",
+                )
 
-                if (context.settings().showUnifiedSearchFeature) {
-                    binding.searchSelectorButton.setIcon(icon, name)
-                } else {
-                    binding.searchEngineIcon.setImageDrawable(icon)
-                }
+                binding.searchSelectorButton.setIcon(icon, contentDescription)
             }
+    }
+
+    companion object {
+        const val SEARCH_SELECTOR_INCREASE_HEIGHT_DPS = 10
     }
 }

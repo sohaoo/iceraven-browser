@@ -68,15 +68,7 @@ class ComposeListViewHolder(
     }
 
     private fun onClick(tab: TabSessionState) {
-        if (tabsTrayStore.state.mode is TabsTrayState.Mode.Select) {
-            interactor.onMultiSelectClicked(tab, featureName)
-        } else {
-            interactor.onTabSelected(tab, featureName)
-        }
-    }
-
-    private fun onLongClick(tab: TabSessionState) {
-        interactor.onTabLongClicked(tab)
+        interactor.onTabSelected(tab, featureName)
     }
 
     @Composable
@@ -90,13 +82,13 @@ class ComposeListViewHolder(
 
         TabListItem(
             tab = tab,
+            thumbnailSize = 108,
             isSelected = isSelectedTabState,
             multiSelectionEnabled = multiSelectionEnabled,
             multiSelectionSelected = multiSelectionSelected,
             onCloseClick = ::onCloseClicked,
             onMediaClick = interactor::onMediaClicked,
             onClick = ::onClick,
-            onLongClick = ::onLongClick,
         )
     }
 

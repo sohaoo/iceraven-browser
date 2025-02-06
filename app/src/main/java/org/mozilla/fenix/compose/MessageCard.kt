@@ -27,8 +27,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import mozilla.components.compose.base.annotation.LightDarkPreview
 import org.mozilla.fenix.R
-import org.mozilla.fenix.compose.annotation.LightDarkPreview
 import org.mozilla.fenix.compose.button.PrimaryButton
 import org.mozilla.fenix.theme.FirefoxTheme
 
@@ -145,7 +145,7 @@ private fun MessageCardIconButton(
         onClick = onCloseButtonClick,
     ) {
         Icon(
-            painter = painterResource(R.drawable.mozac_ic_close_20),
+            painter = painterResource(R.drawable.mozac_ic_cross_20),
             contentDescription = stringResource(
                 R.string.content_description_close_button,
             ),
@@ -157,12 +157,12 @@ private fun MessageCardIconButton(
 /**
  * Wrapper for the color parameters of [MessageCard].
  *
- * @param backgroundColor The background [Color] of the message.
- * @param titleTextColor [Color] to apply to the message's title, or the body text when there is no title.
- * @param messageTextColor [Color] to apply to the message's body text.
- * @param iconColor [Color] to apply to the message's icon.
- * @param buttonColor The background [Color] of the message's button.
- * @param buttonTextColor [Color] to apply to the button text.
+ * @property backgroundColor The background [Color] of the message.
+ * @property titleTextColor [Color] to apply to the message's title, or the body text when there is no title.
+ * @property messageTextColor [Color] to apply to the message's body text.
+ * @property iconColor [Color] to apply to the message's icon.
+ * @property buttonColor The background [Color] of the message's button.
+ * @property buttonTextColor [Color] to apply to the button text.
  */
 data class MessageCardColors(
     val backgroundColor: Color,
@@ -208,7 +208,7 @@ private fun MessageCardPreview() {
         ) {
             MessageCard(
                 messageText = stringResource(id = R.string.default_browser_experiment_card_text),
-                titleText = stringResource(id = R.string.bookmark_empty_title_error),
+                titleText = stringResource(id = R.string.default_browser_experiment_card_title),
                 onClick = {},
                 onCloseButtonClick = {},
             )
@@ -245,7 +245,7 @@ private fun MessageCardWithButtonLabelPreview() {
         ) {
             MessageCard(
                 messageText = stringResource(id = R.string.default_browser_experiment_card_text),
-                titleText = stringResource(id = R.string.bookmark_empty_title_error),
+                titleText = stringResource(id = R.string.default_browser_experiment_card_title),
                 buttonText = stringResource(id = R.string.preferences_set_as_default_browser),
                 onClick = {},
                 onCloseButtonClick = {},

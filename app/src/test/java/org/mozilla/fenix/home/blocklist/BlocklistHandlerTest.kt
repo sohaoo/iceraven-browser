@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 package org.mozilla.fenix.home.blocklist
 
 import io.mockk.every
@@ -11,7 +15,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
-import org.mozilla.fenix.home.recentbookmarks.RecentBookmark
+import org.mozilla.fenix.home.bookmarks.Bookmark
 import org.mozilla.fenix.home.recentsyncedtabs.RecentSyncedTab
 import org.mozilla.fenix.home.recentsyncedtabs.RecentSyncedTabState
 import org.mozilla.fenix.home.recenttabs.RecentTab
@@ -43,7 +47,7 @@ class BlocklistHandlerTest {
 
     @Test
     fun `GIVEN bookmark is not in blocklist THEN will not be filtered`() {
-        val bookmarks = listOf(RecentBookmark(url = "test"))
+        val bookmarks = listOf(Bookmark(url = "test"))
         every { mockSettings.homescreenBlocklist } returns setOf()
 
         val filtered = with(blocklistHandler) {
@@ -56,7 +60,7 @@ class BlocklistHandlerTest {
     @Test
     fun `GIVEN bookmark is in blocklist THEN will be filtered`() {
         val blockedUrl = "test"
-        val bookmarks = listOf(RecentBookmark(url = blockedUrl))
+        val bookmarks = listOf(Bookmark(url = blockedUrl))
         every { mockSettings.homescreenBlocklist } returns setOf(blockedUrl.stripAndHash())
 
         val filtered = with(blocklistHandler) {

@@ -5,11 +5,15 @@
 package org.mozilla.fenix.home.sessioncontrol
 
 import android.annotation.SuppressLint
+import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.widget.EditText
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AlertDialog
+import androidx.core.widget.addTextChangedListener
 import androidx.navigation.NavController
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -26,15 +30,20 @@ import mozilla.components.feature.tab.collections.TabCollection
 import mozilla.components.feature.tab.collections.ext.invoke
 import mozilla.components.feature.tabs.TabsUseCases
 import mozilla.components.feature.top.sites.TopSite
+import mozilla.components.feature.top.sites.TopSitesUseCases
 import mozilla.components.service.nimbus.messaging.Message
+import mozilla.components.support.ktx.android.content.getColorFromAttr
 import mozilla.components.support.ktx.android.view.showKeyboard
+import mozilla.components.support.ktx.kotlin.isUrl
+import mozilla.components.support.ktx.kotlin.toNormalizedUrl
+import mozilla.components.ui.widgets.withCenterAlignedButtons
 import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.fenix.BrowserDirection
 import org.mozilla.fenix.GleanMetrics.Collections
+import org.mozilla.fenix.GleanMetrics.HomeBookmarks
 import org.mozilla.fenix.GleanMetrics.HomeScreen
 import org.mozilla.fenix.GleanMetrics.Pings
 import org.mozilla.fenix.GleanMetrics.Pocket
-import org.mozilla.fenix.GleanMetrics.RecentBookmarks
 import org.mozilla.fenix.GleanMetrics.RecentTabs
 import org.mozilla.fenix.GleanMetrics.TopSites
 import org.mozilla.fenix.HomeActivity
@@ -46,8 +55,10 @@ import org.mozilla.fenix.components.TabCollectionStorage
 import org.mozilla.fenix.components.appstate.AppAction
 import org.mozilla.fenix.components.appstate.AppState
 import org.mozilla.fenix.components.metrics.MetricsUtils
+import org.mozilla.fenix.components.toolbar.navbar.shouldAddNavigationBar
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.nav
+import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.home.HomeFragment
 import org.mozilla.fenix.home.HomeFragmentDirections
 import org.mozilla.fenix.messaging.MessageController
@@ -82,7 +93,7 @@ interface SessionControlController {
     /**
      * @see [CollectionInteractor.onCollectionRemoveTab]
      */
-    fun handleCollectionRemoveTab(collection: TabCollection, tab: ComponentTab, wasSwiped: Boolean)
+    fun handleCollectionRemoveTab(collection: TabCollection, tab: ComponentTab)
 
     /**
      * @see [CollectionInteractor.onCollectionShareTabsClicked]
@@ -100,9 +111,9 @@ interface SessionControlController {
     fun handleOpenInPrivateTabClicked(topSite: TopSite)
 
     /**
-     * @see [TopSiteInteractor.onRenameTopSiteClicked]
+     * @see [TopSiteInteractor.onEditTopSiteClicked]
      */
-    fun handleRenameTopSiteClicked(topSite: TopSite)
+    fun handleEditTopSiteClicked(topSite: TopSite)
 
     /**
      * @see [TopSiteInteractor.onRemoveTopSiteClicked]
@@ -128,6 +139,11 @@ interface SessionControlController {
      * @see [TopSiteInteractor.onSponsorPrivacyClicked]
      */
     fun handleSponsorPrivacyClicked()
+
+    /**
+     * @see [TopSiteInteractor.onTopSiteLongClicked]
+     */
+    fun handleTopSiteLongClicked(topSite: TopSite)
 
     /**
      * @see [CollectionInteractor.onToggleCollectionExpanded]
@@ -180,13 +196,15 @@ class DefaultSessionControlController(
     private val tabCollectionStorage: TabCollectionStorage,
     private val addTabUseCase: TabsUseCases.AddNewTabUseCase,
     private val restoreUseCase: TabsUseCases.RestoreUseCase,
-    private val reloadUrlUseCase: SessionUseCases.ReloadUrlUseCase,
     private val selectTabUseCase: TabsUseCases.SelectTabUseCase,
+    private val reloadUrlUseCase: SessionUseCases.ReloadUrlUseCase,
+    private val topSitesUseCases: TopSitesUseCases,
     private val appStore: AppStore,
     private val navController: NavController,
     private val viewLifecycleScope: CoroutineScope,
     private val registerCollectionStorageObserver: () -> Unit,
     private val removeCollectionWithUndo: (tabCollection: TabCollection) -> Unit,
+    private val showUndoSnackbarForTopSite: (topSite: TopSite) -> Unit,
     private val showTabTray: () -> Unit,
 ) : SessionControlController {
 
@@ -226,7 +244,7 @@ class DefaultSessionControlController(
             engine,
             collection,
             onFailure = { url ->
-                addTabUseCase.invoke(url)
+                addTabUseCase(url)
             },
         )
 
@@ -237,11 +255,16 @@ class DefaultSessionControlController(
     override fun handleCollectionRemoveTab(
         collection: TabCollection,
         tab: ComponentTab,
-        wasSwiped: Boolean,
     ) {
         Collections.tabRemoved.record(NoExtras())
 
-        if (collection.tabs.size == 1) {
+        // collection tabs hold a reference to the initial collection that could have changed since
+        val updatedCollection =
+            tabCollectionStorage.cachedTabCollections.firstOrNull {
+                it.id == collection.id
+            }
+
+        if (updatedCollection?.tabs?.size == 1) {
             removeCollectionWithUndo(collection)
         } else {
             viewLifecycleScope.launch {
@@ -280,36 +303,77 @@ class DefaultSessionControlController(
     }
 
     @SuppressLint("InflateParams")
-    override fun handleRenameTopSiteClicked(topSite: TopSite) {
+    override fun handleEditTopSiteClicked(topSite: TopSite) {
         activity.let {
             val customLayout =
-                LayoutInflater.from(it).inflate(R.layout.top_sites_rename_dialog, null)
-            val topSiteLabelEditText: EditText =
-                customLayout.findViewById(R.id.top_site_title)
-            topSiteLabelEditText.setText(topSite.title)
+                LayoutInflater.from(it).inflate(R.layout.top_sites_edit_dialog, null)
+            val titleEditText = customLayout.findViewById<EditText>(R.id.top_site_title)
+            val urlEditText = customLayout.findViewById<TextInputEditText>(R.id.top_site_url)
+            val urlLayout = customLayout.findViewById<TextInputLayout>(R.id.top_site_url_layout)
+
+            titleEditText.setText(topSite.title)
+            urlEditText.setText(topSite.url)
 
             AlertDialog.Builder(it).apply {
-                setTitle(R.string.rename_top_site)
+                setTitle(R.string.top_sites_edit_dialog_title)
                 setView(customLayout)
-                setPositiveButton(R.string.top_sites_rename_dialog_ok) { dialog, _ ->
-                    viewLifecycleScope.launch(Dispatchers.IO) {
-                        with(activity.components.useCases.topSitesUseCase) {
-                            updateTopSites(
-                                topSite,
-                                topSiteLabelEditText.text.toString(),
-                                topSite.url,
-                            )
-                        }
-                    }
-                    dialog.dismiss()
-                }
+                setPositiveButton(R.string.top_sites_edit_dialog_save) { _, _ -> }
                 setNegativeButton(R.string.top_sites_rename_dialog_cancel) { dialog, _ ->
                     dialog.cancel()
                 }
-            }.show().also {
-                topSiteLabelEditText.setSelection(0, topSiteLabelEditText.text.length)
-                topSiteLabelEditText.showKeyboard()
+            }.show().withCenterAlignedButtons().also { dialog ->
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                    val urlText = urlEditText.text.toString()
+
+                    if (urlText.isUrl()) {
+                        viewLifecycleScope.launch(Dispatchers.IO) {
+                            updateTopSite(
+                                topSite = topSite,
+                                title = titleEditText.text.toString(),
+                                url = urlText.toNormalizedUrl(),
+                            )
+                        }
+
+                        dialog.dismiss()
+                    } else {
+                        val criticalColor = ColorStateList.valueOf(
+                            activity.getColorFromAttr(R.attr.textCritical),
+                        )
+                        urlLayout.setErrorIconTintList(criticalColor)
+                        urlLayout.setErrorTextColor(criticalColor)
+                        urlLayout.boxStrokeErrorColor = criticalColor
+
+                        urlLayout.error =
+                            activity.resources.getString(R.string.top_sites_edit_dialog_url_error)
+
+                        urlLayout.setErrorIconDrawable(R.drawable.mozac_ic_warning_fill_24)
+                    }
+                }
+
+                urlEditText.addTextChangedListener {
+                    urlLayout.error = null
+                    urlLayout.errorIconDrawable = null
+                }
+
+                titleEditText.setSelection(0, titleEditText.text.length)
+                titleEditText.showKeyboard()
             }
+        }
+    }
+
+    @VisibleForTesting
+    internal fun updateTopSite(topSite: TopSite, title: String, url: String) {
+        if (topSite is TopSite.Frecent) {
+            topSitesUseCases.addPinnedSites(
+                title = title,
+                url = url,
+            )
+        } else {
+            topSitesUseCases.updateTopSites(
+                topSite = topSite,
+                title = title,
+                url = url,
+            )
         }
     }
 
@@ -326,6 +390,8 @@ class DefaultSessionControlController(
                 removeTopSites(topSite)
             }
         }
+
+        showUndoSnackbarForTopSite(topSite)
     }
 
     override fun handleRenameCollectionTapped(collection: TabCollection) {
@@ -337,8 +403,6 @@ class DefaultSessionControlController(
     }
 
     override fun handleSelectTopSite(topSite: TopSite, position: Int) {
-        TopSites.openInNewTab.record(NoExtras())
-
         when (topSite) {
             is TopSite.Default -> TopSites.openDefault.record(NoExtras())
             is TopSite.Frecent -> TopSites.openFrecency.record(NoExtras())
@@ -364,19 +428,39 @@ class DefaultSessionControlController(
                 searchEngine,
                 searchEngine == store.state.search.selectedOrDefaultSearchEngine,
                 searchAccessPoint,
+                activity.components.nimbus.events,
             )
         }
 
-        val tabId = addTabUseCase.invoke(
-            url = appendSearchAttributionToUrlIfNeeded(topSite.url),
-            selectTab = true,
-            startLoading = true,
-        )
+        if (settings.enableHomepageAsNewTab) {
+            activity.openToBrowserAndLoad(
+                searchTermOrURL = appendSearchAttributionToUrlIfNeeded(topSite.url),
+                newTab = false,
+                from = BrowserDirection.FromHome,
+            )
+        } else {
+            val existingTabForUrl = when (topSite) {
+                is TopSite.Frecent, is TopSite.Pinned -> {
+                    store.state.tabs.firstOrNull { topSite.url == it.content.url }
+                }
 
-        if (settings.openNextTabInDesktopMode) {
-            activity.handleRequestDesktopMode(tabId)
+                else -> null
+            }
+
+            if (existingTabForUrl == null) {
+                TopSites.openInNewTab.record(NoExtras())
+
+                addTabUseCase.invoke(
+                    url = appendSearchAttributionToUrlIfNeeded(topSite.url),
+                    selectTab = true,
+                    startLoading = true,
+                )
+            } else {
+                selectTabUseCase.invoke(existingTabForUrl.id)
+            }
+
+            navController.navigate(R.id.browserFragment)
         }
-        activity.openToBrowser(BrowserDirection.FromHome)
     }
 
     @VisibleForTesting
@@ -411,6 +495,10 @@ class DefaultSessionControlController(
         )
     }
 
+    override fun handleTopSiteLongClicked(topSite: TopSite) {
+        TopSites.longPress.record(TopSites.LongPressExtra(topSite.type))
+    }
+
     @VisibleForTesting
     internal fun getAvailableSearchEngines() =
         activity.components.core.store.state.search.searchEngines +
@@ -440,7 +528,9 @@ class DefaultSessionControlController(
     }
 
     override fun handleShowWallpapersOnboardingDialog(state: WallpaperState): Boolean {
-        return if (activity.browsingModeManager.mode.isPrivate) {
+        val shouldShowNavBarCFR =
+            activity.shouldAddNavigationBar() && settings.shouldShowNavigationBarCFR
+        return if (activity.browsingModeManager.mode.isPrivate || shouldShowNavBarCFR) {
             false
         } else {
             state.availableWallpapers.filter { wallpaper ->
@@ -527,6 +617,6 @@ class DefaultSessionControlController(
             RecentTabs.sectionVisible.set(true)
         }
 
-        RecentBookmarks.recentBookmarksCount.set(state.recentBookmarks.size.toLong())
+        HomeBookmarks.bookmarksCount.set(state.bookmarks.size.toLong())
     }
 }

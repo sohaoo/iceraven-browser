@@ -11,8 +11,13 @@ import androidx.core.view.isVisible
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.SimpleItemAnimator
-import mozilla.components.support.base.feature.UserInteractionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import mozilla.components.service.fxa.SyncEngine
+import mozilla.components.service.fxa.manager.FxaAccountManager
+import mozilla.components.service.fxa.sync.SyncReason
 import org.mozilla.fenix.R
+import org.mozilla.fenix.components.appstate.AppState
 import org.mozilla.fenix.databinding.ComponentHistoryBinding
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.library.LibraryPageView
@@ -21,12 +26,18 @@ import org.mozilla.fenix.theme.ThemeManager
 /**
  * View that contains and configures the History List
  */
+@Suppress("LongParameterList")
 class HistoryView(
     container: ViewGroup,
-    val interactor: HistoryInteractor,
+    val store: HistoryFragmentStore,
     val onZeroItemsLoaded: () -> Unit,
+    val onRecentlyClosedClicked: () -> Unit,
+    val onHistoryItemClicked: (History) -> Unit,
+    val onDeleteInitiated: (Set<History>) -> Unit,
     val onEmptyStateChanged: (Boolean) -> Unit,
-) : LibraryPageView(container), UserInteractionHandler {
+    private val accountManager: FxaAccountManager,
+    private val scope: CoroutineScope,
+) : LibraryPageView(container) {
 
     val binding = ComponentHistoryBinding.inflate(
         LayoutInflater.from(container.context),
@@ -37,7 +48,12 @@ class HistoryView(
     var mode: HistoryFragmentState.Mode = HistoryFragmentState.Mode.Normal
         private set
 
-    val historyAdapter = HistoryAdapter(interactor) { isEmpty ->
+    val historyAdapter = HistoryAdapter(
+        store = store,
+        onHistoryItemClicked = onHistoryItemClicked,
+        onRecentlyClosedClicked = onRecentlyClosedClicked,
+        onDeleteInitiated = onDeleteInitiated,
+    ) { isEmpty ->
         onEmptyStateChanged(isEmpty)
     }.apply {
         addLoadStateListener {
@@ -68,13 +84,20 @@ class HistoryView(
         val primaryTextColor = ThemeManager.resolveAttribute(R.attr.textPrimary, context)
         binding.swipeRefresh.setColorSchemeColors(primaryTextColor)
         binding.swipeRefresh.setOnRefreshListener {
-            interactor.onRequestSync()
+            store.dispatch(HistoryFragmentAction.StartSync)
+            scope.launch {
+                accountManager.syncNow(
+                    reason = SyncReason.User,
+                    debounce = true,
+                    customEngineSubset = listOf(SyncEngine.History),
+                )
+            }
+            historyAdapter.refresh()
+            store.dispatch(HistoryFragmentAction.FinishSync)
         }
     }
 
     fun update(state: HistoryFragmentState) {
-        val oldMode = mode
-
         binding.progressBar.isVisible = state.isDeletingItems
         binding.swipeRefresh.isRefreshing = state.mode === HistoryFragmentState.Mode.Syncing
         binding.swipeRefresh.isEnabled =
@@ -91,10 +114,6 @@ class HistoryView(
         val first = layoutManager.findFirstVisibleItemPosition() - 1
         val last = layoutManager.findLastVisibleItemPosition() + 1
         historyAdapter.notifyItemRangeChanged(first, last - first)
-
-        if (state.mode::class != oldMode::class) {
-            interactor.onModeSwitched()
-        }
 
         when (val mode = state.mode) {
             is HistoryFragmentState.Mode.Normal -> {
@@ -113,6 +132,14 @@ class HistoryView(
         }
     }
 
+    /**
+     * Updates the View with the latest changes to [AppState].
+     */
+    fun update(state: AppState) {
+        historyAdapter.updatePendingDeletionItems(state.pendingDeletionHistoryItems)
+        historyAdapter.notifyDataSetChanged()
+    }
+
     private fun updateEmptyState(userHasHistory: Boolean) {
         binding.historyList.isInvisible = !userHasHistory
         binding.historyEmptyView.isVisible = !userHasHistory
@@ -120,7 +147,7 @@ class HistoryView(
 
         with(binding.recentlyClosedNavEmpty) {
             recentlyClosedNav.setOnClickListener {
-                interactor.onRecentlyClosedClicked()
+                onRecentlyClosedClicked()
             }
             val numRecentTabs = recentlyClosedNav.context.components.core.store.state.closedTabs.size
             recentlyClosedTabsDescription.text = String.format(
@@ -138,9 +165,5 @@ class HistoryView(
         if (!userHasHistory) {
             binding.historyEmptyView.announceForAccessibility(context.getString(R.string.history_empty_message))
         }
-    }
-
-    override fun onBackPressed(): Boolean {
-        return interactor.onBackPressed()
     }
 }

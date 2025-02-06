@@ -4,16 +4,16 @@
 
 package org.mozilla.fenix.ui
 
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.core.net.toUri
 import androidx.test.espresso.Espresso.pressBack
-import okhttp3.mockwebserver.MockWebServer
-import org.junit.After
-import org.junit.Before
+import mozilla.components.concept.engine.utils.EngineReleaseChannel
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.customannotations.SmokeTest
+import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.settings
-import org.mozilla.fenix.helpers.AndroidAssetDispatcher
 import org.mozilla.fenix.helpers.HomeActivityIntentTestRule
 import org.mozilla.fenix.helpers.TestAssetHelper.getEnhancedTrackingProtectionAsset
 import org.mozilla.fenix.helpers.TestAssetHelper.getGenericAsset
@@ -22,6 +22,7 @@ import org.mozilla.fenix.helpers.TestHelper.exitMenu
 import org.mozilla.fenix.helpers.TestHelper.mDevice
 import org.mozilla.fenix.helpers.TestHelper.restartApp
 import org.mozilla.fenix.helpers.TestHelper.scrollToElementByText
+import org.mozilla.fenix.helpers.TestSetup
 import org.mozilla.fenix.ui.robots.browserScreen
 import org.mozilla.fenix.ui.robots.enhancedTrackingProtection
 import org.mozilla.fenix.ui.robots.homeScreen
@@ -40,29 +41,14 @@ import org.mozilla.fenix.ui.robots.navigationToolbar
  *  - Verifying Enhanced Tracking Protection site exceptions
  */
 
-class EnhancedTrackingProtectionTest {
-    private lateinit var mockWebServer: MockWebServer
-
+class EnhancedTrackingProtectionTest : TestSetup() {
     @get:Rule
-    val activityTestRule = HomeActivityIntentTestRule(
-        isJumpBackInCFREnabled = false,
-        isTCPCFREnabled = false,
-        isWallpaperOnboardingEnabled = false,
-    )
+    val activityTestRule =
+        AndroidComposeTestRule(
+            HomeActivityIntentTestRule.withDefaultSettingsOverrides(),
+        ) { it.activity }
 
-    @Before
-    fun setUp() {
-        mockWebServer = MockWebServer().apply {
-            dispatcher = AndroidAssetDispatcher()
-            start()
-        }
-    }
-
-    @After
-    fun tearDown() {
-        mockWebServer.shutdown()
-    }
-
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/416046
     @Test
     fun testETPSettingsItemsAndSubMenus() {
         homeScreen {
@@ -79,6 +65,8 @@ class EnhancedTrackingProtectionTest {
             verifyEnhancedTrackingProtectionLevelSelected("Standard (default)", true)
             verifyStandardOptionDescription()
             verifyStrictOptionDescription()
+            verifyGPCTextWithSwitchWidget()
+            verifyGPCSwitchEnabled(false)
             selectTrackingProtectionOption("Custom")
             verifyCustomTrackingProtectionSettings()
             scrollToElementByText("Standard (default)")
@@ -93,34 +81,13 @@ class EnhancedTrackingProtectionTest {
             openExceptionsLearnMoreLink()
         }
         browserScreen {
-            verifyUrl("support.mozilla.org/en-US/kb/enhanced-tracking-protection-firefox-android")
+            verifyETPLearnMoreURL()
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1514599
     @Test
-    fun testETPSettingsSummaryChange() {
-        homeScreen {
-        }.openThreeDotMenu {
-        }.openSettings {
-            verifyEnhancedTrackingProtectionButton()
-            verifySettingsOptionSummary("Enhanced Tracking Protection", "Standard")
-        }.openEnhancedTrackingProtectionSubMenu {
-            selectTrackingProtectionOption("Strict")
-        }.goBack {
-            verifySettingsOptionSummary("Enhanced Tracking Protection", "Strict")
-        }.openEnhancedTrackingProtectionSubMenu {
-            selectTrackingProtectionOption("Custom")
-        }.goBack {
-            verifySettingsOptionSummary("Enhanced Tracking Protection", "Custom")
-        }.openEnhancedTrackingProtectionSubMenu {
-            switchEnhancedTrackingProtectionToggle()
-        }.goBack {
-            verifySettingsOptionSummary("Enhanced Tracking Protection", "Off")
-        }
-    }
-
-    @Test
-    fun testETPOffGlobally() {
+    fun verifyETPStateIsReflectedInTPSheetTest() {
         val genericPage = getGenericAsset(mockWebServer, 1)
 
         homeScreen {
@@ -129,6 +96,8 @@ class EnhancedTrackingProtectionTest {
         }.openEnhancedTrackingProtectionSubMenu {
             switchEnhancedTrackingProtectionToggle()
             verifyEnhancedTrackingProtectionOptionsEnabled(false)
+        }.goBack {
+            verifySettingsOptionSummary("Enhanced Tracking Protection", "Off")
             exitMenu()
         }
 
@@ -151,10 +120,11 @@ class EnhancedTrackingProtectionTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/339712
     // Tests adding ETP exceptions to websites and keeping that preference after restart
     @SmokeTest
     @Test
-    fun testDisableETPExceptionToggle() {
+    fun disablingETPOnAWebsiteAddsItToExceptionListTest() {
         val firstPage = getGenericAsset(mockWebServer, 1)
         val secondPage = "example.com"
 
@@ -175,20 +145,21 @@ class EnhancedTrackingProtectionTest {
         }.toggleEnhancedTrackingProtectionFromSheet {
             verifyEnhancedTrackingProtectionSheetStatus("OFF", false)
         }
-        restartApp(activityTestRule)
+        restartApp(activityTestRule.activityRule)
         enhancedTrackingProtection {
         }.openEnhancedTrackingProtectionSheet {
             verifyEnhancedTrackingProtectionSheetStatus("OFF", false)
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/339714
     @Test
-    fun trackingProtectionSwitchEnabledRemovesExceptionTest() {
+    fun enablingETPOnAWebsiteRemovesItFromTheExceptionListTest() {
         val trackingPage = getEnhancedTrackingProtectionAsset(mockWebServer)
 
         navigationToolbar {
         }.enterURLAndEnterToBrowser(trackingPage.url) {
-            waitForPageToLoad()
+            verifyUrl(trackingPage.url.toString())
         }
         enhancedTrackingProtection {
         }.openEnhancedTrackingProtectionSheet {
@@ -206,15 +177,20 @@ class EnhancedTrackingProtectionTest {
         }.openEnhancedTrackingProtectionSheet {
         }.toggleEnhancedTrackingProtectionFromSheet {
             verifyEnhancedTrackingProtectionSheetStatus("ON", true)
-        }.openProtectionSettings {
+        }.closeEnhancedTrackingProtectionSheet {
+        }.openThreeDotMenu {
+        }.openSettings {
+        }.openEnhancedTrackingProtectionSubMenu {
         }.openExceptions {
             verifySiteExceptionExists(trackingPage.url.host.toString(), false)
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/339713
     // Tests removing TP exceptions individually or all at once
+    @Ignore("Failing, see: https://bugzilla.mozilla.org/show_bug.cgi?id=1865781")
     @Test
-    fun clearTrackingProtectionExceptionsTest() {
+    fun clearWebsitesFromTPExceptionListTest() {
         val firstPage = getGenericAsset(mockWebServer, 1)
         val secondPage = "example.com"
 
@@ -249,10 +225,19 @@ class EnhancedTrackingProtectionTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/417444
     @Test
-    fun testStandardETPVisitSheetDetails() {
+    fun verifyTrackersBlockedWithStandardTPTest() {
         val genericPage = getGenericAsset(mockWebServer, 1)
         val trackingProtectionTest = getEnhancedTrackingProtectionAsset(mockWebServer).url
+
+        homeScreen {
+        }.openThreeDotMenu {
+        }.openSettings {
+            verifyEnhancedTrackingProtectionButton()
+            verifySettingsOptionSummary("Enhanced Tracking Protection", "Standard")
+            exitMenu()
+        }
 
         // browsing a generic page to allow GV to load on a fresh run
         navigationToolbar {
@@ -270,8 +255,13 @@ class EnhancedTrackingProtectionTest {
         }.openEnhancedTrackingProtectionSheet {
             verifyEnhancedTrackingProtectionSheetStatus("ON", true)
         }.openDetails {
-            verifyCrossSiteCookiesBlocked(true)
-            navigateBackToDetails()
+            // Third-party cookie tracker blocking in Nightly was disabled: https://bugzilla.mozilla.org/show_bug.cgi?id=1935156
+            if (activityTestRule.activity.components.core.engine.version.releaseChannel == EngineReleaseChannel.BETA &&
+                activityTestRule.activity.components.core.engine.version.releaseChannel == EngineReleaseChannel.RELEASE
+            ) {
+                verifyCrossSiteCookiesBlocked(true)
+                navigateBackToDetails()
+            }
             verifyCryptominersBlocked(true)
             navigateBackToDetails()
             verifyFingerprintersBlocked(true)
@@ -280,16 +270,25 @@ class EnhancedTrackingProtectionTest {
         }.closeEnhancedTrackingProtectionSheet {}
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/417441
     @Test
-    fun testStrictVisitSheetDetails() {
+    fun verifyTrackersBlockedWithStrictTPTest() {
         appContext.settings().setStrictETP()
         val genericPage = getGenericAsset(mockWebServer, 1)
         val trackingProtectionTest = getEnhancedTrackingProtectionAsset(mockWebServer).url
 
+        homeScreen {
+        }.openThreeDotMenu {
+        }.openSettings {
+            verifyEnhancedTrackingProtectionButton()
+            verifySettingsOptionSummary("Enhanced Tracking Protection", "Strict")
+            exitMenu()
+        }
+
         // browsing a generic page to allow GV to load on a fresh run
         navigationToolbar {
         }.enterURLAndEnterToBrowser(genericPage.url) {
-        }.openTabDrawer {
+        }.openTabDrawer(activityTestRule) {
             closeTab()
         }
 
@@ -316,9 +315,10 @@ class EnhancedTrackingProtectionTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/561637
     @SmokeTest
     @Test
-    fun defaultCustomTrackingProtectionSettingsTest() {
+    fun verifyTrackersBlockedWithCustomTPTest() {
         val genericWebPage = getGenericAsset(mockWebServer, 1)
         val trackingPage = getEnhancedTrackingProtectionAsset(mockWebServer)
 
@@ -328,9 +328,12 @@ class EnhancedTrackingProtectionTest {
         }.openEnhancedTrackingProtectionSubMenu {
             selectTrackingProtectionOption("Custom")
             verifyCustomTrackingProtectionSettings()
-        }.goBackToHomeScreen {
-        }.openNavigationToolbar {
-            // browsing a basic page to allow GV to load on a fresh run
+        }.goBack {
+            verifySettingsOptionSummary("Enhanced Tracking Protection", "Custom")
+            exitMenu()
+        }
+
+        navigationToolbar {
         }.enterURLAndEnterToBrowser(genericWebPage.url) {
         }.openNavigationToolbar {
         }.enterURLAndEnterToBrowser(trackingPage.url) {
@@ -344,8 +347,6 @@ class EnhancedTrackingProtectionTest {
         enhancedTrackingProtection {
         }.openEnhancedTrackingProtectionSheet {
         }.openDetails {
-            verifyCrossSiteCookiesBlocked(true)
-            navigateBackToDetails()
             verifyCryptominersBlocked(true)
             navigateBackToDetails()
             verifyFingerprintersBlocked(true)
@@ -355,6 +356,7 @@ class EnhancedTrackingProtectionTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/562710
     // Tests the trackers blocked with the following Custom TP set up:
     // - Cookies set to "All cookies"
     // - Tracking content option OFF
@@ -398,8 +400,9 @@ class EnhancedTrackingProtectionTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/562709
     @Test
-    fun disableCustomTrackingProtectionOptionsTest() {
+    fun verifyTrackersBlockedWithCustomTPOptionsDisabledTest() {
         val genericWebPage = getGenericAsset(mockWebServer, 1)
         val trackingPage = getEnhancedTrackingProtectionAsset(mockWebServer)
 
@@ -412,7 +415,8 @@ class EnhancedTrackingProtectionTest {
             selectTrackingProtectionOption("Cookies")
             selectTrackingProtectionOption("Tracking content")
             selectTrackingProtectionOption("Cryptominers")
-            selectTrackingProtectionOption("Fingerprinters")
+            selectTrackingProtectionOption("Known Fingerprinters")
+            selectTrackingProtectionOption("Suspected Fingerprinters")
             selectTrackingProtectionOption("Redirect Trackers")
         }.goBackToHomeScreen {
             mDevice.waitForIdle()
@@ -430,8 +434,9 @@ class EnhancedTrackingProtectionTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2106997
     @Test
-    fun testTrackingContentBlockedOnlyInPrivateTabs() {
+    fun verifyTrackingContentBlockedOnlyInPrivateTabsTest() {
         val genericWebPage = getGenericAsset(mockWebServer, 1)
         val trackingPage = getEnhancedTrackingProtectionAsset(mockWebServer)
 
@@ -469,8 +474,14 @@ class EnhancedTrackingProtectionTest {
         enhancedTrackingProtection {
         }.openEnhancedTrackingProtectionSheet {
         }.openDetails {
-            verifyCrossSiteCookiesBlocked(true)
-            navigateBackToDetails()
+            // Third-party cookie tracker blocking in Nightly was disabled: https://bugzilla.mozilla.org/show_bug.cgi?id=1935156
+            if (
+                activityTestRule.activity.components.core.engine.version.releaseChannel == EngineReleaseChannel.BETA &&
+                activityTestRule.activity.components.core.engine.version.releaseChannel == EngineReleaseChannel.RELEASE
+            ) {
+                verifyCrossSiteCookiesBlocked(true)
+                navigateBackToDetails()
+            }
             verifyCryptominersBlocked(true)
             navigateBackToDetails()
             verifyFingerprintersBlocked(true)
@@ -480,6 +491,7 @@ class EnhancedTrackingProtectionTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2285368
     @SmokeTest
     @Test
     fun blockCookiesStorageAccessTest() {
@@ -502,6 +514,7 @@ class EnhancedTrackingProtectionTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/2285369
     @SmokeTest
     @Test
     fun allowCookiesStorageAccessTest() {

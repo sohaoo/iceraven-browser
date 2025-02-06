@@ -6,9 +6,10 @@
 
 package org.mozilla.fenix.tabstray.inactivetabs
 
-import android.content.res.Configuration
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,15 +30,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import mozilla.components.browser.state.state.ContentState
 import mozilla.components.browser.state.state.TabSessionState
+import mozilla.components.compose.base.annotation.LightDarkPreview
+import mozilla.components.compose.base.button.TextButton
+import mozilla.components.compose.cfr.CFRPopup
+import mozilla.components.compose.cfr.CFRPopupLayout
+import mozilla.components.compose.cfr.CFRPopupProperties
 import org.mozilla.fenix.R
-import org.mozilla.fenix.compose.button.TextButton
 import org.mozilla.fenix.compose.list.ExpandableListHeader
 import org.mozilla.fenix.compose.list.FaviconListItem
 import org.mozilla.fenix.ext.toShortUrl
@@ -52,12 +60,16 @@ private val ROUNDED_CORNER_SHAPE = RoundedCornerShape(8.dp)
  * @param inactiveTabs List of [TabSessionState] to display.
  * @param expanded Whether to show the inactive tabs section expanded or collapsed.
  * @param showAutoCloseDialog Whether to show the auto close inactive tabs dialog.
+ * @param showCFR Whether to show the CFR.
  * @param onHeaderClick Called when the user clicks on the inactive tabs section header.
  * @param onDeleteAllButtonClick Called when the user clicks on the delete all inactive tabs button.
  * @param onAutoCloseDismissClick Called when the user clicks on the auto close dialog's dismiss button.
  * @param onEnableAutoCloseClick Called when the user clicks on the auto close dialog's enable button.
  * @param onTabClick Called when the user clicks on a specific inactive tab.
  * @param onTabCloseClick Called when the user clicks on a specific inactive tab's close button.
+ * @param onCFRShown Invoked when the CFR is displayed.
+ * @param onCFRClick Invoked when the CFR is clicked.
+ * @param onCFRDismiss Invoked when the CFR is dismissed.
  */
 @Composable
 @Suppress("LongParameterList")
@@ -65,12 +77,16 @@ fun InactiveTabsList(
     inactiveTabs: List<TabSessionState>,
     expanded: Boolean,
     showAutoCloseDialog: Boolean,
+    showCFR: Boolean,
     onHeaderClick: (Boolean) -> Unit,
     onDeleteAllButtonClick: () -> Unit,
     onAutoCloseDismissClick: () -> Unit,
     onEnableAutoCloseClick: () -> Unit,
     onTabClick: (TabSessionState) -> Unit,
     onTabCloseClick: (TabSessionState) -> Unit,
+    onCFRShown: () -> Unit,
+    onCFRClick: () -> Unit,
+    onCFRDismiss: () -> Unit,
 ) {
     Card(
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
@@ -82,10 +98,16 @@ fun InactiveTabsList(
         ),
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .animateContentSize()
+                .fillMaxWidth(),
         ) {
             InactiveTabsHeader(
                 expanded = expanded,
+                showCFR = showCFR,
+                onCFRShown = onCFRShown,
+                onCFRClick = onCFRClick,
+                onCFRDismiss = onCFRDismiss,
                 onClick = { onHeaderClick(!expanded) },
                 onDeleteAllClick = onDeleteAllButtonClick,
             )
@@ -101,13 +123,18 @@ fun InactiveTabsList(
                 Column {
                     inactiveTabs.forEach { tab ->
                         val tabUrl = tab.content.url.toShortUrl()
+                        val faviconPainter = tab.content.icon?.run {
+                            prepareToDraw()
+                            BitmapPainter(asImageBitmap())
+                        }
 
                         FaviconListItem(
                             label = tab.toDisplayTitle(),
-                            description = tabUrl,
-                            onClick = { onTabClick(tab) },
                             url = tabUrl,
-                            iconPainter = painterResource(R.drawable.mozac_ic_close),
+                            description = tabUrl,
+                            faviconPainter = faviconPainter,
+                            onClick = { onTabClick(tab) },
+                            iconPainter = painterResource(R.drawable.mozac_ic_cross_24),
                             iconDescription = stringResource(R.string.content_description_close_button),
                             onIconClick = { onTabCloseClick(tab) },
                         )
@@ -121,35 +148,82 @@ fun InactiveTabsList(
 }
 
 /**
- * Collapsible header for the Inactive Tabs section.
+ * Collapsible header for the Inactive Tabs section with a CFR.
  *
  * @param expanded Whether the section is expanded.
+ * @param showCFR Whether to show the CFR.
  * @param onClick Called when the user clicks on the header.
  * @param onDeleteAllClick Called when the user clicks on the delete all button.
+ * @param onCFRShown Invoked when the CFR is displayed.
+ * @param onCFRClick Invoked when the CFR is clicked.
+ * @param onCFRDismiss Invoked when the CFR is dismissed.
  */
 @Composable
 private fun InactiveTabsHeader(
     expanded: Boolean,
+    showCFR: Boolean,
     onClick: () -> Unit,
     onDeleteAllClick: () -> Unit,
+    onCFRShown: () -> Unit,
+    onCFRClick: () -> Unit,
+    onCFRDismiss: () -> Unit,
 ) {
-    ExpandableListHeader(
-        headerText = stringResource(R.string.inactive_tabs_title),
-        headerTextStyle = FirefoxTheme.typography.headline7,
-        expanded = expanded,
-        expandActionContentDescription = stringResource(R.string.inactive_tabs_expand_content_description),
-        collapseActionContentDescription = stringResource(R.string.inactive_tabs_collapse_content_description),
-        onClick = onClick,
+    CFRPopupLayout(
+        showCFR = showCFR,
+        properties = CFRPopupProperties(
+            popupBodyColors = listOf(
+                FirefoxTheme.colors.layerGradientEnd.toArgb(),
+                FirefoxTheme.colors.layerGradientStart.toArgb(),
+            ),
+            dismissButtonColor = FirefoxTheme.colors.iconOnColor.toArgb(),
+            indicatorDirection = CFRPopup.IndicatorDirection.UP,
+            popupVerticalOffset = (-12).dp,
+        ),
+        onCFRShown = onCFRShown,
+        onDismiss = { onCFRDismiss() },
+        text = {
+            FirefoxTheme {
+                Text(
+                    text = stringResource(R.string.tab_tray_inactive_onboarding_message),
+                    color = FirefoxTheme.colors.textOnColorPrimary,
+                    style = FirefoxTheme.typography.body2,
+                )
+            }
+        },
+        action = { dismissCFR ->
+            FirefoxTheme {
+                Text(
+                    text = stringResource(R.string.tab_tray_inactive_onboarding_button_text),
+                    color = FirefoxTheme.colors.textOnColorPrimary,
+                    modifier = Modifier.clickable {
+                        dismissCFR()
+                        onCFRClick()
+                    },
+                    style = FirefoxTheme.typography.body2.copy(
+                        textDecoration = TextDecoration.Underline,
+                    ),
+                )
+            }
+        },
     ) {
-        IconButton(
-            onClick = onDeleteAllClick,
-            modifier = Modifier.padding(horizontal = 4.dp),
+        ExpandableListHeader(
+            headerText = stringResource(R.string.inactive_tabs_title),
+            headerTextStyle = FirefoxTheme.typography.headline7,
+            expanded = expanded,
+            expandActionContentDescription = stringResource(R.string.inactive_tabs_expand_content_description),
+            collapseActionContentDescription = stringResource(R.string.inactive_tabs_collapse_content_description),
+            onClick = onClick,
         ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_delete),
-                contentDescription = stringResource(R.string.inactive_tabs_delete_all),
-                tint = FirefoxTheme.colors.iconPrimary,
-            )
+            IconButton(
+                onClick = onDeleteAllClick,
+                modifier = Modifier.padding(horizontal = 4.dp),
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_delete),
+                    contentDescription = stringResource(R.string.inactive_tabs_delete_all),
+                    tint = FirefoxTheme.colors.iconPrimary,
+                )
+            }
         }
     }
 }
@@ -195,7 +269,7 @@ private fun InactiveTabsAutoClosePrompt(
                     modifier = Modifier.size(20.dp),
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.mozac_ic_close_20),
+                        painter = painterResource(R.drawable.mozac_ic_cross_20),
                         contentDescription =
                         stringResource(R.string.tab_tray_inactive_auto_close_button_content_description),
                         tint = FirefoxTheme.colors.iconPrimary,
@@ -222,8 +296,7 @@ private fun InactiveTabsAutoClosePrompt(
 }
 
 @Composable
-@Preview(name = "Auto close dialog dark", uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Preview(name = "Auto close dialog light", uiMode = Configuration.UI_MODE_NIGHT_NO)
+@LightDarkPreview
 private fun InactiveTabsAutoClosePromptPreview() {
     FirefoxTheme {
         Box(Modifier.background(FirefoxTheme.colors.layer1)) {
@@ -236,8 +309,7 @@ private fun InactiveTabsAutoClosePromptPreview() {
 }
 
 @Composable
-@Preview(name = "Full preview dark", uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Preview(name = "Full preview light", uiMode = Configuration.UI_MODE_NIGHT_NO)
+@LightDarkPreview
 private fun InactiveTabsListPreview() {
     var expanded by remember { mutableStateOf(true) }
     var showAutoClosePrompt by remember { mutableStateOf(true) }
@@ -248,12 +320,16 @@ private fun InactiveTabsListPreview() {
                 inactiveTabs = generateFakeInactiveTabsList(),
                 expanded = expanded,
                 showAutoCloseDialog = showAutoClosePrompt,
+                showCFR = false,
                 onHeaderClick = { expanded = !expanded },
                 onDeleteAllButtonClick = {},
                 onAutoCloseDismissClick = { showAutoClosePrompt = !showAutoClosePrompt },
                 onEnableAutoCloseClick = { showAutoClosePrompt = !showAutoClosePrompt },
                 onTabClick = {},
                 onTabCloseClick = {},
+                onCFRShown = {},
+                onCFRClick = {},
+                onCFRDismiss = {},
             )
         }
     }

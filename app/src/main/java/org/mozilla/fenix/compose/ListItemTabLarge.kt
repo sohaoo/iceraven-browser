@@ -25,8 +25,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.mozilla.fenix.compose.annotation.LightDarkPreview
+import mozilla.components.compose.base.annotation.LightDarkPreview
+import org.mozilla.fenix.compose.ext.thenConditional
 import org.mozilla.fenix.theme.FirefoxTheme
+
+const val ITEM_WIDTH = 328
+const val ITEM_HEIGHT = 116
 
 /**
  * Default layout of a large tab shown in a list taking String arguments for title and caption.
@@ -138,8 +142,12 @@ fun ListItemTabSurface(
     onClick: (() -> Unit)? = null,
     tabDetails: @Composable () -> Unit,
 ) {
-    var modifier = Modifier.size(328.dp, 116.dp)
-    if (onClick != null) modifier = modifier.then(Modifier.clickable { onClick() })
+    val modifier = Modifier
+        .size(ITEM_WIDTH.dp, ITEM_HEIGHT.dp)
+        .thenConditional(
+            modifier = Modifier.clickable { onClick!!() },
+            predicate = { onClick != null },
+        )
 
     Card(
         modifier = modifier,

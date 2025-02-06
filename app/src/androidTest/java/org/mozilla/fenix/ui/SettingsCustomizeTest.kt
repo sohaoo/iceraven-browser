@@ -1,42 +1,33 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 package org.mozilla.fenix.ui
 
 import android.content.res.Configuration
-import okhttp3.mockwebserver.MockWebServer
-import org.junit.After
-import org.junit.Before
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import org.junit.Rule
 import org.junit.Test
-import org.mozilla.fenix.helpers.AndroidAssetDispatcher
+import org.mozilla.fenix.helpers.AppAndSystemHelper.enableOrDisableBackGestureNavigationOnDevice
 import org.mozilla.fenix.helpers.HomeActivityIntentTestRule
 import org.mozilla.fenix.helpers.TestAssetHelper
 import org.mozilla.fenix.helpers.TestHelper.exitMenu
 import org.mozilla.fenix.helpers.TestHelper.verifyDarkThemeApplied
 import org.mozilla.fenix.helpers.TestHelper.verifyLightThemeApplied
+import org.mozilla.fenix.helpers.TestSetup
 import org.mozilla.fenix.ui.robots.homeScreen
 import org.mozilla.fenix.ui.robots.navigationToolbar
 
-class SettingsCustomizeTest {
-    private lateinit var mockWebServer: MockWebServer
-
+class SettingsCustomizeTest : TestSetup() {
     @get:Rule
-    val activityIntentTestRule = HomeActivityIntentTestRule.withDefaultSettingsOverrides()
-
-    @Before
-    fun setUp() {
-        mockWebServer = MockWebServer().apply {
-            dispatcher = AndroidAssetDispatcher()
-            start()
-        }
-    }
-
-    @After
-    fun tearDown() {
-        mockWebServer.shutdown()
-    }
+    val activityTestRule =
+        AndroidComposeTestRule(
+            HomeActivityIntentTestRule.withDefaultSettingsOverrides(),
+        ) { it.activity }
 
     private fun getUiTheme(): Boolean {
         val mode =
-            activityIntentTestRule.activity.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK)
+            activityTestRule.activity.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK)
 
         return when (mode) {
             Configuration.UI_MODE_NIGHT_YES -> true // dark theme is set
@@ -45,8 +36,9 @@ class SettingsCustomizeTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/344212
     @Test
-    fun changeThemeSettingTest() {
+    fun changeThemeOfTheAppTest() {
         // Goes through the settings and changes the default search engine, then verifies it changes.
         homeScreen {
         }.openThreeDotMenu {
@@ -60,34 +52,39 @@ class SettingsCustomizeTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/466571
     @Test
     fun setToolbarPositionTest() {
         homeScreen {
         }.openThreeDotMenu {
         }.openSettings {
         }.openCustomizeSubMenu {
-            verifyToolbarPositionPreference("Bottom")
+            verifyAddressBarPositionPreference("Bottom")
             clickTopToolbarToggle()
-            verifyToolbarPositionPreference("Top")
+            verifyAddressBarPositionPreference("Top")
         }.goBack {
         }.goBack {
-            verifyToolbarPosition(defaultPosition = false)
+            verifyAddressBarPosition(bottomPosition = false)
         }.openThreeDotMenu {
         }.openSettings {
         }.openCustomizeSubMenu {
             clickBottomToolbarToggle()
-            verifyToolbarPositionPreference("Bottom")
+            verifyAddressBarPositionPreference("Bottom")
             exitMenu()
         }
         homeScreen {
-            verifyToolbarPosition(defaultPosition = true)
+            verifyAddressBarPosition(bottomPosition = true)
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1058682
     @Test
-    fun swipeToolbarGesturePreferenceOffTest() {
+    fun turnOffSwipeToSwitchTabsPreferenceTest() {
         val firstWebPage = TestAssetHelper.getGenericAsset(mockWebServer, 1)
         val secondWebPage = TestAssetHelper.getGenericAsset(mockWebServer, 2)
+
+        // Disable the back gesture from the edge of the screen on the device.
+        enableOrDisableBackGestureNavigationOnDevice(backGestureNavigationEnabled = false)
 
         homeScreen {
         }.openThreeDotMenu {
@@ -100,7 +97,7 @@ class SettingsCustomizeTest {
         }
         navigationToolbar {
         }.enterURLAndEnterToBrowser(firstWebPage.url) {
-        }.openTabDrawer {
+        }.openTabDrawer(activityTestRule) {
         }.openNewTab {
         }.submitQuery(secondWebPage.url.toString()) {
             swipeNavBarRight(secondWebPage.url.toString())
@@ -110,6 +107,7 @@ class SettingsCustomizeTest {
         }
     }
 
+    // TestRail link: https://mozilla.testrail.io/index.php?/cases/view/1992289
     @Test
     fun pullToRefreshPreferenceTest() {
         homeScreen {

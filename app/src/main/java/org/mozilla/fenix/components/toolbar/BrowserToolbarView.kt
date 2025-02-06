@@ -12,52 +12,79 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.LayoutRes
 import androidx.annotation.VisibleForTesting
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.LifecycleOwner
 import mozilla.components.browser.state.selector.selectedTab
 import mozilla.components.browser.state.state.CustomTabSessionState
 import mozilla.components.browser.state.state.ExternalAppType
 import mozilla.components.browser.toolbar.BrowserToolbar
-import mozilla.components.browser.toolbar.behavior.BrowserToolbarBehavior
 import mozilla.components.browser.toolbar.display.DisplayToolbar
+import mozilla.components.concept.toolbar.ScrollableToolbar
 import mozilla.components.support.ktx.util.URLStringUtils
+import mozilla.components.ui.widgets.behavior.EngineViewScrollingBehavior
 import org.mozilla.fenix.R
+import org.mozilla.fenix.browser.tabstrip.isTabStripEnabled
 import org.mozilla.fenix.components.toolbar.interactor.BrowserToolbarInteractor
+import org.mozilla.fenix.components.toolbar.navbar.shouldAddNavigationBar
 import org.mozilla.fenix.customtabs.CustomTabToolbarIntegration
 import org.mozilla.fenix.customtabs.CustomTabToolbarMenu
 import org.mozilla.fenix.ext.bookmarkStorage
 import org.mozilla.fenix.ext.components
+import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.theme.ThemeManager
 import org.mozilla.fenix.utils.Settings
 import org.mozilla.fenix.utils.ToolbarPopupWindow
 import java.lang.ref.WeakReference
-import mozilla.components.browser.toolbar.behavior.ToolbarPosition as MozacToolbarPosition
+import mozilla.components.ui.widgets.behavior.ViewPosition as MozacToolbarPosition
 
-@SuppressWarnings("LargeClass")
+/**
+ * A wrapper over [BrowserToolbar] to allow extra customisation and behavior.
+ *
+ * @param context [Context] used for various system interactions.
+ * @param container [ViewGroup] which will serve as parent of this View.
+ * @param snackbarParent [ViewGroup] in which new snackbars will be shown.
+ * @param settings [Settings] object to get the toolbar position and other settings.
+ * @param interactor [BrowserToolbarInteractor] to handle toolbar interactions.
+ * @param customTabSession [CustomTabSessionState] if the toolbar is shown in a custom tab.
+ * @param lifecycleOwner View lifecycle owner used to determine when to cancel UI jobs.
+ * @param tabStripContent Composable content for the tab strip.
+ */
+@SuppressWarnings("LargeClass", "LongParameterList")
 class BrowserToolbarView(
-    context: Context,
+    private val context: Context,
     container: ViewGroup,
+    private val snackbarParent: ViewGroup,
     private val settings: Settings,
     private val interactor: BrowserToolbarInteractor,
     private val customTabSession: CustomTabSessionState?,
     private val lifecycleOwner: LifecycleOwner,
-) {
+    private val tabStripContent: @Composable () -> Unit,
+) : ScrollableToolbar {
 
     @LayoutRes
     private val toolbarLayout = when (settings.toolbarPosition) {
         ToolbarPosition.BOTTOM -> R.layout.component_bottom_browser_toolbar
-        ToolbarPosition.TOP -> R.layout.component_browser_top_toolbar
+        ToolbarPosition.TOP -> if (shouldShowTabStrip()) {
+            R.layout.component_browser_top_toolbar_with_tab_strip
+        } else {
+            R.layout.component_browser_top_toolbar
+        }
     }
 
-    private val layout = LayoutInflater.from(context)
-        .inflate(toolbarLayout, container, true)
+    internal val layout = LayoutInflater.from(context)
+        .inflate(toolbarLayout, container, false)
 
-    @VisibleForTesting
-    internal var view: BrowserToolbar = layout
+    var view: BrowserToolbar = layout
         .findViewById(R.id.toolbar)
 
     val toolbarIntegration: ToolbarIntegration
+    val menuToolbar: ToolbarMenu
 
     @VisibleForTesting
     internal val isPwaTabOrTwaTab: Boolean
@@ -65,11 +92,22 @@ class BrowserToolbarView(
             customTabSession?.config?.externalAppType == ExternalAppType.TRUSTED_WEB_ACTIVITY
 
     init {
+        container.addView(layout)
         val isCustomTabSession = customTabSession != null
+
+        if (toolbarLayout == R.layout.component_browser_top_toolbar_with_tab_strip) {
+            layout.findViewById<ComposeView>(R.id.tabStripView).apply {
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+                setContent {
+                    tabStripContent()
+                }
+            }
+        }
 
         view.display.setOnUrlLongClickListener {
             ToolbarPopupWindow.show(
                 WeakReference(view),
+                WeakReference(snackbarParent),
                 customTabSession?.id,
                 interactor::onBrowserToolbarPasteAndGo,
                 interactor::onBrowserToolbarPaste,
@@ -79,13 +117,23 @@ class BrowserToolbarView(
 
         with(context) {
             val isPinningSupported = components.useCases.webAppUseCases.isPinningSupported()
+            layout.elevation = if (shouldShowDropShadow()) {
+                resources.getDimension(R.dimen.browser_fragment_toolbar_elevation)
+            } else {
+                0.0f
+            }
 
             view.apply {
                 setToolbarBehavior()
+                setDisplayToolbarColors()
 
-                elevation = resources.getDimension(R.dimen.browser_fragment_toolbar_elevation)
                 if (!isCustomTabSession) {
-                    display.setUrlBackground(getDrawable(R.drawable.search_url_background))
+                    display.setUrlBackground(
+                        AppCompatResources.getDrawable(
+                            this@with,
+                            R.drawable.search_url_background,
+                        ),
+                    )
                 }
 
                 display.onUrlClicked = {
@@ -98,50 +146,16 @@ class BrowserToolbarView(
                     ToolbarPosition.TOP -> DisplayToolbar.Gravity.BOTTOM
                 }
 
-                val primaryTextColor = ContextCompat.getColor(
-                    context,
-                    ThemeManager.resolveAttribute(R.attr.textPrimary, context),
-                )
-                val secondaryTextColor = ContextCompat.getColor(
-                    context,
-                    ThemeManager.resolveAttribute(R.attr.textSecondary, context),
-                )
-                val separatorColor = ContextCompat.getColor(
-                    context,
-                    ThemeManager.resolveAttribute(R.attr.borderPrimary, context),
-                )
-
                 display.urlFormatter =
-                    if (settings.shouldStripUrl) {
-                        {
-                                url ->
-                            URLStringUtils.toDisplayUrl(url)
-                        }
+                    if (!settings.shouldStripUrl) {
+                        {url -> url}
                     } else {
-                        {
-                                url ->
-                            url
-                        }
+                        {url -> URLStringUtils.toDisplayUrl(url)}
                     }
-
-                display.colors = display.colors.copy(
-                    text = primaryTextColor,
-                    securityIconSecure = primaryTextColor,
-                    securityIconInsecure = Color.TRANSPARENT,
-                    menu = primaryTextColor,
-                    hint = secondaryTextColor,
-                    separator = separatorColor,
-                    trackingProtection = primaryTextColor,
-                    highlight = ContextCompat.getColor(
-                        context,
-                        R.color.fx_mobile_icon_color_information,
-                    ),
-                )
 
                 display.hint = context.getString(R.string.search_hint)
             }
 
-            val menuToolbar: ToolbarMenu
             if (isCustomTabSession) {
                 menuToolbar = CustomTabToolbarMenu(
                     context = this,
@@ -175,19 +189,21 @@ class BrowserToolbarView(
 
             toolbarIntegration = if (customTabSession != null) {
                 CustomTabToolbarIntegration(
-                    this,
-                    view,
-                    menuToolbar,
-                    customTabSession.id,
+                    context = this,
+                    toolbar = view,
+                    scrollableToolbar = view as ScrollableToolbar,
+                    toolbarMenu = menuToolbar,
+                    interactor = interactor,
+                    customTabId = customTabSession.id,
                     isPrivate = customTabSession.content.private,
                 )
             } else {
                 DefaultToolbarIntegration(
-                    this,
-                    view,
-                    menuToolbar,
-                    lifecycleOwner,
-                    sessionId = null,
+                    context = this,
+                    toolbar = view,
+                    scrollableToolbar = layout as ScrollableToolbar,
+                    toolbarMenu = menuToolbar,
+                    lifecycleOwner = lifecycleOwner,
                     isPrivate = components.core.store.state.selectedTab?.content?.private ?: false,
                     interactor = interactor,
                 )
@@ -195,25 +211,45 @@ class BrowserToolbarView(
         }
     }
 
-    fun expand() {
+    internal fun gone() {
+        layout.isVisible = false
+    }
+
+    internal fun visible() {
+        layout.isVisible = true
+    }
+
+    override fun expand() {
         // expand only for normal tabs and custom tabs not for PWA or TWA
         if (isPwaTabOrTwaTab) {
             return
         }
 
-        (view.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
-            (behavior as? BrowserToolbarBehavior)?.forceExpand(view)
+        (layout.layoutParams as CoordinatorLayout.LayoutParams).apply {
+            (behavior as? EngineViewScrollingBehavior)?.forceExpand(layout)
         }
     }
 
-    fun collapse() {
+    override fun collapse() {
         // collapse only for normal tabs and custom tabs not for PWA or TWA. Mirror expand()
         if (isPwaTabOrTwaTab) {
             return
         }
 
-        (view.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
-            (behavior as? BrowserToolbarBehavior)?.forceCollapse(view)
+        (layout.layoutParams as CoordinatorLayout.LayoutParams).apply {
+            (behavior as? EngineViewScrollingBehavior)?.forceCollapse(layout)
+        }
+    }
+
+    override fun enableScrolling() {
+        (layout.layoutParams as CoordinatorLayout.LayoutParams).apply {
+            (behavior as? EngineViewScrollingBehavior)?.enableScrolling()
+        }
+    }
+
+    override fun disableScrolling() {
+        (layout.layoutParams as CoordinatorLayout.LayoutParams).apply {
+            (behavior as? EngineViewScrollingBehavior)?.disableScrolling()
         }
     }
 
@@ -222,11 +258,30 @@ class BrowserToolbarView(
     }
 
     /**
+     * Updates the visibility of the menu in the toolbar.
+     */
+    fun updateMenuVisibility(isVisible: Boolean) {
+        with(view) {
+            if (isVisible) {
+                showMenuButton()
+                setDisplayHorizontalPadding(0)
+            } else {
+                hideMenuButton()
+                setDisplayHorizontalPadding(
+                    context.resources.getDimensionPixelSize(R.dimen.browser_fragment_display_toolbar_padding),
+                )
+            }
+        }
+    }
+
+    /**
      * Sets whether the toolbar will have a dynamic behavior (to be scrolled) or not.
      *
      * This will intrinsically check and disable the dynamic behavior if
      *  - this is disabled in app settings
      *  - toolbar is placed at the bottom and tab shows a PWA or TWA
+     *  - toolbar is shown together with the navbar in a container that will handle scrolling
+     *  for both Views at the same time.
      *
      *  Also if the user has not explicitly set a toolbar position and has a screen reader enabled
      *  the toolbar will be placed at the top and in a fixed position.
@@ -236,7 +291,10 @@ class BrowserToolbarView(
     fun setToolbarBehavior(shouldDisableScroll: Boolean = false) {
         when (settings.toolbarPosition) {
             ToolbarPosition.BOTTOM -> {
-                if (settings.isDynamicToolbarEnabled && !isPwaTabOrTwaTab && !settings.shouldUseFixedTopToolbar) {
+                if (settings.isDynamicToolbarEnabled &&
+                    !settings.shouldUseFixedTopToolbar &&
+                    !context.shouldAddNavigationBar()
+                ) {
                     setDynamicToolbarBehavior(MozacToolbarPosition.BOTTOM)
                 } else {
                     expandToolbarAndMakeItFixed()
@@ -255,18 +313,47 @@ class BrowserToolbarView(
         }
     }
 
+    private fun setDisplayToolbarColors() {
+        val primaryTextColor = ContextCompat.getColor(
+            context,
+            ThemeManager.resolveAttribute(R.attr.textPrimary, context),
+        )
+        val secondaryTextColor = ContextCompat.getColor(
+            context,
+            ThemeManager.resolveAttribute(R.attr.textSecondary, context),
+        )
+        val separatorColor = ContextCompat.getColor(
+            context,
+            ThemeManager.resolveAttribute(R.attr.borderPrimary, context),
+        )
+
+        view.display.colors = view.display.colors.copy(
+            text = primaryTextColor,
+            securityIconSecure = primaryTextColor,
+            securityIconInsecure = Color.TRANSPARENT,
+            menu = primaryTextColor,
+            hint = secondaryTextColor,
+            separator = separatorColor,
+            trackingProtection = primaryTextColor,
+            highlight = ContextCompat.getColor(
+                context,
+                R.color.fx_mobile_icon_color_information,
+            ),
+        )
+    }
+
     @VisibleForTesting
     internal fun expandToolbarAndMakeItFixed() {
         expand()
-        (view.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
+        (layout.layoutParams as CoordinatorLayout.LayoutParams).apply {
             behavior = null
         }
     }
 
     @VisibleForTesting
     internal fun setDynamicToolbarBehavior(toolbarPosition: MozacToolbarPosition) {
-        (view.layoutParams as? CoordinatorLayout.LayoutParams)?.apply {
-            behavior = BrowserToolbarBehavior(view.context, null, toolbarPosition)
+        (layout.layoutParams as CoordinatorLayout.LayoutParams).apply {
+            behavior = EngineViewScrollingBehavior(layout.context, null, toolbarPosition)
         }
     }
 
@@ -279,4 +366,9 @@ class BrowserToolbarView(
             view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
         }
     }
+
+    private fun shouldShowDropShadow() = !context.settings().navigationToolbarEnabled
+
+    private fun shouldShowTabStrip() =
+        customTabSession == null && context.isTabStripEnabled()
 }

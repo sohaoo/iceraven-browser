@@ -8,7 +8,7 @@ import mozilla.components.browser.state.state.content.DownloadState
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.mozilla.fenix.R
-import org.mozilla.fenix.library.downloads.DownloadItem
+import org.mozilla.fenix.downloads.listscreen.DownloadItem
 
 class DownloadItemKtTest {
     @Test
@@ -18,7 +18,7 @@ class DownloadItemKtTest {
             url = "url",
             fileName = "MyAwesomeFile",
             filePath = "",
-            size = "",
+            formattedSize = "",
             contentType = "image/png",
             status = DownloadState.Status.COMPLETED,
         )

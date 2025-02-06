@@ -14,6 +14,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import mozilla.components.compose.base.utils.inComposePreview
 import mozilla.components.support.images.compose.loader.ImageLoader
 import mozilla.components.support.images.compose.loader.WithImage
 import org.mozilla.fenix.components.components
@@ -35,9 +36,12 @@ import org.mozilla.fenix.theme.FirefoxTheme
  * bounds defined by the width and height.
  * @param contentScale Optional scale parameter used to determine the aspect ratio scaling to be used
  * if the bounds are a different size from the intrinsic size of the [Painter].
+ * @param placeholder composable displayed while the image is still loading.
+ * By default set to a solid color in [DefaultImagePlaceholder].
+ * @param fallback composable displayed when the image fails loading.
+ * By default set to a solid color in [DefaultImagePlaceholder].
  */
 @Composable
-@Suppress("LongParameterList")
 fun Image(
     url: String,
     modifier: Modifier = Modifier,
@@ -46,9 +50,11 @@ fun Image(
     contentDescription: String? = null,
     alignment: Alignment = Alignment.Center,
     contentScale: ContentScale = ContentScale.Fit,
+    placeholder: @Composable () -> Unit = { DefaultImagePlaceholder(modifier, contentDescription) },
+    fallback: @Composable () -> Unit = { DefaultImagePlaceholder(modifier, contentDescription) },
 ) {
     if (inComposePreview) {
-        DefaultImagePlaceholder(modifier = modifier)
+        placeholder()
     } else {
         ImageLoader(
             url = url,
@@ -66,9 +72,9 @@ fun Image(
                 )
             }
 
-            WithDefaultPlaceholder(modifier, contentDescription)
+            WithPlaceholder(placeholder)
 
-            WithDefaultFallback(modifier, contentDescription)
+            WithFallback(fallback)
         }
     }
 }

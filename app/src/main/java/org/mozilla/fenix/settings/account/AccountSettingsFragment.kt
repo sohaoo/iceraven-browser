@@ -14,6 +14,7 @@ import android.text.InputFilter
 import android.text.format.DateUtils
 import android.view.View
 import androidx.appcompat.app.AlertDialog
+import androidx.compose.material.SnackbarDuration
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.preference.CheckBoxPreference
@@ -33,19 +34,24 @@ import mozilla.components.service.fxa.manager.SyncEnginesStorage
 import mozilla.components.service.fxa.sync.SyncReason
 import mozilla.components.service.fxa.sync.SyncStatusObserver
 import mozilla.components.service.fxa.sync.getLastSynced
+import mozilla.components.service.fxa.sync.setLastSynced
 import mozilla.components.support.ktx.android.content.getColorFromAttr
+import mozilla.components.ui.widgets.withCenterAlignedButtons
 import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.fenix.FeatureFlags
 import org.mozilla.fenix.GleanMetrics.SyncAccount
 import org.mozilla.fenix.R
-import org.mozilla.fenix.components.FenixSnackbar
 import org.mozilla.fenix.components.StoreProvider
+import org.mozilla.fenix.components.accounts.FenixFxAEntryPoint
+import org.mozilla.fenix.compose.snackbar.Snackbar
+import org.mozilla.fenix.compose.snackbar.SnackbarState
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.getPreferenceKey
 import org.mozilla.fenix.ext.requireComponents
 import org.mozilla.fenix.ext.secure
 import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.ext.showToolbar
+import org.mozilla.fenix.settings.SupportUtils
 import org.mozilla.fenix.settings.requirePreference
 
 @SuppressWarnings("TooManyFunctions", "LargeClass")
@@ -69,7 +75,7 @@ class AccountSettingsFragment : PreferenceFragmentCompat() {
                 // Remove the device name when we log out.
                 context?.let {
                     val deviceNameKey = it.getPreferenceKey(R.string.pref_key_sync_device_name)
-                    preferenceManager.sharedPreferences.edit().remove(deviceNameKey).apply()
+                    preferenceManager.sharedPreferences?.edit()?.remove(deviceNameKey)?.apply()
                 }
             }
         }
@@ -123,6 +129,9 @@ class AccountSettingsFragment : PreferenceFragmentCompat() {
         accountManager = requireComponents.backgroundServices.accountManager
         accountManager.register(accountStateObserver, this, true)
 
+        val preferenceManageAccount = requirePreference<Preference>(R.string.pref_key_sync_manage_account)
+        preferenceManageAccount.onPreferenceClickListener = getClickListenerForManageAccount()
+
         // Sign out
         val preferenceSignOut = requirePreference<Preference>(R.string.pref_key_sign_out)
         preferenceSignOut.onPreferenceClickListener = getClickListenerForSignOut()
@@ -132,8 +141,10 @@ class AccountSettingsFragment : PreferenceFragmentCompat() {
         preferenceSyncNow.apply {
             onPreferenceClickListener = getClickListenerForSyncNow()
 
-            icon = icon.mutate().apply {
-                setTint(context.getColorFromAttr(R.attr.textPrimary))
+            icon?.let {
+                icon = it.mutate().apply {
+                    setTint(context.getColorFromAttr(R.attr.textPrimary))
+                }
             }
 
             // Current sync state
@@ -269,9 +280,9 @@ class AccountSettingsFragment : PreferenceFragmentCompat() {
     private fun showPinDialogWarning(syncEngine: SyncEngine, newValue: Boolean) {
         context?.let {
             AlertDialog.Builder(it).apply {
-                setTitle(getString(R.string.logins_warning_dialog_title))
+                setTitle(getString(R.string.logins_warning_dialog_title_2))
                 setMessage(
-                    getString(R.string.logins_warning_dialog_message),
+                    getString(R.string.logins_warning_dialog_message_2),
                 )
 
                 setNegativeButton(getString(R.string.logins_warning_dialog_later)) { _: DialogInterface, _ ->
@@ -285,7 +296,7 @@ class AccountSettingsFragment : PreferenceFragmentCompat() {
                     )
                     startActivity(intent)
                 }
-                create()
+                create().withCenterAlignedButtons()
             }.show().secure(activity)
             it.settings().incrementShowLoginsSecureWarningSyncCount()
         }
@@ -357,8 +368,26 @@ class AccountSettingsFragment : PreferenceFragmentCompat() {
                     ?.deviceConstellation()
                     ?.setDeviceName(newDeviceName, it)
             }
+            accountSettingsStore.dispatch(AccountSettingsFragmentAction.UpdateDeviceName(newDeviceName))
         }
         return true
+    }
+
+    private fun getClickListenerForManageAccount(): Preference.OnPreferenceClickListener {
+        return Preference.OnPreferenceClickListener {
+            viewLifecycleOwner.lifecycleScope.launch(Main) {
+                context?.let {
+                    var acct = accountManager.authenticatedAccount()
+                    var url = acct?.getManageAccountURL(FenixFxAEntryPoint.SettingsMenu)
+                    if (url != null) {
+                        val intent = SupportUtils.createCustomTabIntent(it, url)
+                        startActivity(intent)
+                    }
+                }
+            }
+            SyncAccount.manageAccount.record(NoExtras())
+            true
+        }
     }
 
     private fun getClickListenerForSignOut(): Preference.OnPreferenceClickListener {
@@ -378,13 +407,13 @@ class AccountSettingsFragment : PreferenceFragmentCompat() {
     private fun getChangeListenerForDeviceName(): Preference.OnPreferenceChangeListener {
         return Preference.OnPreferenceChangeListener { _, newValue ->
             accountSettingsInteractor.onChangeDeviceName(newValue as String) {
-                FenixSnackbar.make(
-                    view = requireView(),
-                    duration = FenixSnackbar.LENGTH_LONG,
-                    isDisplayedWithBrowserToolbar = false,
-                )
-                    .setText(getString(R.string.empty_device_name_error))
-                    .show()
+                Snackbar.make(
+                    snackBarParentView = requireView(),
+                    snackbarState = SnackbarState(
+                        message = getString(R.string.empty_device_name_error),
+                        duration = SnackbarDuration.Long,
+                    ),
+                ).show()
             }
         }
     }
@@ -412,8 +441,11 @@ class AccountSettingsFragment : PreferenceFragmentCompat() {
                 pref.title = getString(R.string.preferences_sync_now)
                 pref.isEnabled = true
 
-                val time = getLastSynced(requireContext())
-                accountSettingsStore.dispatch(AccountSettingsFragmentAction.SyncEnded(time))
+                accountSettingsStore.dispatch(
+                    AccountSettingsFragmentAction.SyncEnded(
+                        lastSavedSyncTime(),
+                    ),
+                )
                 // Make sure out sync engine checkboxes are up-to-date.
                 updateSyncEngineStates()
                 setDisabledWhileSyncing(false)
@@ -427,12 +459,25 @@ class AccountSettingsFragment : PreferenceFragmentCompat() {
                 // We want to only enable the sync button, and not the checkboxes here
                 pref.isEnabled = true
 
-                val failedTime = getLastSynced(requireContext())
                 accountSettingsStore.dispatch(
                     AccountSettingsFragmentAction.SyncFailed(
-                        failedTime,
+                        lastSavedSyncTime(),
                     ),
                 )
+            }
+        }
+
+        // Returns the last saved sync time (in millis)
+        // If the corresponding shared preference doesn't have a value yet,
+        // it is initialized with the current time (in millis)
+        private fun lastSavedSyncTime(): Long {
+            val lastSyncedTime = getLastSynced(requireContext())
+            return if (lastSyncedTime != 0L) {
+                lastSyncedTime
+            } else {
+                val current = System.currentTimeMillis()
+                setLastSynced(requireContext(), current)
+                current
             }
         }
     }

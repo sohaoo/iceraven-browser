@@ -4,14 +4,32 @@
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 <resources xmlns:tools="http://schemas.android.com/tools">
 
+    <style name="SplashScreen" parent="SplashScreenThemeBase"/>
+
+    <style name="SplashScreenThemeBase" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_screen</item>
+        <item name="windowSplashScreenBackground">@color/fx_mobile_layer_color_1</item>
+        <item name="postSplashScreenTheme">@style/NormalTheme</item>
+        <!-- Temporarily opt out of edge to edge enforcement.
+        To be removed in https://bugzilla.mozilla.org/show_bug.cgi?id=1916695-->
+        <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
+    </style>
+
     <style name="NormalThemeBase" parent="Theme.MaterialComponents.DayNight.NoActionBar.Bridge">
+        <!-- Temporarily opt out of edge to edge enforcement.
+        To be removed in https://bugzilla.mozilla.org/show_bug.cgi?id=1916695-->
+        <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
+
         <!-- Android system styling -->
         <item name="searchViewStyle">@style/SearchViewStyle</item>
         <item name="autoCompleteTextViewStyle">@style/AutoCompleteTextViewStyle</item>
+        <item name="android:textAlignment">viewStart</item>
         <item name="android:windowContentTransitions">true</item>
         <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
         <item name="android:progressBarStyleHorizontal">@style/progressBarStyleHorizontal</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">?attr/layer1</item>
+        <item name="android:windowTranslucentNavigation">false</item>
         <item name="android:windowBackground">@color/fx_mobile_layer_color_1</item>
         <item name="android:colorEdgeEffect">@color/accent_normal_theme</item>
         <item name="android:colorAccent">@color/fx_mobile_text_color_primary</item>
@@ -25,9 +43,9 @@
         <item name="android:textColorLink">@color/fx_mobile_text_color_accent</item>
 
         <item name="mozacInputLayoutErrorTextColor"
-            tools:ignore="UnusedResources">@color/fx_mobile_text_color_warning</item>
+            tools:ignore="UnusedResources">@color/fx_mobile_text_color_critical</item>
         <item name="mozacInputLayoutErrorIconColor"
-            tools:ignore="UnusedResources">@color/fx_mobile_text_color_warning</item>
+            tools:ignore="UnusedResources">@color/fx_mobile_text_color_critical</item>
         <item name="mozacLoginSelectHeaderTextStyle" tools:ignore="UnusedResources">@style/SelectPromptHeaderTextStyle</item>
         <item name="mozacSelectCreditCardHeaderTextStyle" tools:ignore="UnusedResources">@style/SelectPromptHeaderTextStyle</item>
         <item name="mozacSelectAddressHeaderTextStyle" tools:ignore="UnusedResources">@style/SelectPromptHeaderTextStyle</item>
@@ -41,6 +59,7 @@
         <item name="layer2">@color/fx_mobile_layer_color_2</item>
         <!-- Search -->
         <item name="layer3">@color/fx_mobile_layer_color_3</item>
+        <item name="layerSearch">@color/fx_mobile_layer_color_search</item>
         <!-- Selected tab -->
         <item name="layerNonOpaque">@color/fx_mobile_layer_color_accent_nonopaque</item>
         <item name="scrim">@color/fx_mobile_layer_color_scrim</item>
@@ -57,7 +76,7 @@
         <!-- Disabled text -->
         <item name="textDisabled">@color/fx_mobile_text_color_disabled</item>
         <!-- Warning text -->
-        <item name="textWarning">@color/fx_mobile_text_color_warning</item>
+        <item name="textCritical">@color/fx_mobile_text_color_critical</item>
         <!-- Small heading, Text link -->
         <item name="textAccent">@color/fx_mobile_text_color_accent</item>
         <!-- Text Inverted/On Color -->
@@ -76,7 +95,9 @@
         <!-- Border -->
         <!-- Default, Divider, Dotted -->
         <item name="borderPrimary">@color/fx_mobile_border_color_primary</item>
-
+        <item name="borderSecondary">@color/fx_mobile_border_color_secondary</item>
+        <!-- Toolbar divider -->
+        <item name="borderToolbarDivider">@color/fx_mobile_border_color_toolbar_divider</item>
         <!-- Active thumb color & Active track color (30% transparency) -->
         <item name="colorControlActivated">@color/accent_high_contrast_normal_theme</item>
         <!-- Inactive thumb color -->
@@ -99,10 +120,6 @@
         <item name="fillLinkFromClipboard">@color/fill_link_from_clipboard_normal_theme</item>
         <item name="syncDisconnected">@color/sync_disconnected_icon_fill_normal_theme</item>
         <item name="syncDisconnectedBackground">@color/sync_disconnected_background_normal_theme</item>
-        <item name="onboardingDarkGradientStartBackground">@color/photonViolet70</item>
-        <item name="onboardingDarkGradientEndBackground">@color/photonViolet40</item>
-        <item name="onboardingSelected">@color/onboarding_illustration_selected_normal_theme</item>
-        <item name="onboardingDeselected">@color/onboarding_illustration_deselected_normal_theme</item>
         <item name="addOnPrivateBrowsingExteriorCircleBackground">@color/add_on_private_browsing_exterior_circle_background_normal_theme</item>
         <item name="mozacPromptLoginEditTextCursorColor">@color/prompt_login_edit_text_cursor_color_normal_theme</item>
         <item name="awesomeBarIndicatorColor">@color/search_suggestion_indicator_icon_color_normal_theme</item>
@@ -124,8 +141,8 @@
         <item name="homeBackground">@color/fx_mobile_layer_color_1</item>
         <item name="bottomBarBackground">@drawable/home_bottom_bar_background</item>
         <item name="bottomBarBackgroundTop">@drawable/home_bottom_bar_background_top</item>
-        <item name="privateBrowsingButtonBackground">@android:color/transparent</item>
-        <item name="privateBrowsingButtonAccent">@color/fx_mobile_text_color_primary</item>
+        <item name="mozac_ic_private_mode_circle_fill_background_color">@android:color/transparent</item>
+        <item name="mozac_ic_private_mode_circle_fill_icon_color">@color/fx_mobile_text_color_primary</item>
 
         <item name="tabCounterTintColor">?attr/textPrimary</item>
     </style>
@@ -180,35 +197,35 @@
         <item name="drawableTint">?accentHighContrast</item>
     </style>
 
-    <style name="Checkable.Colored" parent="Theme.AppCompat">
-        <item name="colorControlActivated">?attr/onboardingSelected</item>
-        <item name="colorControlNormal">?attr/onboardingDeselected</item>
-    </style>
-
     <style name="DialogStyleDark" parent="BaseDialogStyle">
         <item name="buttonBarNegativeButtonStyle">@style/DialogButtonStyleDark</item>
         <item name="buttonBarPositiveButtonStyle">@style/DialogButtonStyleDark</item>
     </style>
 
     <style name="DialogButtonStyleLight" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
-        <item name="android:background">?android:attr/selectableItemBackgroundBorderless</item>
+        <item name="android:background">@drawable/ripple_button</item>
         <item name="android:textColor">?accentBright</item>
         <item name="android:textFontWeight" tools:ignore="NewApi">@integer/font_weight_medium</item>
         <item name="android:fontWeight" tools:ignore="NewApi">@integer/font_weight_medium</item>
     </style>
 
     <style name="DialogButtonStyleDark" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
-        <item name="android:background">?android:attr/selectableItemBackgroundBorderless</item>
-        <item name="android:textColor">?accentHighContrast</item>
+        <item name="android:background">@drawable/ripple_button_dark</item>
+        <item name="android:textColor">?accentUsedOnDarkBackground</item>
         <item name="android:textFontWeight" tools:ignore="NewApi">@integer/font_weight_medium</item>
         <item name="android:fontWeight" tools:ignore="NewApi">@integer/font_weight_medium</item>    </style>
 
     <style name="DialogStyleNormal" parent="DialogStyleLight"/>
 
     <style name="PrivateThemeBase" parent="Theme.MaterialComponents.NoActionBar.Bridge">
+        <!-- Temporarily opt out of edge to edge enforcement.
+        To be removed in https://bugzilla.mozilla.org/show_bug.cgi?id=1916695-->
+        <item name="android:windowOptOutEdgeToEdgeEnforcement" tools:targetApi="35">true</item>
+
         <!-- Android system styling -->
         <item name="searchViewStyle">@style/SearchViewStyle</item>
         <item name="autoCompleteTextViewStyle">@style/AutoCompleteTextViewStyle</item>
+        <item name="android:textAlignment">viewStart</item>
         <item name="android:windowContentTransitions">true</item>
         <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
         <item name="android:progressBarStyleHorizontal">@style/progressBarStyleHorizontal</item>
@@ -226,9 +243,9 @@
         <item name="bottomSheetDialogTheme">@style/BottomSheetPrivate</item>
 
         <item name="mozacInputLayoutErrorTextColor"
-            tools:ignore="UnusedResources">@color/fx_mobile_private_text_color_warning</item>
+            tools:ignore="UnusedResources">@color/fx_mobile_private_text_color_critical</item>
         <item name="mozacInputLayoutErrorIconColor"
-            tools:ignore="UnusedResources">@color/fx_mobile_private_text_color_warning</item>
+            tools:ignore="UnusedResources">@color/fx_mobile_private_text_color_critical</item>
         <item name="mozacLoginSelectHeaderTextStyle" tools:ignore="UnusedResources">@style/SelectPromptHeaderTextStyle</item>
         <item name="mozacSelectCreditCardHeaderTextStyle" tools:ignore="UnusedResources">@style/SelectPromptHeaderTextStyle</item>
         <item name="mozacSelectAddressHeaderTextStyle" tools:ignore="UnusedResources">@style/SelectPromptHeaderTextStyle</item>
@@ -242,6 +259,7 @@
         <item name="layer2">@color/fx_mobile_private_layer_color_2</item>
         <!-- Search -->
         <item name="layer3">@color/fx_mobile_private_layer_color_3</item>
+        <item name="layerSearch">@color/fx_mobile_private_layer_color_search</item>
         <!-- Selected tab -->
         <item name="layerNonOpaque">@color/fx_mobile_private_layer_color_accent_nonopaque</item>
         <item name="scrim">@color/fx_mobile_private_layer_color_scrim</item>
@@ -258,7 +276,7 @@
         <!-- Disabled text -->
         <item name="textDisabled">@color/fx_mobile_private_text_color_disabled</item>
         <!-- Warning text -->
-        <item name="textWarning">@color/fx_mobile_private_text_color_warning</item>
+        <item name="textCritical">@color/fx_mobile_private_text_color_critical</item>
         <!-- Small heading, Text link -->
         <item name="textAccent">@color/fx_mobile_private_text_color_accent</item>
         <!-- Text Inverted/On Color -->
@@ -277,6 +295,9 @@
         <!-- Border -->
         <!-- Default, Divider, Dotted -->
         <item name="borderPrimary">@color/fx_mobile_private_border_color_primary</item>
+        <item name="borderSecondary">@color/fx_mobile_private_border_color_secondary</item>
+        <!-- Toolbar divider -->
+        <item name="borderToolbarDivider">@color/fx_mobile_private_border_color_toolbar_divider</item>
 
         <!-- Inactive thumb color -->
         <item name="colorSwitchThumbNormal">@color/toggle_off_knob_dark_theme</item>
@@ -298,10 +319,6 @@
         <item name="fillLinkFromClipboard">@color/accent_high_contrast_private_theme</item>
         <item name="syncDisconnected">@color/sync_disconnected_icon_fill_private_theme</item>
         <item name="syncDisconnectedBackground">@color/sync_disconnected_background_private_theme</item>
-        <item name="onboardingDarkGradientStartBackground">@color/photonViolet60</item>
-        <item name="onboardingDarkGradientEndBackground">@color/photonPurple50</item>
-        <item name="onboardingSelected">@color/accent_private_theme</item>
-        <item name="onboardingDeselected">@color/onboarding_illustration_deselected_private_theme</item>
         <item name="addOnPrivateBrowsingExteriorCircleBackground">@color/accent_private_theme</item>
         <item name="mozacPromptLoginEditTextCursorColor">@color/prompt_login_edit_text_cursor_color_private_theme</item>
         <item name="awesomeBarIndicatorColor">@color/photonGreen60</item>
@@ -319,11 +336,14 @@
         <!-- Drawables -->
         <item name="fenixLogo">@drawable/ic_logo_wordmark_private</item>
         <item name="fenixWordmarkText">@drawable/ic_wordmark_text_private</item>
+        <item name="fenixWordmarkLogo">@drawable/ic_wordmark_logo</item>
         <item name="homeBackground">@drawable/private_home_background_gradient</item>
         <item name="bottomBarBackground">@drawable/private_home_bottom_bar_background_gradient</item>
         <item name="bottomBarBackgroundTop">@drawable/private_home_bottom_bar_background_gradient_top</item>
-        <item name="privateBrowsingButtonBackground">@color/fx_mobile_private_text_color_primary</item>
-        <item name="privateBrowsingButtonAccent">@color/fx_mobile_private_layer_color_1</item>
+        <item name="mozac_ic_private_mode_circle_fill_background_color">@color/photonWhite</item>
+        <item name="mozac_ic_private_mode_circle_fill_icon_color">@color/fx_mobile_private_layer_color_2</item>
+
+        <item name="tabCounterTintColor">?attr/textPrimary</item>
     </style>
 
     <style name="Mozac.Browser.Menu" parent="" tools:ignore="UnusedResources">
@@ -334,11 +354,21 @@
     </style>
 
     <style name="PrivateTheme" parent="PrivateThemeBase" />
+    <style name="FeltPrivateTheme" parent="PrivateThemeBase">
+        <item name="homeBackground">@drawable/felt_private_home_background_gradient</item>
+    </style>
 
     <!-- Fade animation for theme switching -->
-    <style name="WindowAnimationTransition">
+    <style name="WindowAnimationTransition" parent="android:Animation.Activity">
         <item name="android:windowEnterAnimation">@anim/fade_in</item>
         <item name="android:windowExitAnimation">@anim/fade_out</item>
+    </style>
+
+    <!-- On some android versions (known about OneUI 2.5) the entering animation is played every -->
+    <!-- time DialogFragment goes though an onStart() lifecycle call. We want to prevent the -->
+    <!-- animation from being repeated after app returns from background.-->
+    <style name="DialogFragmentRestoreAnimation" parent="Animation.MaterialComponents.BottomSheetDialog">
+        <item name="android:windowEnterAnimation">@null</item>
     </style>
 
     <!-- UI button styling -->
@@ -360,42 +390,15 @@
         <item name="android:fontWeight" tools:ignore="NewApi">@integer/font_weight_medium</item>
     </style>
 
-    <!-- Ideally we should consolidate this with NeutralButton in the future -->
-    <style name="NeutralOnboardingButton" parent="NeutralButton">
-        <item name="android:background">@drawable/onboarding_padded_background</item>
-        <item name="backgroundTint">?neutralFaded</item>
-        <item name="android:textColor">?attr/textPrimary</item>
-    </style>
-
     <style name="DestructiveButton" parent="NeutralButton">
-        <item name="iconTint">@color/fx_mobile_icon_color_warning_button</item>
-        <item name="android:textColor">@color/fx_mobile_text_color_warning_button</item>
+        <item name="iconTint">@color/fx_mobile_icon_color_critical_button</item>
+        <item name="android:textColor">@color/fx_mobile_text_color_critical_button</item>
     </style>
 
     <style name="PositiveButton" parent="NeutralButton">
         <item name="backgroundTint">?actionPrimary</item>
         <item name="iconTint">?iconOnColor</item>
         <item name="android:textColor">?textActionPrimary</item>
-    </style>
-
-    <style name="search_pill" parent="Widget.AppCompat.Button.Borderless">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">40dp</item>
-        <item name="android:paddingTop">4dp</item>
-        <item name="android:paddingBottom">4dp</item>
-        <item name="android:textAllCaps">false</item>
-        <item name="android:textSize">14sp</item>
-        <item name="android:textColor">@color/toggle_text_color</item>
-        <item name="drawableTint">@color/toggle_text_color</item>
-        <item name="android:layout_gravity">center_vertical</item>
-        <item name="android:gravity">center_vertical</item>
-        <item name="android:singleLine">true</item>
-        <item name="android:paddingStart">8dp</item>
-        <item name="android:paddingEnd">16dp</item>
-        <item name="android:drawablePadding">8dp</item>
-        <item name="android:minWidth">0dp</item>
-        <item name="android:minHeight">0dp</item>
-        <item name="android:background">@drawable/search_pill_drawable_button_background</item>
     </style>
 
     <style name="DialogStyleBase" parent="NormalTheme">
@@ -534,21 +537,6 @@
         <item name="android:textColor">?accentUsedOnDarkBackground</item>
     </style>
 
-    <style name="OnboardingCardLight">
-        <item name="android:background">@drawable/onboarding_card_background_light</item>
-        <item name="android:layout_marginBottom">16dp</item>
-        <item name="android:elevation">5dp</item>
-    </style>
-
-    <style name="OnboardingCardLightWithPadding" parent="OnboardingCardLight">
-        <item name="android:padding">16dp</item>
-    </style>
-
-    <style name="OnboardingCardDark" parent="OnboardingCardLightWithPadding" tools:ignore="UnusedResources">
-        <item name="android:background">@drawable/onboarding_card_background_dark</item>
-        <item name="android:elevation">0dp</item>
-    </style>
-
     <style name="SearchClipboardStyle">
         <item name="android:ellipsize">end</item>
         <item name="android:maxLines">1</item>
@@ -580,6 +568,7 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:minHeight">40dp</item>
         <item name="android:layout_marginTop">32dp</item>
+        <item name="android:textAlignment">center</item>
         <item name="android:textColor">?accentUsedOnDarkBackground</item>
         <item name="android:textFontWeight" tools:ignore="NewApi">@integer/font_weight_medium</item>
         <item name="android:fontWeight" tools:ignore="NewApi">@integer/font_weight_medium</item>
@@ -727,8 +716,13 @@
         <item name="windowActionBar">false</item>
         <item name="android:windowFullscreen">false</item>
         <item name="android:windowContentOverlay">@null</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowTranslucentNavigation">true</item>
+        <item name="android:navigationBarColor">?attr/layer1</item>
+        <item name="android:windowTranslucentNavigation">false</item>
+        <item name="android:statusBarColor">?attr/layer1</item>
+    </style>
+
+    <style name="SearchDialogStyleTabStrip" parent="SearchDialogStyle">
+        <item name="android:statusBarColor">?attr/layer3</item>
     </style>
 
     <style name="SearchSelectorIconStyle">

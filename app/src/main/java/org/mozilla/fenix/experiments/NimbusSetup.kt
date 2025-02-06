@@ -8,7 +8,6 @@ import android.content.Context
 import mozilla.components.service.nimbus.NimbusApi
 import mozilla.components.service.nimbus.NimbusAppInfo
 import mozilla.components.service.nimbus.NimbusBuilder
-import mozilla.components.service.nimbus.loggingErrorReporter
 import mozilla.components.service.nimbus.messaging.FxNimbusMessaging
 import mozilla.components.service.nimbus.messaging.NimbusSystem
 import mozilla.components.support.base.log.logger.Logger
@@ -30,6 +29,8 @@ import org.mozilla.fenix.utils.Settings
  */
 private const val TIME_OUT_LOADING_EXPERIMENT_FROM_DISK_MS = 200L
 
+private val logger = Logger("service/Nimbus")
+
 /**
  * Create the Nimbus singleton object for the Fenix app.
  */
@@ -41,6 +42,11 @@ fun createNimbus(context: Context, urlString: String?): NimbusApi {
     if (isAppFirstRun) {
         context.settings().isFirstNimbusRun = false
     }
+
+    val recordedNimbusContext = RecordedNimbusContext.create(
+        context = context,
+        isFirstRun = isAppFirstRun,
+    )
 
     // The name "fenix" here corresponds to the app_name defined for the family of apps
     // that encompasses all of the channels for the Fenix app.  This is defined upstream in
@@ -59,30 +65,34 @@ fun createNimbus(context: Context, urlString: String?): NimbusApi {
 
     return NimbusBuilder(context).apply {
         url = urlString
-        errorReporter = { message, e ->
-            if (BuildConfig.BUILD_TYPE == "debug") {
-                Logger.error("Nimbus error: $message", e)
-            }
-            if (e !is NimbusException || e.isReportableError()) {
-                @Suppress("TooGenericExceptionCaught")
-                try {
-                    context.components.analytics.crashReporter.submitCaughtException(e)
-                } catch (e: Throwable) {
-                    loggingErrorReporter(message, e)
-                }
-            }
-        }
+        errorReporter = context::reportError
         initialExperiments = R.raw.initial_experiments
         timeoutLoadingExperiment = TIME_OUT_LOADING_EXPERIMENT_FROM_DISK_MS
         usePreviewCollection = context.settings().nimbusUsePreview
+        sharedPreferences = context.settings().preferences
         isFirstRun = isAppFirstRun
-        onCreateCallback = { nimbus ->
-            FxNimbus.initialize { nimbus }
+        featureManifest = FxNimbus
+        onFetchCallback = {
+            context.settings().nimbusExperimentsFetched = true
         }
-        onApplyCallback = {
-            FxNimbus.invalidateCachedValues()
+        recordedContext = recordedNimbusContext
+    }.build(appInfo).also { nimbusApi ->
+        nimbusApi.recordIsReady(FxNimbus.features.nimbusIsReady.value().eventCount)
+    }
+}
+
+private fun Context.reportError(message: String, e: Throwable) {
+    if (BuildConfig.BUILD_TYPE == "debug") {
+        logger.error("Nimbus error: $message", e)
+    }
+    if (e !is NimbusException || e.isReportableError()) {
+        @Suppress("TooGenericExceptionCaught")
+        try {
+            this.components.analytics.crashReporter.submitCaughtException(e)
+        } catch (e: Throwable) {
+            logger.error(message, e)
         }
-    }.build(appInfo)
+    }
 }
 
 /**

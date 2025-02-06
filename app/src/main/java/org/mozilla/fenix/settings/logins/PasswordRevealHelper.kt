@@ -8,7 +8,7 @@ import android.text.InputType
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
-import mozilla.components.service.glean.private.NoExtras
+import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.fenix.GleanMetrics.Logins
 import org.mozilla.fenix.R
 
@@ -21,7 +21,7 @@ fun togglePasswordReveal(passwordText: TextView, revealPasswordButton: ImageButt
         Logins.viewPasswordLogin.record(NoExtras())
         passwordText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
         revealPasswordButton.setImageDrawable(
-            AppCompatResources.getDrawable(context, R.drawable.mozac_ic_password_hide),
+            AppCompatResources.getDrawable(context, R.drawable.mozac_ic_eye_slash_24),
         )
         revealPasswordButton.contentDescription =
             context.getString(R.string.saved_login_hide_password)
@@ -29,7 +29,7 @@ fun togglePasswordReveal(passwordText: TextView, revealPasswordButton: ImageButt
         passwordText.inputType =
             InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
         revealPasswordButton.setImageDrawable(
-            AppCompatResources.getDrawable(context, R.drawable.mozac_ic_password_reveal),
+            AppCompatResources.getDrawable(context, R.drawable.mozac_ic_eye_24),
         )
         revealPasswordButton.contentDescription =
             context.getString(R.string.saved_login_reveal_password)
