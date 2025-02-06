@@ -169,24 +169,16 @@ internal class ReleaseMetricController(
         }
         Component.BROWSER_TOOLBAR to ToolbarFacts.Items.MENU -> {
             if (settings.navigationToolbarEnabled) {
-                NavigationBar.browserMenuTapped.record(NoExtras())
+                Events.browserToolbarAction.record(Events.BrowserToolbarActionExtra("menu_press"))
             } else {
                 Events.toolbarMenuVisible.record(NoExtras())
             }
         }
         Component.UI_TABCOUNTER to ToolbarFacts.Items.TOOLBAR -> {
-            if (settings.navigationToolbarEnabled) {
-                NavigationBar.browserTabTrayTapped.record(NoExtras())
-            } else {
-                Unit
-            }
+            Events.browserToolbarAction.record(Events.BrowserToolbarActionExtra("tabs_tray"))
         }
         Component.UI_TABCOUNTER to ToolbarFacts.Items.MENU -> {
-            if (settings.navigationToolbarEnabled) {
-                NavigationBar.browserTabTrayLongTapped.record(NoExtras())
-            } else {
-                Unit
-            }
+            Events.browserToolbarAction.record(Events.BrowserToolbarActionExtra("tabs_tray_long_press"))
         }
         Component.FEATURE_CONTEXTMENU to ContextMenuFacts.Items.ITEM -> {
             metadata?.get("item")?.let { item ->

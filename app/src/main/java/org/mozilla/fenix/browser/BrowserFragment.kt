@@ -22,6 +22,7 @@ import mozilla.components.browser.state.state.SessionState
 import mozilla.components.browser.state.state.TabSessionState
 import mozilla.components.browser.thumbnails.BrowserThumbnails
 import mozilla.components.browser.toolbar.BrowserToolbar
+import mozilla.components.compose.base.theme.AcornWindowSize
 import mozilla.components.concept.engine.permission.SitePermissions
 import mozilla.components.concept.toolbar.Toolbar
 import mozilla.components.feature.app.links.AppLinksUseCases
@@ -62,7 +63,6 @@ import org.mozilla.fenix.settings.quicksettings.protections.cookiebanners.getCoo
 import org.mozilla.fenix.shopping.DefaultShoppingExperienceFeature
 import org.mozilla.fenix.shopping.ReviewQualityCheckFeature
 import org.mozilla.fenix.shortcut.PwaOnboardingObserver
-import org.mozilla.fenix.theme.AcornWindowSize
 import org.mozilla.fenix.theme.ThemeManager
 
 /**
@@ -563,7 +563,7 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler {
                         NavigationBar.browserBackLongTapped.record(NoExtras())
                     }
                     browserToolbarInteractor.onBrowserToolbarMenuItemTapped(
-                        ToolbarMenu.Item.Back(viewHistory = true),
+                        ToolbarMenu.Item.Back(viewHistory = true, isOnToolbar = true),
                     )
                 },
                 listener = {
@@ -571,7 +571,7 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler {
                         NavigationBar.browserBackTapped.record(NoExtras())
                     }
                     browserToolbarInteractor.onBrowserToolbarMenuItemTapped(
-                        ToolbarMenu.Item.Back(viewHistory = false),
+                        ToolbarMenu.Item.Back(viewHistory = false, isOnToolbar = true),
                     )
                 },
             ).also {
@@ -595,7 +595,7 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler {
                         NavigationBar.browserForwardLongTapped.record(NoExtras())
                     }
                     browserToolbarInteractor.onBrowserToolbarMenuItemTapped(
-                        ToolbarMenu.Item.Forward(viewHistory = true),
+                        ToolbarMenu.Item.Forward(viewHistory = true, isOnToolbar = true),
                     )
                 },
                 listener = {
@@ -603,7 +603,7 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler {
                         NavigationBar.browserForwardTapped.record(NoExtras())
                     }
                     browserToolbarInteractor.onBrowserToolbarMenuItemTapped(
-                        ToolbarMenu.Item.Forward(viewHistory = false),
+                        ToolbarMenu.Item.Forward(viewHistory = false, isOnToolbar = true),
                     )
                 },
             ).also {
@@ -752,7 +752,19 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler {
                     runIfFragmentIsAttached {
                         val isTrackingProtectionEnabled =
                             tab.trackingProtection.enabled && !hasTrackingProtectionException
-                        val directions =
+                        val directions = if (requireContext().settings().enableUnifiedTrustPanel) {
+                            BrowserFragmentDirections.actionBrowserFragmentToTrustPanelFragment(
+                                sessionId = tab.id,
+                                url = tab.content.url,
+                                title = tab.content.title,
+                                isSecured = tab.content.securityInfo.secure,
+                                sitePermissions = sitePermissions,
+                                certificateName = tab.content.securityInfo.issuer,
+                                permissionHighlights = tab.content.permissionHighlights,
+                                isTrackingProtectionEnabled = isTrackingProtectionEnabled,
+                                cookieBannerUIMode = cookieBannerUIMode,
+                            )
+                        } else {
                             BrowserFragmentDirections.actionBrowserFragmentToQuickSettingsSheetDialogFragment(
                                 sessionId = tab.id,
                                 url = tab.content.url,
@@ -765,6 +777,7 @@ class BrowserFragment : BaseBrowserFragment(), UserInteractionHandler {
                                 isTrackingProtectionEnabled = isTrackingProtectionEnabled,
                                 cookieBannerUIMode = cookieBannerUIMode,
                             )
+                        }
                         nav(R.id.browserFragment, directions)
                     }
                 }
