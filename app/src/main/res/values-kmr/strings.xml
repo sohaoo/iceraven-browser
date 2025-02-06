@@ -441,10 +441,6 @@
     The parameter is the search engine name (for example: DuckDuckGo). -->
     <string name="search_engine_icon_content_description_1">Motora lêgerînê: %s</string>
 
-    <!-- Content description (not visible, for screen readers etc.): Search engine icon.
-    The parameter is the search engine name (for example: DuckDuckGo). -->
-    <string name="search_engine_icon_content_description_1">Motora lêgerînê: %s</string>
-
     <!-- Home onboarding -->
     <!-- Home onboarding dialog welcome screen title text. -->
     <string name="onboarding_home_welcome_title_2">Tu bi xêr hatiyî înterneteke kesanetir</string>

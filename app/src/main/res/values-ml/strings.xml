@@ -1557,18 +1557,6 @@
     <!-- Preference for altering the default browsing mode. When enabled, the desktop site will always be requested. -->
     <string name="preference_feature_desktop_mode_default">എപ്പോഴും ഉപരിഫലക സൈറ്റ് ആവശ്യപ്പെടൂ</string>
 
-    <!-- Summary of studies preference if it is set to on -->
-    <string name="studies_on">തുറന്നതു്</string>
-    <!-- Summary of studies data on quit preference if it is set to off -->
-    <string name="studies_off">അണച്ചതു്</string>
-    <!-- Category header of a preference that allows a user to alter settings related to web permissions. -->
-    <string name="preferences_category_permissions">അനുമതികൾ</string>
-    <!-- Category header of a preference that allows a user to alter settings related to web content. -->
-    <string name="preferences_category_content">ഉള്ളടക്കം</string>
-
-    <!-- Preference for altering the default browsing mode. When enabled, the desktop site will always be requested. -->
-    <string name="preference_feature_desktop_mode_default">എപ്പോഴും ഉപരിഫലക സൈറ്റ് ആവശ്യപ്പെടൂ</string>
-
     <!-- Collections -->
     <!-- Collections header on home fragment -->
     <string name="collections_header">ശേഖരങ്ങൾ</string>

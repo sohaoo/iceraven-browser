@@ -1045,9 +1045,6 @@
     <!-- Toast shown after turning on/off studies preferences -->
     <string name="studies_toast_quit_application" moz:removedIn="135" tools:ignore="UnusedResources">Serrende s’aplicatzione pro aplicare is modìficas…</string>
 
-    <!-- Toast shown after turning on/off studies preferences -->
-    <string name="studies_toast_quit_application" tools:ignore="UnusedResources">Serrende s’aplicatzione pro aplicare is modìficas…</string>
-
     <!-- Sessions -->
     <!-- Title for the list of tabs -->
     <string name="tab_header_label" moz:removedIn="135" tools:ignore="UnusedResources">Ischedas abertas</string>

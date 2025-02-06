@@ -448,10 +448,6 @@
     The colon character (in "%s:") is intended to have the screen reader make a small pause between the search engine name and the description of the button. -->
     <string name="search_engine_selector_content_description">%s: selector de motor de búsqueda</string>
 
-    <!-- Content description (not visible, for screen readers etc.): Search engine icon.
-    The parameter is the search engine name (for example: DuckDuckGo). -->
-    <string name="search_engine_icon_content_description_1">Motor de búsqueda: %s</string>
-
     <!-- Home onboarding -->
     <!-- Home onboarding dialog welcome screen title text. -->
     <string name="onboarding_home_welcome_title_2">Te damos la bienvenida a un internet más personal</string>
